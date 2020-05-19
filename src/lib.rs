@@ -9,6 +9,9 @@ pub use {request::Request, response::Response, server::run};
 
 #[macro_export]
 macro_rules! run {
+    ($addr:expr, $module:ident) => {
+        vial::run($addr, $module::vial_router);
+    };
     ($addr:expr) => {
         vial::run($addr, vial_router);
     };
@@ -26,7 +29,7 @@ macro_rules! vial {
         }
 
 
-        fn vial_router(req: ::vial::Request) -> ::vial::Response {
+        pub fn vial_router(req: ::vial::Request) -> ::vial::Response {
             match (req.method(), req.path()) {
                 $( (stringify!($method), $path) => $body(req), )*
                 _ => ::vial::Response::from("404 Not Found"),
