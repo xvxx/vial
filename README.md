@@ -10,14 +10,34 @@ It includes but a droplet of the bare minimum:
 
 Everything else... well, that's up to you.
 
-It's sort of like a picnic where the playlist is all 90s music and you
-have to bring your own beverage.
-
-Yes, even water.
-
 The goal is a small, simple, as-few-as-possible-dependencies web
 library you can use to test out an idea quickly or get a static site
 _rolling_.
+
+It's sort of like a picnic where the playlist is all 90s music and you
+have to bring your own beverage. Yabba dabba doo!
+
+## ~ hello world ~
+
+```rust
+use vial::{vial, Request, Response};
+
+vial! {
+    GET "/hi/world" => |_| "Hello, world!".into();
+
+    GET "/" => welcome;
+}
+
+fn welcome(_req: Request) -> Response {
+    Response::from(200).with_file("welcome.html")
+}
+
+fn main() {
+    if let Err(e) = vial::run!("0.0.0.0:7667") {
+        eprintln!("error: {}", e);
+    }
+}
+```
 
 ## ~ bonus features ~
 
@@ -29,7 +49,6 @@ activate for enhanced productivity:
 - **markdown**: Add Markdown rendering capabilities.
 - **json**: `to_json` and `from_json` powers, via Serde.
 - **tera**: Templating, via Tera.
-- **htxl**: Vial's preferred, no-dependency template library:
-  HTXL.
+- **htxl**: Vial's preferred, no-dependency template library: HTXL.
 - **ssl**: Add support for SSL/TLS. Normally you should be using a
   proxy.
