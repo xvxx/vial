@@ -58,6 +58,27 @@ fn main() {
 }
 ```
 
+To _really_ break the mold, you can split your site into different
+modules:
+
+```rust
+use vial;
+
+mod wiki;
+mod blog;
+
+mod index {
+    use vial::vial;
+    vial! {
+        GET "/" => |_| Response::from_file("index.html")
+    }
+}
+
+fn main() {
+    vial::run!("0.0.0.0:7667", crate, wiki, blog, index);
+}
+```
+
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
@@ -87,3 +108,4 @@ activate for enhanced productivity:
 - [ ] multiple modules
 - [ ] `before_filter`
 - [ ] `after_filter`
+```
