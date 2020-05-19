@@ -94,7 +94,7 @@ fn write_response(
     let content_type = "text/html; charset=utf8";
     let content_len = res.body.chars().count();
     let res = format!(
-        "HTTP/1.1 200 OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n{}",
+        "HTTP/1.1 200 OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         date, content_type, content_len, res.body
     );
     stream.write(res.as_bytes())?;

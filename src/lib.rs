@@ -4,6 +4,7 @@ mod method;
 mod request;
 mod response;
 mod server;
+mod util;
 
 pub use {request::Request, response::Response, server::run};
 
