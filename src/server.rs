@@ -21,7 +21,6 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: fn(Request) -> Response) -> Result
 
     for stream in server.incoming() {
         let stream = stream?;
-        println!("~ connection from {}", stream.peer_addr()?);
         pool.execute(move || {
             if let Err(e) = handle_request(stream, &router) {
                 eprintln!("!! {}", e);
@@ -45,7 +44,6 @@ fn handle_request(mut stream: TcpStream, router: &fn(Request) -> Response) -> Re
             break;
         }
 
-        println!("parsing...");
         let res = match httpreq.parse(&buf) {
             Ok(res) => res,
             Err(_) => {
@@ -67,6 +65,7 @@ fn handle_request(mut stream: TcpStream, router: &fn(Request) -> Response) -> Re
 
             if let Some(path) = httpreq.path {
                 req.path = path.to_string();
+                req.parse_params();
             }
 
             break;
@@ -89,15 +88,18 @@ fn write_response(
     req: Request,
     router: &fn(Request) -> Response,
 ) -> Result<()> {
+    let method = req.method().to_string();
+    let path = req.path().to_string();
     let res = router(req);
     let date = http_current_date();
     let content_type = "text/html; charset=utf8";
     let content_len = res.body.chars().count();
-    let res = format!(
+    let body = format!(
         "HTTP/1.1 200 OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         date, content_type, content_len, res.body
     );
-    stream.write(res.as_bytes())?;
+    stream.write(body.as_bytes())?;
     stream.flush()?;
+    println!("{} {} {}", method, res.code, path);
     Ok(())
 }

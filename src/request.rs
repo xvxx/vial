@@ -10,13 +10,11 @@ pub struct Request {
 
 impl Request {
     pub fn new() -> Request {
-        let mut req = Request {
+        Request {
             path: "/".to_string(),
             method: "GET".to_string(),
             params: HashMap::new(),
-        };
-        req.parse_params();
-        req
+        }
     }
 
     pub fn method(&self) -> &str {
@@ -39,7 +37,7 @@ impl Request {
     }
 
     /// Turn a query string or POST body into a nice and tidy HashMap.
-    fn parse_params(&mut self) {
+    pub(crate) fn parse_params(&mut self) {
         if !self.params.is_empty() {
             self.params.clear();
         }
@@ -59,6 +57,10 @@ impl Request {
         }
 
         if !map.is_empty() {
+            // strip ?querystring from /path
+            if let Some(idx) = self.path.find('?') {
+                self.path = self.path[..idx].to_string();
+            }
             self.params = map;
         }
     }
