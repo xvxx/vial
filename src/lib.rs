@@ -3,8 +3,9 @@
 mod method;
 mod request;
 mod response;
+mod server;
 
-pub use {request::Request, response::Response};
+pub use {request::Request, response::Response, server::run};
 
 #[macro_export]
 macro_rules! vial {
@@ -19,7 +20,7 @@ macro_rules! vial {
 
 
         fn route(req: Request) -> Response {
-            match (req.method(), req.url()) {
+            match (req.method(), req.path()) {
                 $( (stringify!($method), $path) => $body(req), )*
                 _ => Response::from("404 Not Found"),
             }

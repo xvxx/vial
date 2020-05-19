@@ -40,13 +40,5 @@ fn blahblah(req: Request) -> Response {
 }
 
 fn main() {
-    let mut args = std::env::args().skip(1);
-    let path = args.next().unwrap_or_else(|| "/".into());
-    let method = args.next().unwrap_or_else(|| "GET".into()).to_uppercase();
-    let req = Request {
-        method: method,
-        url: path,
-        params: HashMap::new(),
-    };
-    println!("{}", route(req));
+    vial::run("0.0.0.0:7667");
 }
