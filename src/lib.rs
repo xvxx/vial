@@ -8,9 +8,16 @@ mod server;
 pub use {request::Request, response::Response, server::run};
 
 #[macro_export]
+macro_rules! run {
+    ($addr:expr) => {
+        vial::run($addr, vial_router);
+    };
+}
+
+#[macro_export]
 macro_rules! vial {
     ( $($method:ident $path:expr => $body:expr;)* ) => {
-        fn check() {
+        fn vial_check_method() {
             #[allow(non_snake_case)]
             fn GET() {}
             #[allow(non_snake_case)]
@@ -19,10 +26,10 @@ macro_rules! vial {
         }
 
 
-        fn route(req: Request) -> Response {
+        fn vial_router(req: ::vial::Request) -> ::vial::Response {
             match (req.method(), req.path()) {
                 $( (stringify!($method), $path) => $body(req), )*
-                _ => Response::from("404 Not Found"),
+                _ => ::vial::Response::from("404 Not Found"),
             }
         }
     };

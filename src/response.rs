@@ -2,8 +2,8 @@ use std::{fmt, fs, path::Path};
 
 #[derive(Debug)]
 pub struct Response {
-    code: usize,
-    body: String,
+    pub code: usize,
+    pub body: String,
 }
 
 impl Default for Response {

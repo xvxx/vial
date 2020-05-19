@@ -1,5 +1,5 @@
 use {
-    crate::Request,
+    crate::{Request, Response},
     httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
@@ -12,7 +12,7 @@ const MAX_CONNECTIONS: usize = 10;
 
 type Result<T> = std::result::Result<T, io::Error>;
 
-pub fn run<T: ToSocketAddrs>(addr: T) -> Result<()> {
+pub fn run<T: ToSocketAddrs>(addr: T, router: fn(Request) -> Response) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
     let server = TcpListener::bind(&addr).expect("~ vial error: ");
     let addr = server.local_addr()?;
@@ -22,7 +22,7 @@ pub fn run<T: ToSocketAddrs>(addr: T) -> Result<()> {
         let stream = stream?;
         println!("~ connection from {}", stream.peer_addr()?);
         pool.execute(move || {
-            if let Err(e) = handle_request(stream) {
+            if let Err(e) = handle_request(stream, &router) {
                 eprintln!("!! {}", e);
             }
         });
@@ -31,7 +31,7 @@ pub fn run<T: ToSocketAddrs>(addr: T) -> Result<()> {
     Ok(())
 }
 
-fn handle_request(mut stream: TcpStream) -> Result<()> {
+fn handle_request(mut stream: TcpStream, router: &fn(Request) -> Response) -> Result<()> {
     let mut reader = BufReader::new(&stream);
     let mut req = Request::new();
 
@@ -74,7 +74,19 @@ fn handle_request(mut stream: TcpStream) -> Result<()> {
         unimplemented!();
     }
 
-    println!("REQ: {:?}", req);
+    write_response(stream, req, router)?;
+    Ok(())
+}
 
+fn write_response(
+    mut stream: TcpStream,
+    req: Request,
+    router: &fn(Request) -> Response,
+) -> Result<()> {
+    println!("REQ: {:?}", req);
+    let res = router(req);
+    let res = format!("HTTP/1.1 200 OK\r\n\r\n{}", res.body);
+    stream.write(res.as_bytes())?;
+    stream.flush()?;
     Ok(())
 }
