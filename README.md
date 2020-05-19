@@ -71,3 +71,19 @@ activate for enhanced productivity:
 - **htxl**: Vial's preferred, no-dependency template library: HTXL.
 - **ssl**: Add support for SSL/TLS. Normally you should be using a
   proxy.
+
+## ~ T0DO ~
+
+- [ ] GET requests
+- [ ] POST requests
+- [ ] static file
+- [ ] static file etag
+- [ ] parse headers()
+- [ ] test headers()
+- [ ] test GET param()
+- [ ] test POST param()
+- [ ] test static file
+- [ ] test etag
+- [ ] multiple modules
+- [ ] `before_filter`
+- [ ] `after_filter`
