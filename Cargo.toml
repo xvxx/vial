@@ -1,8 +1,11 @@
 [package]
 name = "vial"
-version = "0.1.0"
+description = "a micro micro-framework"
+documentation = "https://docs.rs/vial/"
+version = "0.0.0"
 authors = ["chris west <c@xvxx.io>"]
 edition = "2018"
+license = "MIT"
 
 # See more keys and their definitions at
 # https://doc.rust-lang.org/cargo/reference/manifest.html
