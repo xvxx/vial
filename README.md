@@ -81,6 +81,13 @@ fn main() {
 }
 ```
 
+## ~ hot reloading ~
+
+Install [cargo-watch]:
+
+    $ cargo install cargo-watch
+    $ cargo watch -x 'run --example hello_world'
+
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
@@ -110,4 +117,5 @@ activate for enhanced productivity:
 - [ ] multiple modules
 - [ ] `before_filter`
 - [ ] `after_filter`
-```
+
+[cargo-watch]: https://crates.io/crates/cargo-watch
