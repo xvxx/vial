@@ -7,7 +7,7 @@ vial! {
 <form method="POST" action="/">
     <p><label>Name: <input type="text" name="name"/></label></p>
     <p><label>Age:
-        <select>
+        <select name="age">
             <option value="0-18">0-18</option>
             <option value="19-29">19-29</option>
             <option value="30-49">30-49</option>
@@ -33,5 +33,5 @@ vial! {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:9999");
+    vial::run!("0.0.0.0:9999").unwrap();
 }

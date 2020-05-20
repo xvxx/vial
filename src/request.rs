@@ -36,7 +36,6 @@ impl Request {
 
     /// Was the given form value sent?
     pub fn has_form(&mut self, name: &str) -> bool {
-        self.parse_form_data();
         self.form.contains_key(name)
     }
 
@@ -46,7 +45,7 @@ impl Request {
     }
 
     /// Turn POSTed form data into a nice 'n tidy HashMap.
-    pub(crate) fn parse_form_data(&mut self) {
+    pub(crate) fn parse_body(&mut self) {
         if !self.form.is_empty() {
             self.form.clear();
         }
@@ -59,7 +58,6 @@ impl Request {
 
     /// Was the given query value sent?
     pub fn has_query(&mut self, name: &str) -> bool {
-        self.parse_query();
         self.query.contains_key(name)
     }
 
