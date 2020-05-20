@@ -67,7 +67,7 @@ fn handle_request(mut stream: TcpStream, routers: &Routers) -> Result<()> {
 
             if let Some(path) = httpreq.path {
                 req.path = path.to_string();
-                req.parse_params();
+                req.parse_query();
             }
 
             break;

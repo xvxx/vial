@@ -5,7 +5,10 @@ use std::collections::HashMap;
 pub struct Request {
     pub path: String,
     pub method: String,
-    pub params: HashMap<String, String>,
+    pub body: String,
+
+    pub query: HashMap<String, String>,
+    pub form: HashMap<String, String>,
 }
 
 impl Request {
@@ -13,8 +16,14 @@ impl Request {
         Request {
             path: "/".to_string(),
             method: "GET".to_string(),
-            params: HashMap::new(),
+            body: "".to_string(),
+            query: HashMap::new(),
+            form: HashMap::new(),
         }
+    }
+
+    pub fn body(&self) -> &str {
+        &self.body
     }
 
     pub fn method(&self) -> &str {
@@ -25,21 +34,44 @@ impl Request {
         &self.path
     }
 
-    /// Has the given param been set?
-    pub fn has_param(&mut self, name: &str) -> bool {
-        self.parse_params();
-        self.params.contains_key(name)
+    /// Was the given form value sent?
+    pub fn has_form(&mut self, name: &str) -> bool {
+        self.parse_form_data();
+        self.form.contains_key(name)
     }
 
-    /// Return a value in a POST <form> or ?querystring=
-    pub fn param(&self, name: &str) -> Option<&String> {
-        self.params.get(name)
+    /// Return a value from the POSTed form data.
+    pub fn form(&self, name: &str) -> Option<&str> {
+        self.form.get(name).and_then(|s| Some(s.as_ref()))
     }
 
-    /// Turn a query string or POST body into a nice and tidy HashMap.
-    pub(crate) fn parse_params(&mut self) {
-        if !self.params.is_empty() {
-            self.params.clear();
+    /// Turn POSTed form data into a nice 'n tidy HashMap.
+    pub(crate) fn parse_form_data(&mut self) {
+        if !self.form.is_empty() {
+            self.form.clear();
+        }
+        let mut map = HashMap::new();
+        parse_query_into_map(&self.body, &mut map);
+        if !map.is_empty() {
+            self.query = map;
+        }
+    }
+
+    /// Was the given query value sent?
+    pub fn has_query(&mut self, name: &str) -> bool {
+        self.parse_query();
+        self.query.contains_key(name)
+    }
+
+    /// Return a value from the ?querystring=
+    pub fn query(&self, name: &str) -> Option<&str> {
+        self.query.get(name).and_then(|s| Some(s.as_ref()))
+    }
+
+    /// Turn a query string into a nice 'n tidy HashMap.
+    pub(crate) fn parse_query(&mut self) {
+        if !self.query.is_empty() {
+            self.query.clear();
         }
 
         // temp value
@@ -51,17 +83,12 @@ impl Request {
             parse_query_into_map(&path[start + 1..], &mut map);
         }
 
-        // parse POST body
-        if self.method() == "POST" {
-            todo!();
-        }
-
         if !map.is_empty() {
             // strip ?querystring from /path
             if let Some(idx) = self.path.find('?') {
                 self.path = self.path[..idx].to_string();
             }
-            self.params = map;
+            self.query = map;
         }
     }
 }
