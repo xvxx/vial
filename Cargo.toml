@@ -1,11 +1,16 @@
 [package]
 name = "vial"
 description = "a micro micro-framework"
-documentation = "https://docs.rs/vial/"
-version = "0.0.1"
+version = "0.0.2-dev"
 authors = ["chris west <c@xvxx.io>"]
+documentation = "https://docs.rs/vial/"
 edition = "2018"
 license = "MIT"
+repository = "https://github.com/xvxx/vial"
+readme = "README.md"
+
+[package.metadata.release]
+dev-version-ext = "dev"
 
 [features]
 markdown = ['pulldown-cmark', 'autolink']
