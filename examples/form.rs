@@ -21,6 +21,7 @@ vial! {
     };
 
     POST "/" => |req| {
+        println!("{:?}", req);
         format!(r#"
 <h3>results</h3>
 <p><b>Name:</b> {}</p>

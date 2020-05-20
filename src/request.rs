@@ -52,7 +52,7 @@ impl Request {
         let mut map = HashMap::new();
         parse_query_into_map(&self.body, &mut map);
         if !map.is_empty() {
-            self.query = map;
+            self.form = map;
         }
     }
 
