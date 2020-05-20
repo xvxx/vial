@@ -12,8 +12,9 @@ const MAX_CONNECTIONS: usize = 10;
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
 type Result<T> = std::result::Result<T, io::Error>;
+type Routers = Vec<fn(&Request) -> Option<fn(Request) -> Response>>;
 
-pub fn run<T: ToSocketAddrs>(addr: T, router: fn(Request) -> Response) -> Result<()> {
+pub fn run<T: ToSocketAddrs>(addr: T, routers: Routers) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
     let server = TcpListener::bind(&addr).expect("~ vial error: ");
     let addr = server.local_addr()?;
@@ -21,8 +22,9 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: fn(Request) -> Response) -> Result
 
     for stream in server.incoming() {
         let stream = stream?;
+        let routers = routers.clone();
         pool.execute(move || {
-            if let Err(e) = handle_request(stream, &router) {
+            if let Err(e) = handle_request(stream, &routers) {
                 eprintln!("!! {}", e);
             }
         });
@@ -31,7 +33,7 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: fn(Request) -> Response) -> Result
     Ok(())
 }
 
-fn handle_request(mut stream: TcpStream, router: &fn(Request) -> Response) -> Result<()> {
+fn handle_request(mut stream: TcpStream, routers: &Routers) -> Result<()> {
     let mut reader = BufReader::new(&stream);
     let mut req = Request::new();
 
@@ -74,7 +76,7 @@ fn handle_request(mut stream: TcpStream, router: &fn(Request) -> Response) -> Re
         unimplemented!();
     }
 
-    write_response(stream, req, router)?;
+    write_response(stream, req, routers)?;
     Ok(())
 }
 
@@ -83,20 +85,28 @@ fn http_current_date() -> String {
     libc_strftime::strftime_gmt(HTTP_DATE_FMT, now)
 }
 
-fn write_response(
-    mut stream: TcpStream,
-    req: Request,
-    router: &fn(Request) -> Response,
-) -> Result<()> {
+fn write_response(mut stream: TcpStream, req: Request, routers: &Routers) -> Result<()> {
     let method = req.method().to_string();
     let path = req.path().to_string();
-    let res = router(req);
+    let res = if let Some(router) = routers.iter().find_map(|r| {
+        if let Some(router) = r(&req) {
+            println!("got one");
+            Some(router)
+        } else {
+            None
+        }
+    }) {
+        router(req)
+    } else {
+        Response::from(404).with_body("404 Not Found")
+    };
+
     let date = http_current_date();
     let content_type = "text/html; charset=utf8";
-    let content_len = res.body.chars().count();
+    let content_len = res.body.len();
     let body = format!(
-        "HTTP/1.1 200 OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-        date, content_type, content_len, res.body
+        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        res.code, date, content_type, content_len, res.body
     );
     stream.write(body.as_bytes())?;
     stream.flush()?;

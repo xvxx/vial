@@ -2,7 +2,7 @@
 
 `vial` is a small web "framework" for making small web "sites".
 
-It includes but a droplet of the bare minimum:
+It includes but a drop of the bare minimum:
 
 - Parsing and routing HTTP requests
 - Handling POST requests

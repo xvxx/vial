@@ -7,7 +7,7 @@ vial! {
 }
 
 fn welcome(_req: Request) -> Response {
-    Response::from(200).from_file("welcome.html")
+    Response::from(200).from_file("examples/welcome.html")
 }
 
 fn main() {

@@ -10,11 +10,11 @@ pub use {request::Request, response::Response, server::run};
 
 #[macro_export]
 macro_rules! run {
-    ($addr:expr, $module:ident) => {
-        vial::run($addr, $module::vial_router);
+    ($addr:expr, $($module:ident),+) => {
+        vial::run($addr, vec![$($module::vial_recognize),+]);
     };
     ($addr:expr) => {
-        vial::run($addr, vial_router);
+        vial::run($addr, vec![vial_recognize]);
     };
 }
 
@@ -30,10 +30,10 @@ macro_rules! vial {
         }
 
 
-        pub fn vial_router(req: ::vial::Request) -> ::vial::Response {
+        pub fn vial_recognize(req: &::vial::Request) -> Option<fn(::vial::Request) -> ::vial::Response> {
             match (req.method(), req.path()) {
-                $( (stringify!($method), $path) => $body(req), )*
-                _ => ::vial::Response::from("404 Not Found"),
+                $( (stringify!($method), $path) => Some($body), )*
+                _ => None,
             }
         }
     };
