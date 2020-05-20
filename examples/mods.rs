@@ -1,16 +1,15 @@
-use vial::vial;
+use vial;
 
-vial! {
-    GET "/vial" => |_| "What?".into();
-}
+mod blog;
+mod wiki;
 
-mod v {
-    use vial::vial;
+mod index {
+    use vial::{vial, Response};
     vial! {
-        GET "/v" => |_| "v!".into();
+        GET "/" => |_| Response::from("<h1>This is the index.</h1>");
     }
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667", crate, v).unwrap();
+    vial::run!("0.0.0.0:7667", index, wiki, blog).unwrap();
 }

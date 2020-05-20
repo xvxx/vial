@@ -49,6 +49,8 @@ mod wiki {
     }
 }
 
+pub use wiki::vial_recognize;
+
 fn main() {
     vial::run!("0.0.0.0:4567", wiki).unwrap();
 }

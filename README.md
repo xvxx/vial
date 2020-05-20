@@ -75,7 +75,9 @@ mod index {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667", crate, wiki, blog, index);
+    // The order matters here - if `wiki` and `blog` both define "/",
+    // the `mod index` version will match first and get run.
+    vial::run!("0.0.0.0:7667", index, wiki, blog);
 }
 ```
 

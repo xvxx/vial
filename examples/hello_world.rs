@@ -2,6 +2,7 @@ use vial::{vial, Request, Response};
 
 vial! {
     GET "/hi/world" => |_| "Hello, world!".into();
+    GET "/hey/world" => |_| "Heyo, world-o!".into();
 
     GET "/" => welcome;
 }
