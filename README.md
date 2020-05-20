@@ -101,10 +101,10 @@ activate for enhanced productivity:
 ## ~ T0D0 ~
 
 - [x] GET requests
-- [ ] POST requests
+- [x] POST requests
 - [ ] static file
 - [ ] static file etag
-- [ ] parse headers()
+- [x] parse headers()
 - [ ] test headers()
 - [ ] test GET param()
 - [ ] test POST param()

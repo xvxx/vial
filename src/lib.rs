@@ -9,11 +9,4 @@ mod server;
 mod util;
 
 pub use {request::Request, response::Response, server::run};
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+pub type Result<T> = std::result::Result<T, std::io::Error>;

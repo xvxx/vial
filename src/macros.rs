@@ -28,3 +28,12 @@ macro_rules! vial {
         }
     };
 }
+
+macro_rules! error {
+    ($msg:expr) => {
+        std::io::Error::new(std::io::ErrorKind::Other, $msg)
+    };
+    ($fmt:expr, $($args:expr),*) => {
+        error!(format!($fmt, $($args),*))
+    };
+}

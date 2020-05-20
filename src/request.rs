@@ -1,14 +1,15 @@
-use crate::util;
+use crate::{util, Result};
 use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Request {
-    pub path: String,
-    pub method: String,
-    pub body: String,
+    path: String,
+    method: String,
+    body: String,
 
-    pub query: HashMap<String, String>,
-    pub form: HashMap<String, String>,
+    headers: HashMap<String, String>,
+    query: HashMap<String, String>,
+    form: HashMap<String, String>,
 }
 
 impl Request {
@@ -17,6 +18,7 @@ impl Request {
             path: "/".to_string(),
             method: "GET".to_string(),
             body: "".to_string(),
+            headers: HashMap::new(),
             query: HashMap::new(),
             form: HashMap::new(),
         }
@@ -32,6 +34,10 @@ impl Request {
 
     pub fn path(&self) -> &str {
         &self.path
+    }
+
+    pub fn header(&self, name: &str) -> Option<&str> {
+        self.headers.get(name).and_then(|v| Some(v.as_ref()))
     }
 
     /// Was the given form value sent?
@@ -88,6 +94,41 @@ impl Request {
             }
             self.query = map;
         }
+    }
+
+    pub(crate) fn from_raw_http_request(buf: &[u8]) -> Result<Option<Request>> {
+        let mut headers = [httparse::EMPTY_HEADER; 100];
+        let mut hreq = httparse::Request::new(&mut headers);
+
+        let headers = hreq
+            .parse(buf)
+            .map_err(|e| error!("Unable to parse HTTP headers: {}", e))?;
+
+        let header_length = match headers {
+            httparse::Status::Complete(n) => n,
+            httparse::Status::Partial => return Ok(None),
+        };
+
+        let mut req = Request::new();
+        for header in hreq.headers {
+            req.headers.insert(
+                header.name.to_string(),
+                String::from_utf8_lossy(header.value).to_string(),
+            );
+        }
+        if let Some(method) = hreq.method {
+            req.method = method.into();
+        }
+        if let Some(path) = hreq.path {
+            req.path = path.into();
+            req.parse_query();
+        }
+        if header_length < buf.len() {
+            req.body = String::from_utf8_lossy(&buf[header_length..]).into();
+            req.parse_body();
+        }
+
+        Ok(Some(req))
     }
 }
 

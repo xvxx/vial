@@ -1,5 +1,5 @@
 use {
-    crate::{Request, Response},
+    crate::{Request, Response, Result},
     httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
@@ -11,20 +11,7 @@ use {
 const MAX_CONNECTIONS: usize = 10;
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
-type Result<T> = std::result::Result<T, io::Error>;
 type Routers = Vec<fn(&Request) -> Option<fn(Request) -> Response>>;
-
-macro_rules! error {
-    ($msg:expr) => {
-        io::Error::new(
-            io::ErrorKind::Other, $msg
-        )
-    };
-    ($fmt:expr, $($args:expr),*) => {
-        error!(format!($fmt, $($args),*))
-    };
-
-}
 
 pub fn run<T: ToSocketAddrs>(addr: T, routers: Routers) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
@@ -55,42 +42,13 @@ fn handle_request(mut stream: TcpStream, routers: &Routers) -> Result<()> {
             return Err(error!("Empty response"));
         }
         buffer.extend_from_slice(&read_buf[..n]);
-        if let Some(req) = parse_request(&mut buffer)? {
+        if let Some(req) = Request::from_raw_http_request(&mut buffer)? {
             break req;
         }
     };
 
     write_response(stream, req, routers)?;
     Ok(())
-}
-
-fn parse_request(buf: &[u8]) -> Result<Option<Request>> {
-    let mut headers = [httparse::EMPTY_HEADER; 100];
-    let mut hreq = httparse::Request::new(&mut headers);
-
-    let headers = hreq
-        .parse(buf)
-        .map_err(|e| error!("Unable to parse HTTP headers: {}", e))?;
-
-    let header_length = match headers {
-        httparse::Status::Complete(n) => n,
-        httparse::Status::Partial => return Ok(None),
-    };
-
-    let mut req = Request::new();
-    if let Some(method) = hreq.method {
-        req.method = method.into();
-    }
-    if let Some(path) = hreq.path {
-        req.path = path.into();
-        req.parse_query();
-    }
-    if header_length < buf.len() {
-        req.body = String::from_utf8_lossy(&buf[header_length..]).into();
-        req.parse_body();
-    }
-
-    Ok(Some(req))
 }
 
 fn http_current_date() -> String {
