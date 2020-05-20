@@ -50,5 +50,5 @@ mod wiki {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:4567", wiki);
+    vial::run!("0.0.0.0:4567", wiki).unwrap();
 }
