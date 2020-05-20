@@ -88,14 +88,7 @@ fn http_current_date() -> String {
 fn write_response(mut stream: TcpStream, req: Request, routers: &Routers) -> Result<()> {
     let method = req.method().to_string();
     let path = req.path().to_string();
-    let res = if let Some(router) = routers.iter().find_map(|r| {
-        if let Some(router) = r(&req) {
-            println!("got one");
-            Some(router)
-        } else {
-            None
-        }
-    }) {
+    let res = if let Some(router) = routers.iter().find_map(|r| r(&req)) {
         router(req)
     } else {
         Response::from(404).with_body("404 Not Found")
