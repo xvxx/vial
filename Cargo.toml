@@ -2,7 +2,7 @@
 name = "vial"
 description = "a micro micro-framework"
 documentation = "https://docs.rs/vial/"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["chris west <c@xvxx.io>"]
 edition = "2018"
 license = "MIT"
