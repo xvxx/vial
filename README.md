@@ -98,9 +98,9 @@ activate for enhanced productivity:
 - **ssl**: Add support for SSL/TLS. Normally you should be using a
   proxy.
 
-## ~ T0DO ~
+## ~ T0D0 ~
 
-- [ ] GET requests
+- [x] GET requests
 - [ ] POST requests
 - [ ] static file
 - [ ] static file etag
