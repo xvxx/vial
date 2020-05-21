@@ -14,8 +14,8 @@ Everything else... well, that's up to you.
 
 The goal is a small, simple, as-few-as-possible-dependencies web
 library you can use to test out an idea quickly or get a static site
-_rolling_. Single file, server side apps? Yes, please! Fast
-compilation? Now you're talkin'!
+_rolling_. Single file, server side apps? You bet! Fast compilation?
+Yes please! _À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
 have to bring your own beverage. In other words, you're guaranteed to
