@@ -15,8 +15,22 @@ impl Router {
         }
     }
 
-    pub fn insert(&mut self, method: &str, pattern: &str, action: fn(Request) -> Response) {
-        let method = Method::from(method);
+    pub fn action_for(&self, req: &Request) -> Option<&fn(Request) -> Response> {
+        if let Some(routes) = self.routes.get(&req.method().into()) {
+            if let Some(action) = routes.get(req.path()) {
+                return Some(action);
+            }
+        }
+        None
+    }
+
+    pub fn insert<T: Into<Method>>(
+        &mut self,
+        method: T,
+        pattern: &str,
+        action: fn(Request) -> Response,
+    ) {
+        let method = method.into();
         if let Some(map) = self.routes.get_mut(&method) {
             map.insert(pattern.to_string(), action);
         } else {

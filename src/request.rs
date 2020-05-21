@@ -8,6 +8,7 @@ pub struct Request {
     body: String,
 
     headers: HashMap<String, String>,
+    args: HashMap<String, String>,
     query: HashMap<String, String>,
     form: HashMap<String, String>,
 }
@@ -19,6 +20,7 @@ impl Request {
             method: "GET".to_string(),
             body: "".to_string(),
             headers: HashMap::new(),
+            args: HashMap::new(),
             query: HashMap::new(),
             form: HashMap::new(),
         }
@@ -34,6 +36,10 @@ impl Request {
 
     pub fn path(&self) -> &str {
         &self.path
+    }
+
+    pub fn arg(&self, name: &str) -> Option<&str> {
+        self.args.get(name).and_then(|v| Some(v.as_ref()))
     }
 
     pub fn header(&self, name: &str) -> Option<&str> {

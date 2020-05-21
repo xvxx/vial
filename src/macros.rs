@@ -1,13 +1,13 @@
 #[macro_export]
 macro_rules! run {
     () => {
-        vial::run("0.0.0.0:7667", vec![vial_recognize]);
+        vial::run!("0.0.0.0:7667")
     };
     ($addr:expr) => {
-        vial::run($addr, vec![vial_recognize]);
+        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(vec![vial_router()])))
     };
     ($addr:expr, $($module:ident),+) => {
-        vial::run($addr, vec![$($module::vial_recognize),+]);
+        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(vec![$($module::vial_router()),+])))
     };
 
 }
@@ -26,14 +26,10 @@ macro_rules! vial {
             $($method();)*
         }
 
-
-        pub(crate) fn vial_recognize(
-            req: &::vial::Request
-        ) -> Option<fn(::vial::Request) -> ::vial::Response> {
-            match (req.method(), req.path()) {
-                $( (stringify!($method), $path) => Some($body), )*
-                _ => None,
-            }
+        pub(crate) fn vial_router() -> ::vial::Router {
+            let mut router = ::vial::Router::new();
+            $( router.insert(::vial::Method::$method, $path, $body); )*
+            router
         }
     };
 }

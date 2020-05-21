@@ -1,9 +1,10 @@
 use {
-    crate::{Request, Response, Result},
+    crate::{Request, Response, Result, Router},
     httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
         net::{SocketAddr, TcpListener, TcpStream, ToSocketAddrs},
+        sync::{Arc, Mutex},
     },
     threadpool::ThreadPool,
 };
@@ -11,17 +12,17 @@ use {
 const MAX_CONNECTIONS: usize = 10;
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
-type Routers = Vec<fn(&Request) -> Option<fn(Request) -> Response>>;
+type Routers = Arc<Mutex<Vec<Router>>>;
 
 pub fn run<T: ToSocketAddrs>(addr: T, routers: Routers) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
-    let server = TcpListener::bind(&addr).expect("~ vial error: ");
+    let server = TcpListener::bind(&addr)?;
     let addr = server.local_addr()?;
     println!("~ vial running at http://{}", addr);
 
     for stream in server.incoming() {
-        let stream = stream?;
         let routers = routers.clone();
+        let stream = stream?;
         pool.execute(move || {
             if let Err(e) = handle_request(stream, &routers) {
                 eprintln!("!! {}", e);
@@ -59,8 +60,13 @@ fn http_current_date() -> String {
 fn write_response(mut stream: TcpStream, req: Request, routers: &Routers) -> Result<()> {
     let method = req.method().to_string();
     let path = req.path().to_string();
-    let res = if let Some(router) = routers.iter().find_map(|r| r(&req)) {
-        router(req)
+    let res = if let Some(action) = routers
+        .lock()
+        .unwrap()
+        .iter()
+        .find_map(|r| r.action_for(&req))
+    {
+        action(req)
     } else {
         Response::from(404).with_body("404 Not Found")
     };

@@ -10,5 +10,5 @@ mod router;
 mod server;
 mod util;
 
-pub use {method::Method, request::Request, response::Response, server::run};
+pub use {method::Method, request::Request, response::Response, router::Router, server::run};
 pub type Result<T> = std::result::Result<T, std::io::Error>;

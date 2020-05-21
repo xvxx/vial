@@ -12,7 +12,7 @@ pub enum Method {
 }
 
 impl Method {
-    pub fn from(s: &str) -> Method {
+    pub fn from_str(s: &str) -> Method {
         match s {
             "GET" => Method::GET,
             "HEAD" => Method::HEAD,
@@ -22,5 +22,11 @@ impl Method {
             "PATCH" => Method::PATCH,
             _ => Method::GET,
         }
+    }
+}
+
+impl From<&str> for Method {
+    fn from(s: &str) -> Method {
+        Method::from_str(s)
     }
 }

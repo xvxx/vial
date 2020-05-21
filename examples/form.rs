@@ -21,7 +21,6 @@ vial! {
     };
 
     POST "/" => |req| {
-        println!("{:?}", req);
         format!(r#"
 <h3>results</h3>
 <p><b>Name:</b> {}</p>
@@ -34,5 +33,5 @@ vial! {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:9999").unwrap();
+    vial::run!().unwrap();
 }
