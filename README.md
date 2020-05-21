@@ -115,6 +115,8 @@ activate for enhanced productivity:
 - [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
       proxy.
 
+_**Please note:** The list above is a work-in-progress._
+
 ## ~ T0D0 ~
 
 - [x] GET requests
