@@ -1,11 +1,15 @@
 #[macro_export]
 macro_rules! run {
-    ($addr:expr, $($module:ident),+) => {
-        vial::run($addr, vec![$($module::vial_recognize),+]);
+    () => {
+        vial::run("0.0.0.0:7667", vec![vial_recognize]);
     };
     ($addr:expr) => {
         vial::run($addr, vec![vial_recognize]);
     };
+    ($addr:expr, $($module:ident),+) => {
+        vial::run($addr, vec![$($module::vial_recognize),+]);
+    };
+
 }
 
 #[macro_export]
