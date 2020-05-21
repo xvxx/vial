@@ -12,7 +12,5 @@ fn welcome(_req: Request) -> Response {
 }
 
 fn main() {
-    if let Err(e) = vial::run!("0.0.0.0:7667") {
-        eprintln!("error: {}", e);
-    }
+    vial::run!().unwrap();
 }

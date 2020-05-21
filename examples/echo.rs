@@ -22,5 +22,5 @@ fn post(req: Request) -> Response {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667").unwrap();
+    vial::run!().unwrap();
 }

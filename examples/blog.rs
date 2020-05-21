@@ -46,5 +46,5 @@ fn show_raw(req: Request) -> Response {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:4567").unwrap();
+    vial::run!().unwrap();
 }
