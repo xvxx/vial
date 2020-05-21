@@ -91,3 +91,12 @@ impl From<usize> for Response {
         }
     }
 }
+
+impl From<std::borrow::Cow<'_, [u8]>> for Response {
+    fn from(i: std::borrow::Cow<'_, [u8]>) -> Response {
+        Response {
+            body: String::from_utf8_lossy(&i).to_string(),
+            ..Response::default()
+        }
+    }
+}

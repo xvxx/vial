@@ -130,9 +130,8 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] test POST param()
 - [ ] test static file
 - [ ] test etag
-- [ ] multiple modules
+- [ ] don't copy any of raw HTTP request
 - [ ] `before_filter`
-- [ ] `after_filter`
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs

@@ -2,6 +2,7 @@
 
 #[macro_use]
 mod macros;
+mod asset;
 mod features;
 mod method;
 mod request;
