@@ -16,6 +16,10 @@ dev-version-ext = "dev"
 name = "horrorshow"
 required-features = ["horror"]
 
+[[example]]
+name = "markdown"
+required-features = ["markdown"]
+
 [features]
 markdown = ['pulldown-cmark', 'autolink']
 horror = ['horrorshow']

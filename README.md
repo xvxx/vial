@@ -105,7 +105,7 @@ fancy stuff, but there are a few compile-time `--features` you can
 activate for enhanced productivity:
 
 - [ ] **cookies**: Cookie monster!
-- [ ] **markdown**: Add Markdown rendering capabilities.
+- [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
