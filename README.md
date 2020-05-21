@@ -33,7 +33,7 @@ vial! {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667");
+    vial::run!("0.0.0.0:7667").unwrap();
 }
 ```
 
@@ -43,18 +43,28 @@ For a bit more sanity, you can route to functions directly:
 use vial::{vial, Request, Response};
 
 vial! {
-    GET "/hi/world" => |_| "Hello, world!".into();
-    GET "/" => echo;
+    GET "/echo" => echo;
+    POST "/echo" => post;
 }
 
-fn echo(req: Request) -> Response {
-  Response::from(
-    format!("You said: <b>{}</b>", req.params("echo").unwrap())
-  )
+fn echo(_: Request) -> Response {
+    Response::from(
+        "<form method='POST'>
+        <input type='text' name='echo'/>
+        <input type='submit'/>
+    </form>",
+    )
+}
+
+fn post(req: Request) -> Response {
+    Response::from(format!(
+        "<h1>{}</h1>",
+        req.form("echo").unwrap_or("You didn't say anything!")
+    ))
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667");
+    vial::run!("0.0.0.0:7667").unwrap();
 }
 ```
 

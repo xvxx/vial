@@ -1,20 +1,26 @@
 use vial::{vial, Request, Response};
 
 vial! {
-    GET "/hi/world" => |_| "Hello, world!".into();
-    GET "/" => echo;
+    GET "/echo" => echo;
+    POST "/echo" => post;
 }
 
-fn echo(req: Request) -> Response {
-    if let Some(msg) = req.param("echo") {
-        Response::from(format!("You said: <b>{}</b>", msg))
-    } else {
-        Response::from(format!("<form action='' method='get'>Say something: <input type='text' name='echo'/> <input type='submit'/>"))
-    }
+fn echo(_: Request) -> Response {
+    Response::from(
+        "<form method='POST'>
+        <input type='text' name='echo'/>
+        <input type='submit'/>
+    </form>",
+    )
+}
+
+fn post(req: Request) -> Response {
+    Response::from(format!(
+        "<h1>{}</h1>",
+        req.form("echo").unwrap_or("You didn't say anything!")
+    ))
 }
 
 fn main() {
-    if let Err(e) = vial::run!("0.0.0.0:7667") {
-        eprintln!("error: {}", e);
-    }
+    vial::run!("0.0.0.0:7667").unwrap();
 }
