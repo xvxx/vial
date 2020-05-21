@@ -1,6 +1,9 @@
 use {
-    crate::{Method, Request, Response},
-    std::collections::HashMap,
+    crate::{asset, Method, Request, Response},
+    std::{
+        collections::HashMap,
+        path::{Path, PathBuf},
+    },
 };
 
 #[derive(Default)]
@@ -16,12 +19,24 @@ impl Router {
     }
 
     pub fn action_for(&self, req: &Request) -> Option<&fn(Request) -> Response> {
+        if asset::exists(req.path()) {
+            return Some(&Self::serve_static_file);
+        }
+
         if let Some(routes) = self.routes.get(&req.method().into()) {
             if let Some(action) = routes.get(req.path()) {
                 return Some(action);
             }
         }
         None
+    }
+
+    fn serve_static_file(req: Request) -> Response {
+        if let Some(bytes) = asset::read(req.path()) {
+            Response::from(bytes)
+        } else {
+            Response::from(404)
+        }
     }
 
     pub fn insert<T: Into<Method>>(
