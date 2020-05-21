@@ -30,7 +30,7 @@ macro_rules! vial {
             $($method();)*
         }
 
-        pub(crate) fn vial_add_to_router(router: &mut ::vial::Router) {
+        pub fn vial_add_to_router(router: &mut ::vial::Router) {
             $( router.insert(::vial::Method::$method, $path, $body); )*
         }
     };

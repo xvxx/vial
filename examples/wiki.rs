@@ -1,3 +1,4 @@
+#![allow(unused)]
 use vial;
 
 mod wiki {
