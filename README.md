@@ -1,3 +1,5 @@
+<img src="./img/drink-me.jpeg" alt="Drink Me." align="right" />
+
 # ~ vial: a micro micro-framework ~
 
 `vial` is a small web "framework" for making small web "sites".
