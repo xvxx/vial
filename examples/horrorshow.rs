@@ -3,16 +3,12 @@ extern crate horrorshow;
 use vial::{vial, Request, Response};
 
 vial! {
-    GET "/" => |_| {
-        Response::from(
-            html! {
-                p {
-                    : "You're looking for this: ";
-                    a(href="/echo") { : "echo" }
-                }
-            }
-        )
-    };
+    GET "/" => |_| html! {
+        p {
+            : "You're looking for this: ";
+            a(href="/echo") { : "echo" }
+        }
+    }.into();
     GET "/echo" => echo;
     POST "/echo" => post;
 }
