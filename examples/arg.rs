@@ -1,10 +1,10 @@
 #![allow(unused)]
-use vial::vial;
+use vial::{vial, Responder};
 
 vial! {
     GET "/hello/:name" => |req| {
         let name = req.arg("name").unwrap_or("");
-        format!("Hello, {}", name).into()
+        format!("Hello, {}", name)
     };
 }
 

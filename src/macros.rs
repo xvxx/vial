@@ -31,7 +31,11 @@ macro_rules! vial {
         }
 
         pub fn vial_add_to_router(router: &mut ::vial::Router) {
-            $( router.insert(::vial::Method::$method, $path, $body); )*
+            $( router.insert(::vial::Method::$method, $path, |req| {
+                use ::vial::Responder;
+                let b: fn(::vial::Request) -> _ = $body;
+                b(req).to_response()
+            }); )*
         }
     };
 }

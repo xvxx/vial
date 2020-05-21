@@ -29,7 +29,7 @@ As is tradition.
 use vial::vial;
 
 vial! {
-    GET "/" => |_| "Hello, world!".into();
+    GET "/" => |_| "Hello, world!";
 }
 
 fn main() {
@@ -40,27 +40,25 @@ fn main() {
 For a bit more sanity, you can route to functions directly:
 
 ```rust
-use vial::{vial, Request, Response};
+use vial::{vial, Request, Responder};
 
 vial! {
     GET "/echo" => echo;
     POST "/echo" => post;
 }
 
-fn echo(_: Request) -> Response {
-    Response::from(
-        "<form method='POST'>
+fn echo(_: Request) -> impl Responder {
+    "<form method='POST'>
         <input type='text' name='echo'/>
         <input type='submit'/>
-    </form>",
-    )
+    </form>"
 }
 
-fn post(req: Request) -> Response {
-    Response::from(format!(
+fn post(req: Request) -> impl Responder {
+    format!(
         "<h1>{}</h1>",
         req.form("echo").unwrap_or("You didn't say anything!")
-    ))
+    )
 }
 
 fn main() {
@@ -78,7 +76,7 @@ mod wiki;
 mod blog;
 
 mod index {
-    use vial::vial;
+    use vial::{Response, vial};
     vial! {
         GET "/" => |_| Response::from_file("index.html")
     }

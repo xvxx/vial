@@ -2,7 +2,7 @@
 use vial;
 
 mod wiki {
-    use vial::{vial, Request, Response};
+    use vial::{vial, Request, Responder};
 
     vial! {
         GET "/" => index;
@@ -17,36 +17,36 @@ mod wiki {
         GET "/:page.md" => show_raw;
     }
 
-    fn index(req: Request) -> Response {
-        "".into()
+    fn index(req: Request) -> impl Responder {
+        ""
     }
 
-    fn about(req: Request) -> Response {
-        "".into()
+    fn about(req: Request) -> impl Responder {
+        ""
     }
 
-    fn new(req: Request) -> Response {
-        "".into()
+    fn new(req: Request) -> impl Responder {
+        ""
     }
 
-    fn create(req: Request) -> Response {
-        "".into()
+    fn create(req: Request) -> impl Responder {
+        ""
     }
 
-    fn edit(req: Request) -> Response {
-        "".into()
+    fn edit(req: Request) -> impl Responder {
+        ""
     }
 
-    fn update(req: Request) -> Response {
-        "".into()
+    fn update(req: Request) -> impl Responder {
+        ""
     }
 
-    fn show(req: Request) -> Response {
-        "".into()
+    fn show(req: Request) -> impl Responder {
+        ""
     }
 
-    fn show_raw(req: Request) -> Response {
-        "".into()
+    fn show_raw(req: Request) -> impl Responder {
+        ""
     }
 }
 

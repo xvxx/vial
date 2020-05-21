@@ -2,7 +2,7 @@ use vial::vial;
 
 vial! {
     GET "/" => |_| {
-        format!(r#"
+        r#"
 <h3>vial form</h3>
 <form method="POST" action="/">
     <p><label>Name: <input type="text" name="name"/></label></p>
@@ -17,7 +17,7 @@ vial! {
     </label></p>
     <p><input type="submit"/></p>
 </form>
-    "#).into()
+    "#
     };
 
     POST "/" => |req| {
@@ -28,7 +28,7 @@ vial! {
 "#,
     req.form("name").unwrap_or(""),
     req.form("age").unwrap_or(""),
-).into()
+)
     };
 }
 
