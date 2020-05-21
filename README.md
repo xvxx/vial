@@ -1,4 +1,4 @@
-<img src="./img/drink-me.jpeg" alt="Drink Me." align="right" />
+<img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="200" />
 
 # ~ vial: a micro micro-framework ~
 
