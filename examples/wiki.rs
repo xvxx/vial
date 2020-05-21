@@ -49,7 +49,7 @@ mod wiki {
     }
 }
 
-pub use wiki::vial_router;
+pub use wiki::vial_add_to_router;
 
 fn main() {
     vial::run!("0.0.0.0:4567", wiki).unwrap();

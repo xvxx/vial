@@ -3,12 +3,16 @@ macro_rules! run {
     () => {
         vial::run!("0.0.0.0:7667")
     };
-    ($addr:expr) => {
-        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(vec![vial_router()])))
-    };
-    ($addr:expr, $($module:ident),+) => {
-        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(vec![$($module::vial_router()),+])))
-    };
+    ($addr:expr) => {{
+        let mut router = ::vial::Router::new();
+        vial_add_to_router(&mut router);
+        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+    }};
+    ($addr:expr, $($module:ident),+) => {{
+        let mut router = ::vial::Router::new();
+        $($module::vial_add_to_router(&mut router);),+
+        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+    }};
 
 }
 
@@ -26,10 +30,8 @@ macro_rules! vial {
             $($method();)*
         }
 
-        pub(crate) fn vial_router() -> ::vial::Router {
-            let mut router = ::vial::Router::new();
+        pub(crate) fn vial_add_to_router(router: &mut ::vial::Router) {
             $( router.insert(::vial::Method::$method, $path, $body); )*
-            router
         }
     };
 }

@@ -11,7 +11,12 @@ use std::{
 /// (or in the embedded fs, in release mode).
 pub fn exists(path: &str) -> bool {
     let path = path.replace("..", ".");
-    Path::new(&path).exists()
+    if let Ok(mut file) = fs::File::open(path) {
+        if let Ok(meta) = file.metadata() {
+            return !meta.is_dir();
+        }
+    }
+    false
 }
 
 /// Like fs::read_to_string(), but with an asset.
@@ -33,7 +38,7 @@ pub fn to_string(path: &str) -> Result<String, io::Error> {
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = path.replace("..", ".");
     let mut buf = vec![];
-    if let Ok(file) = fs::File::open(path) {
+    if let Ok(mut file) = fs::File::open(path) {
         if let Ok(meta) = file.metadata() {
             if !meta.is_dir() && file.read_to_end(&mut buf).is_ok() {
                 return Some(Cow::from(buf));

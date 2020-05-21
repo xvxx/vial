@@ -1,5 +1,5 @@
 use {
-    crate::{Request, Response, Result, Router},
+    crate::{asset, Request, Response, Result},
     httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
@@ -12,19 +12,19 @@ use {
 const MAX_CONNECTIONS: usize = 10;
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
-type Routers = Arc<Mutex<Vec<Router>>>;
+type Router = Arc<Mutex<crate::Router>>;
 
-pub fn run<T: ToSocketAddrs>(addr: T, routers: Routers) -> Result<()> {
+pub fn run<T: ToSocketAddrs>(addr: T, router: Router) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
     let server = TcpListener::bind(&addr)?;
     let addr = server.local_addr()?;
     println!("~ vial running at http://{}", addr);
 
     for stream in server.incoming() {
-        let routers = routers.clone();
+        let router = router.clone();
         let stream = stream?;
         pool.execute(move || {
-            if let Err(e) = handle_request(stream, &routers) {
+            if let Err(e) = handle_request(stream, &router) {
                 eprintln!("!! {}", e);
             }
         });
@@ -33,7 +33,7 @@ pub fn run<T: ToSocketAddrs>(addr: T, routers: Routers) -> Result<()> {
     Ok(())
 }
 
-fn handle_request(mut stream: TcpStream, routers: &Routers) -> Result<()> {
+fn handle_request(mut stream: TcpStream, router: &Router) -> Result<()> {
     let mut buffer = vec![];
     let mut read_buf = [0u8; 512];
 
@@ -48,7 +48,7 @@ fn handle_request(mut stream: TcpStream, routers: &Routers) -> Result<()> {
         }
     };
 
-    write_response(stream, req, routers)?;
+    write_response(stream, req, router)?;
     Ok(())
 }
 
@@ -57,15 +57,13 @@ fn http_current_date() -> String {
     libc_strftime::strftime_gmt(HTTP_DATE_FMT, now)
 }
 
-fn write_response(mut stream: TcpStream, req: Request, routers: &Routers) -> Result<()> {
+fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Result<()> {
     let method = req.method().to_string();
     let path = req.path().to_string();
-    let res = if let Some(action) = routers
-        .lock()
-        .unwrap()
-        .iter()
-        .find_map(|r| r.action_for(&req))
-    {
+    let router = router.lock().unwrap();
+    let res = if asset::exists(req.path()) {
+        Response::from_file(req.path())
+    } else if let Some(action) = router.action_for(&req) {
         action(req)
     } else {
         Response::from(404).with_body("404 Not Found")
