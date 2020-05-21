@@ -106,7 +106,7 @@ activate for enhanced productivity:
 
 - [ ] **cookies**: Cookie monster!
 - [ ] **markdown**: Add Markdown rendering capabilities.
-- [x] **horror**: Small and fast Rust HTML macros, via [horrowshow].
+- [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
 - [ ] **htxl**: Vial's preferred, no-dependency template library: HTXL.
@@ -117,6 +117,7 @@ activate for enhanced productivity:
 
 - [x] GET requests
 - [x] POST requests
+- [ ] route/:recognizer
 - [ ] static file
 - [ ] static file etag
 - [x] parse headers()
