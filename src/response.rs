@@ -24,6 +24,10 @@ impl Response {
         from.into()
     }
 
+    pub fn from_file<P: AsRef<Path>>(path: P) -> Response {
+        Response::default().with_file(path)
+    }
+
     pub fn with_code(mut self, code: usize) -> Response {
         self.code = code;
         self
@@ -34,7 +38,7 @@ impl Response {
         self
     }
 
-    pub fn from_file<P: AsRef<Path>>(mut self, path: P) -> Response {
+    pub fn with_file<P: AsRef<Path>>(mut self, path: P) -> Response {
         match fs::read_to_string(path) {
             Ok(body) => self.body = body,
             Err(e) => {
