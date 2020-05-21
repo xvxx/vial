@@ -104,6 +104,8 @@ Install [cargo-watch]:
 fancy stuff, but there are a few compile-time `--features` you can
 activate for enhanced productivity:
 
+<img src="./img/alice.jpeg" alt="Alice" align="right" width="250" />
+
 - [ ] **cookies**: Cookie monster!
 - [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
