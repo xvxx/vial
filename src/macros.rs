@@ -12,15 +12,20 @@ macro_rules! run {
 macro_rules! vial {
     ( $($method:ident $path:expr => $body:expr;)* ) => {
         fn vial_check_method() {
-            #[allow(non_snake_case)]
+            #![allow(non_snake_case)]
             fn GET() {}
-            #[allow(non_snake_case)]
             fn POST() {}
+            fn PUT() {}
+            fn DELETE() {}
+            fn UPDATE() {}
+            fn PATCH() {}
             $($method();)*
         }
 
 
-        pub(crate) fn vial_recognize(req: &::vial::Request) -> Option<fn(::vial::Request) -> ::vial::Response> {
+        pub(crate) fn vial_recognize(
+            req: &::vial::Request
+        ) -> Option<fn(::vial::Request) -> ::vial::Response> {
             match (req.method(), req.path()) {
                 $( (stringify!($method), $path) => Some($body), )*
                 _ => None,
