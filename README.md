@@ -101,16 +101,17 @@ Install [cargo-watch]:
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
-fancy stuff, but there are a few compile-time features you can
+fancy stuff, but there are a few compile-time `--features` you can
 activate for enhanced productivity:
 
-- **cookies**: Cookie monster!
-- **markdown**: Add Markdown rendering capabilities.
-- **json**: `to_json` and `from_json` powers, via Serde.
-- **tera**: Templating, via Tera.
-- **htxl**: Vial's preferred, no-dependency template library: HTXL.
-- **ssl**: Add support for SSL/TLS. Normally you should be using a
-  proxy.
+- [ ] **cookies**: Cookie monster!
+- [ ] **markdown**: Add Markdown rendering capabilities.
+- [x] **horror**: Small and fast Rust HTML macros, via [horrowshow].
+- [ ] **json**: `to_json` and `from_json` powers, via Serde.
+- [ ] **tera**: Templating, via Tera.
+- [ ] **htxl**: Vial's preferred, no-dependency template library: HTXL.
+- [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
+      proxy.
 
 ## ~ T0D0 ~
 
@@ -129,3 +130,4 @@ activate for enhanced productivity:
 - [ ] `after_filter`
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
+[horrowshow]: https://github.com/Stebalien/horrorshow-rs

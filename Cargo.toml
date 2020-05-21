@@ -12,8 +12,13 @@ readme = "README.md"
 [package.metadata.release]
 dev-version-ext = "dev"
 
+[[example]]
+name = "horrorshow"
+required-features = ["horror"]
+
 [features]
 markdown = ['pulldown-cmark', 'autolink']
+horror = ['horrorshow']
 default = []
 
 [dependencies]
@@ -24,3 +29,5 @@ percent-encoding = "2.1.0"
 
 pulldown-cmark = { version = "0.7", default-features = false, optional = true }
 autolink = { version = "0.3.0", optional = true }
+
+horrorshow = { version = "0.8.3", optional = true }

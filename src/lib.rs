@@ -2,6 +2,8 @@
 
 #[macro_use]
 mod macros;
+#[cfg(feature = "horror")]
+mod horrorshow;
 mod method;
 mod request;
 mod response;
