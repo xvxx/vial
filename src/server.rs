@@ -70,12 +70,16 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     };
 
     let date = http_current_date();
-    let content_len = res.body.len();
-    let body = format!(
-        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-        res.code, date, res.content_type, content_len, res.body
+    let headers = format!(
+        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        res.code, date, res.content_type, res.len(),
     );
-    stream.write(body.as_bytes())?;
+    stream.write(headers.as_bytes())?;
+    if res.buf.is_empty() {
+        stream.write(res.body.as_bytes())?;
+    } else {
+        stream.write(&res.buf)?;
+    }
     stream.flush()?;
     println!("{} {} {}", method, res.code, path);
     Ok(())

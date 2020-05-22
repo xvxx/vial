@@ -10,6 +10,7 @@ use {
 pub struct Response {
     pub code: usize,
     pub body: String,
+    pub buf: Vec<u8>,
     pub content_type: String,
     pub reader: Option<Box<dyn Read>>,
 }
@@ -30,6 +31,7 @@ impl Default for Response {
         Response {
             code: 200,
             body: String::new(),
+            buf: Vec::new(),
             content_type: "text/html; charset=utf8".to_string(),
             reader: None,
         }
@@ -55,24 +57,32 @@ impl Response {
     }
 
     pub fn with_body(mut self, body: &str) -> Response {
-        self.body = body.to_string();
+        self.body.clear();
+        self.body.push_str(body);
         self
     }
 
     pub fn with_file(mut self, path: &str) -> Response {
-        match fs::read_to_string(asset::normalize_path(path)) {
-            Ok(body) => {
-                println!("CT: {}", util::content_type(path));
-                self.content_type = util::content_type(path).to_string();
-                self.body = body;
+        match fs::File::open(asset::normalize_path(path)) {
+            Ok(mut file) => {
+                self.content_type.clear();
+                self.content_type.push_str(util::content_type(path));
+                file.read_to_end(&mut self.buf);
+                self
             }
 
-            Err(e) => {
-                self.body = format!("<h1>500 Internal Error</h1><pre>{:?}", e);
-                self.code = 500;
-            }
+            Err(e) => self
+                .with_body(&format!("<h1>500 Internal Error</h1><pre>{:?}", e))
+                .with_code(500),
         }
-        self
+    }
+
+    pub fn len(&self) -> usize {
+        if self.buf.is_empty() {
+            self.body.len()
+        } else {
+            self.buf.len()
+        }
     }
 }
 
