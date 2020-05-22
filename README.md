@@ -161,7 +161,7 @@ _**Please note:** The list above is a work-in-progress._
 
 - [x] GET requests
 - [x] POST requests
-- [ ] route/:recognizer
+- [x] route/:recognizer
 - [x] static file
 - [x] static file etag
 - [x] parse headers()
@@ -177,8 +177,8 @@ _**Please note:** The list above is a work-in-progress._
 
 ### big goals
 
-- [ ] Parsing and routing HTTP requests
-    - [ ] :segments
+- [x] Parsing and routing HTTP requests
+    - [x] :segments
 - [ ] Handling POST requests
     - [ ] JSON body
 - [ ] Serving static files (css, js)

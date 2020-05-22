@@ -8,7 +8,7 @@ pub struct Request {
     body: String,
 
     headers: HashMap<String, String>,
-    args: HashMap<String, String>,
+    pub(crate) args: HashMap<String, String>,
     query: HashMap<String, String>,
     form: HashMap<String, String>,
 }

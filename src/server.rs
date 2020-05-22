@@ -51,7 +51,7 @@ fn handle_request(mut stream: TcpStream, router: &Router) -> Result<()> {
     Ok(())
 }
 
-fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Result<()> {
+fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> Result<()> {
     let router = router.lock().unwrap();
     let method = req.method().to_string();
     let path = req.path().to_string();
@@ -67,7 +67,7 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
         } else {
             Response::from_file(req.path())
         }
-    } else if let Some(action) = router.action_for(&req) {
+    } else if let Some(action) = router.action_for(&mut req) {
         action(req)
     } else {
         Response::from(404).with_body("404 Not Found")

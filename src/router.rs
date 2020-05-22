@@ -8,7 +8,7 @@ use {
 
 #[derive(Default)]
 pub struct Router {
-    routes: HashMap<Method, HashMap<String, fn(Request) -> Response>>,
+    routes: HashMap<Method, Vec<(Vec<String>, fn(Request) -> Response)>>,
 }
 
 impl Router {
@@ -18,31 +18,55 @@ impl Router {
         }
     }
 
-    pub fn action_for(&self, req: &Request) -> Option<&fn(Request) -> Response> {
+    pub fn action_for(&self, req: &mut Request) -> Option<&fn(Request) -> Response> {
         if let Some(routes) = self.routes.get(&req.method().into()) {
-            if let Some(action) = routes.get(req.path()) {
-                return Some(action);
+            let req_parts = Self::pattern_to_vec(req.path());
+
+            'outer: for (pattern, action) in routes {
+                req.args.clear();
+                if pattern.len() == req_parts.len() {
+                    for (i, req_part) in req_parts.iter().enumerate() {
+                        if pattern[i].starts_with(':') && !req_part.is_empty() {
+                            req.args.insert(
+                                pattern[i].trim_start_matches(':').to_string(),
+                                req_part.to_string(),
+                            );
+                            continue;
+                        } else if *req_part == pattern[i] {
+                            continue;
+                        } else {
+                            continue 'outer;
+                        }
+                    }
+                    return Some(action);
+                }
             }
         }
         None
     }
 
+    /// Path pattern ("/dogs", "/dogs/:breed") to Vec<String>
+    fn pattern_to_vec(pattern: &str) -> Vec<String> {
+        pattern
+            .trim_matches('/')
+            .split('/')
+            .flat_map(|s| s.split('.').map(|s| s.to_string()))
+            .collect::<Vec<_>>()
+    }
+
     pub fn insert<T: Into<Method>>(
         &mut self,
         method: T,
-        pattern: &str,
+        pattern: &'static str,
         action: fn(Request) -> Response,
     ) {
         let method = method.into();
+        let pattern_parts = Self::pattern_to_vec(pattern);
+
         if let Some(map) = self.routes.get_mut(&method) {
-            // don't overwrite routes. ie first "/" defined wins
-            if !map.contains_key(pattern) {
-                map.insert(pattern.to_string(), action);
-            }
+            map.push((pattern_parts, action));
         } else {
-            let mut map = HashMap::new();
-            map.insert(pattern.to_string(), action);
-            self.routes.insert(method, map);
+            self.routes.insert(method, vec![(pattern_parts, action)]);
         }
     }
 }
@@ -72,52 +96,52 @@ mod tests {
         router.insert("GET", "/info", info);
         router.insert("GET", "/:page.md", show_raw);
 
-        let req = Request::from_path("/");
-        assert_eq!(router.action_for(&req), None);
+        let mut req = Request::from_path("/");
+        assert_eq!(router.action_for(&mut req), None);
 
-        let req = Request::from_path("/cats");
+        let mut req = Request::from_path("/cats");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "Show: cats".to_string()
         );
 
-        let req = Request::from_path("/dogs");
+        let mut req = Request::from_path("/dogs");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "Show: dogs".to_string()
         );
 
-        let req = Request::from_path("/rabbits?haxcode=1");
+        let mut req = Request::from_path("/rabbits?haxcode=1");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "Show: rabbits".to_string()
         );
 
-        let req = Request::from_path("/lemurs/?other-haxcode=1&bobby=brown");
+        let mut req = Request::from_path("/lemurs/?other-haxcode=1&bobby=brown");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "Show: lemurs".to_string()
         );
 
-        let req = Request::from_path("/about");
+        let mut req = Request::from_path("/about");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "About".to_string()
         );
 
-        let req = Request::from_path("/info");
+        let mut req = Request::from_path("/info");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
+            router.action_for(&mut req).unwrap()(req).to_string(),
             "Show: info".to_string()
         );
 
-        let req = Request::from_path("/cats.md");
+        let mut req = Request::from_path("/cats.md");
         assert_eq!(
-            router.action_for(&req).unwrap()(req).to_string(),
-            "Raw: info".to_string()
+            router.action_for(&mut req).unwrap()(req).to_string(),
+            "Raw: cats".to_string()
         );
 
-        let req = Request::from_path("/slashes/dont/match");
-        assert_eq!(router.action_for(&req), None);
+        let mut req = Request::from_path("/slashes/dont/match");
+        assert_eq!(router.action_for(&mut req), None);
     }
 }
