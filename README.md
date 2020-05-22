@@ -93,9 +93,7 @@ But hey, who wants to putz around with HTML when you can be writing
 **Rust**? Enable the `horror` feature and you're on your way:
 
 ```rust
-#[macro_use]
-extern crate horrorshow;
-use vial::{vial, Request, Responder};
+use vial::{html, owned_html, vial, Request, Responder};
 
 vial! {
     GET "/" => |_| html! {
@@ -130,7 +128,6 @@ fn post(req: Request) -> impl Responder {
 fn main() {
     vial::run!().unwrap();
 }
-
 ```
 
 ## ~ hot reloading ~
