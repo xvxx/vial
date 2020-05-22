@@ -8,9 +8,14 @@ macro_rules! run {
         vial_add_to_router(&mut router);
         vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
     }};
+    ($($module:ident),+) => {{
+        let mut router = ::vial::Router::new();
+        $($module::vial_add_to_router(&mut router);)+
+        vial::run("0.0.0.0:7667", ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+    }};
     ($addr:expr, $($module:ident),+) => {{
         let mut router = ::vial::Router::new();
-        $($module::vial_add_to_router(&mut router);),+
+        $($module::vial_add_to_router(&mut router);)+
         vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
     }};
 

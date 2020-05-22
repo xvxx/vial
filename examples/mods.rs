@@ -11,5 +11,5 @@ mod index {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667", index, wiki, blog).unwrap();
+    vial::run!(index, wiki, blog).unwrap();
 }
