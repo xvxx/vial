@@ -62,7 +62,7 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     let path = req.path().to_string();
     let router = router.lock().unwrap();
 
-    let res = if asset::exists(req.path()) {
+    let mut res = if asset::exists(req.path()) {
         if let Some(req_etag) = req.header("If-None-Match") {
             if req_etag == asset::hash(req.path()) {
                 Response::from(304)
@@ -78,9 +78,15 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
         Response::from(404).with_body("404 Not Found")
     };
 
+    let content_length = if res.len() > 0 {
+        format!("Content-Length: {}\r\n", res.len())
+    } else {
+        "".to_string()
+    };
+
     let mut header = format!(
-        "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n",
-        res.code, env!("CARGO_PKG_VERSION"), http_current_date(), res.content_type, res.len(),
+        "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\n{}Connection: close\r\n",
+        res.code, env!("CARGO_PKG_VERSION"), http_current_date(), res.content_type, content_length,
     );
 
     header.push_str(
@@ -97,12 +103,17 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     header.push_str("\r\n");
 
     stream.write(header.as_bytes())?;
-    if res.buf.is_empty() {
+
+    if res.is_reader {
+        io::copy(&mut res.reader, &mut stream);
+    } else if res.buf.is_empty() {
         stream.write(res.body.as_bytes())?;
     } else {
         stream.write(&res.buf)?;
     }
+
     stream.flush()?;
+
     println!("{} {} {}", method, res.code, path);
     Ok(())
 }

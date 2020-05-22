@@ -3,7 +3,7 @@ use {
     std::{
         collections::HashMap,
         fmt, fs,
-        io::{self, Read},
+        io::{self, BufReader, Read},
         path::Path,
     },
 };
@@ -13,6 +13,9 @@ pub struct Response {
     pub body: String,
     pub headers: HashMap<String, String>,
     pub buf: Vec<u8>,
+    pub reader: Box<dyn io::Read>,
+    /// TODO: hax
+    pub is_reader: bool,
     pub content_type: String,
 }
 
@@ -33,6 +36,8 @@ impl Default for Response {
             body: String::new(),
             buf: Vec::new(),
             headers: HashMap::new(),
+            reader: Box::new(io::empty()),
+            is_reader: false,
             content_type: "text/html; charset=utf8".to_string(),
         }
     }
@@ -73,10 +78,11 @@ impl Response {
     pub fn with_file(mut self, path: &str) -> Response {
         match fs::File::open(asset::normalize_path(path)) {
             Ok(mut file) => {
+                self.header("ETag", &asset::hash(path));
                 self.content_type.clear();
                 self.content_type.push_str(util::content_type(path));
-                self.header("ETag", &asset::hash(path));
-                file.read_to_end(&mut self.buf);
+                self.is_reader = true;
+                self.reader = Box::new(BufReader::new(file));
                 self
             }
 
@@ -87,7 +93,9 @@ impl Response {
     }
 
     pub fn len(&self) -> usize {
-        if self.buf.is_empty() {
+        if self.is_reader {
+            0
+        } else if self.buf.is_empty() {
             self.body.len()
         } else {
             self.buf.len()
