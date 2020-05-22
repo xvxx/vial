@@ -43,7 +43,9 @@ impl Request {
     }
 
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers.get(name).and_then(|v| Some(v.as_ref()))
+        self.headers
+            .get(&name.to_lowercase())
+            .and_then(|v| Some(v.as_ref()))
     }
 
     /// Was the given form value sent?
@@ -118,7 +120,7 @@ impl Request {
         let mut req = Request::new();
         for header in hreq.headers {
             req.headers.insert(
-                header.name.to_string(),
+                header.name.to_lowercase(),
                 String::from_utf8_lossy(header.value).to_string(),
             );
         }

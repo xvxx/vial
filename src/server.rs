@@ -63,7 +63,15 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     let router = router.lock().unwrap();
 
     let res = if asset::exists(req.path()) {
-        Response::from_file(req.path())
+        if let Some(req_etag) = req.header("If-None-Match") {
+            if req_etag == asset::hash(req.path()) {
+                Response::from(304)
+            } else {
+                Response::from_file(req.path())
+            }
+        } else {
+            Response::from_file(req.path())
+        }
     } else if let Some(action) = router.action_for(&req) {
         action(req)
     } else {
