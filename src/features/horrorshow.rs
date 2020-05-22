@@ -17,15 +17,23 @@ where
     }
 }
 
-// impl<F> From<FnRenderer<F>> for Response
-// where
-//     FnRenderer<F>: fmt::Display,
-//     F: FnOnce(&mut TemplateBuffer<'_>),
-// {
-//     fn from(renderer: FnRenderer<F>) -> Response {
-//         Response {
-//             body: renderer.to_string(),
-//             ..Response::default()
-//         }
-//     }
-// }
+#[macro_export]
+macro_rules! html {
+    ($($t:tt)*) => {
+        ::horrorshow::html! { $($t)* }
+    };
+}
+
+#[macro_export]
+macro_rules! owned_html {
+    ($($t:tt)*) => {
+        ::horrorshow::owned_html! { $($t)* }
+    };
+}
+
+#[macro_export]
+macro_rules! box_html {
+    ($($t:tt)*) => {
+        ::horrorshow::box_html! { $($t)* }
+    };
+}

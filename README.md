@@ -18,12 +18,12 @@ _rolling_. Single file, server side apps? You bet! Fast compilation?
 Yes please! _À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
-have to bring your own beverage. In other words, you're guaranteed to
-have a great time.
+have to bring your own beverage. In other words, you're gonna have a
+good time.
 
 ## ~ hello world ~
 
-As is tradition.
+As is tradition:
 
 ```rust
 use vial::vial;
@@ -33,7 +33,7 @@ vial! {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667").unwrap();
+    vial::run!().unwrap();
 }
 ```
 
@@ -62,7 +62,7 @@ fn post(req: Request) -> impl Responder {
 }
 
 fn main() {
-    vial::run!("0.0.0.0:7667").unwrap();
+    vial::run!().unwrap();
 }
 ```
 
@@ -85,8 +85,52 @@ mod index {
 fn main() {
     // The order matters here - if `wiki` and `blog` both define "/",
     // the `mod index` version will match first and get run.
-    vial::run!("0.0.0.0:7667", index, wiki, blog);
+    vial::run!(index, wiki, blog);
 }
+```
+
+But hey, who wants to putz around with HTML when you can be writing
+**Rust**? Enable the `horror` feature and you're on your way:
+
+```rust
+#[macro_use]
+extern crate horrorshow;
+use vial::{vial, Request, Responder};
+
+vial! {
+    GET "/" => |_| html! {
+        p {
+            : "You're looking for this: ";
+            a(href="/echo") { : "echo" }
+        }
+    };
+    GET "/echo" => echo;
+    POST "/echo" => post;
+}
+
+fn echo(_: Request) -> impl Responder {
+    html! {
+        form(method="POST") {
+            p {
+            : "Type something: ";
+                input(type="text", name="echo");
+                input(type="submit");
+            }
+        }
+    }
+}
+
+fn post(req: Request) -> impl Responder {
+    owned_html! {
+        h1: req.form("echo")
+            .unwrap_or("You didn't say anything!");
+    }
+}
+
+fn main() {
+    vial::run!().unwrap();
+}
+
 ```
 
 ## ~ hot reloading ~
@@ -130,6 +174,12 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] test etag
 - [ ] don't copy any of raw HTTP request
 - [ ] `before_filter`
+
+### big goals
+
+- [ ] Parsing and routing HTTP requests
+- [ ] Handling POST requests
+- [ ] Serving static files (css, js)
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs

@@ -1,6 +1,4 @@
-#[macro_use]
-extern crate horrorshow;
-use vial::{vial, Request, Responder};
+use vial::{html, owned_html, vial, Request, Responder};
 
 vial! {
     GET "/" => |_| html! {
