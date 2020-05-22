@@ -1,5 +1,5 @@
 use {
-    crate::{asset, util},
+    crate::{asset, util, Result},
     std::{
         collections::HashMap,
         fmt, fs,
@@ -100,6 +100,51 @@ impl Response {
         } else {
             self.buf.len()
         }
+    }
+
+    pub fn write<W: io::Write>(mut self, mut w: W) -> Result<()> {
+        // we don't set Content-Length on static files we stream
+        let content_length = if self.len() > 0 {
+            format!("Content-Length: {}\r\n", self.len())
+        } else {
+            "".to_string()
+        };
+
+        // gross - move into print_headers or something
+        let mut header = format!(
+            "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\n{}Connection: close\r\n",
+            self.code, env!("CARGO_PKG_VERSION"), util::http_current_date(),
+            self.content_type, content_length,
+        );
+
+        // TODO check for content-type, date, etc
+        header.push_str(
+            &self
+                .headers
+                .iter()
+                .map(|(key, val)| format!("{}: {}", key, val))
+                .collect::<Vec<_>>()
+                .join("\r\n"),
+        );
+
+        if !header.ends_with("\r\n") {
+            header.push_str("\r\n");
+        }
+        header.push_str("\r\n");
+
+        w.write(header.as_bytes())?;
+
+        if self.is_reader {
+            io::copy(&mut self.reader, &mut w);
+        } else if self.buf.is_empty() {
+            w.write(self.body.as_bytes())?;
+        } else {
+            w.write(&self.buf)?;
+        }
+
+        w.flush()?;
+
+        Ok(())
     }
 }
 

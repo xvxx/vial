@@ -10,7 +10,6 @@ use {
 };
 
 const MAX_CONNECTIONS: usize = 10;
-const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
 type Router = Arc<Mutex<crate::Router>>;
 
@@ -52,17 +51,13 @@ fn handle_request(mut stream: TcpStream, router: &Router) -> Result<()> {
     Ok(())
 }
 
-fn http_current_date() -> String {
-    let now = libc_strftime::epoch();
-    libc_strftime::strftime_gmt(HTTP_DATE_FMT, now)
-}
-
 fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Result<()> {
+    let router = router.lock().unwrap();
     let method = req.method().to_string();
     let path = req.path().to_string();
-    let router = router.lock().unwrap();
 
-    let mut res = if asset::exists(req.path()) {
+    // route request to either a static file or code
+    let mut response = if asset::exists(req.path()) {
         if let Some(req_etag) = req.header("If-None-Match") {
             if req_etag == asset::hash(req.path()) {
                 Response::from(304)
@@ -78,42 +73,9 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
         Response::from(404).with_body("404 Not Found")
     };
 
-    let content_length = if res.len() > 0 {
-        format!("Content-Length: {}\r\n", res.len())
-    } else {
-        "".to_string()
-    };
+    let code = response.code;
+    response.write(stream)?;
+    println!("{} {} {}", method, code, path);
 
-    let mut header = format!(
-        "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\n{}Connection: close\r\n",
-        res.code, env!("CARGO_PKG_VERSION"), http_current_date(), res.content_type, content_length,
-    );
-
-    header.push_str(
-        &res.headers
-            .iter()
-            .map(|(key, val)| format!("{}: {}", key, val))
-            .collect::<Vec<_>>()
-            .join("\r\n"),
-    );
-
-    if !header.ends_with("\r\n") {
-        header.push_str("\r\n");
-    }
-    header.push_str("\r\n");
-
-    stream.write(header.as_bytes())?;
-
-    if res.is_reader {
-        io::copy(&mut res.reader, &mut stream);
-    } else if res.buf.is_empty() {
-        stream.write(res.body.as_bytes())?;
-    } else {
-        stream.write(&res.buf)?;
-    }
-
-    stream.flush()?;
-
-    println!("{} {} {}", method, res.code, path);
     Ok(())
 }
