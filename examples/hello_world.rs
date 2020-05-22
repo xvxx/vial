@@ -1,4 +1,4 @@
-use vial::{vial, Request, Responder, Response};
+use vial::prelude::*;
 
 vial! {
     GET "/hi/world" => |_| "Hello, world!";

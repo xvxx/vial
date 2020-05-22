@@ -1,4 +1,4 @@
-use vial::{html, owned_html, vial, Request, Responder};
+use vial::prelude::*;
 
 vial! {
     GET "/" => |_| html! {

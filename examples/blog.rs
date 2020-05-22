@@ -1,5 +1,5 @@
 #![allow(unused)]
-use vial::{vial, Request, Responder};
+use vial::prelude::*;
 
 vial! {
     GET "/blog" => index;

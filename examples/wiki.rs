@@ -2,7 +2,7 @@
 use vial;
 
 mod wiki {
-    use vial::{vial, Request, Responder};
+    use vial::prelude::*;
 
     vial! {
         GET "/" => index;

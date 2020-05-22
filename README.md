@@ -40,7 +40,7 @@ fn main() {
 For a bit more sanity, you can route to functions directly:
 
 ```rust
-use vial::{vial, Request, Responder};
+use vial::prelude::*;
 
 vial! {
     GET "/echo" => echo;
@@ -93,7 +93,7 @@ But hey, who wants to putz around with HTML when you can be writing
 **Rust**? Enable the `horror` feature and you're on your way:
 
 ```rust
-use vial::{html, owned_html, vial, Request, Responder};
+use vial::prelude::*;
 
 vial! {
     GET "/" => |_| html! {
