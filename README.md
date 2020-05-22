@@ -163,7 +163,7 @@ _**Please note:** The list above is a work-in-progress._
 - [x] POST requests
 - [ ] route/:recognizer
 - [x] static file
-- [ ] static file etag
+- [x] static file etag
 - [x] parse headers()
 - [ ] test headers()
 - [ ] test GET param()
@@ -178,8 +178,11 @@ _**Please note:** The list above is a work-in-progress._
 ### big goals
 
 - [ ] Parsing and routing HTTP requests
+    - [ ] :segments
 - [ ] Handling POST requests
+    - [ ] JSON body
 - [ ] Serving static files (css, js)
+    - [ ] bundle in release mode
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
