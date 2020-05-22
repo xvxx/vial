@@ -79,8 +79,8 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     };
 
     let mut header = format!(
-        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n",
-        res.code, http_current_date(), res.content_type, res.len(),
+        "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n",
+        res.code, env!("CARGO_PKG_VERSION"), http_current_date(), res.content_type, res.len(),
     );
 
     header.push_str(
