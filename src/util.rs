@@ -20,10 +20,10 @@ pub fn content_type(path: &str) -> &'static str {
 
 /// Does what it says.
 pub fn decode_form_value(post: &str) -> String {
-    percent_decode(post.as_bytes())
+    let cleaned = post.replace('+', " ").replace('\r', "");
+    percent_decode(cleaned.as_bytes())
         .decode_utf8_lossy()
-        .replace('+', " ")
-        .replace('\r', "")
+        .to_string()
 }
 
 /// Current date in HTTP format.

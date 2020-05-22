@@ -29,7 +29,9 @@ impl Router {
                         if pattern[i].starts_with(':') && !req_part.is_empty() {
                             req.args.insert(
                                 pattern[i].trim_start_matches(':').to_string(),
-                                req_part.to_string(),
+                                percent_encoding::percent_decode(req_part.as_bytes())
+                                    .decode_utf8_lossy()
+                                    .to_string(),
                             );
                             continue;
                         } else if *req_part == pattern[i] {
@@ -139,6 +141,12 @@ mod tests {
         assert_eq!(
             router.action_for(&mut req).unwrap()(req).to_string(),
             "Raw: cats".to_string()
+        );
+
+        let mut req = Request::from_path("/cats and dogs.md");
+        assert_eq!(
+            router.action_for(&mut req).unwrap()(req).to_string(),
+            "Raw: cats and dogs".to_string()
         );
 
         let mut req = Request::from_path("/slashes/dont/match");

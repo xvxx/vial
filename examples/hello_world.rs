@@ -2,7 +2,8 @@ use vial::prelude::*;
 
 vial! {
     GET "/hi/world" => |_| "Hello, world!";
-    GET "/hey/world" => |_| "Heyo, world-o!";
+    GET "/hey/:place" => |req|
+        format!("Heyo, {}!", req.arg("place").unwrap_or("?"));
 
     GET "/" => welcome;
 }
