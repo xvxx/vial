@@ -4,9 +4,11 @@ use std::{
     fs,
     hash::{Hash, Hasher},
     io::{self, Read},
-    path::Path,
+    path::{Path, PathBuf},
     str,
 };
+
+type Result<T> = std::result::Result<T, io::Error>;
 
 pub fn hash(path: &str) -> String {
     let mut hasher = DefaultHasher::new();
@@ -47,7 +49,7 @@ pub fn exists(path: &str) -> bool {
 }
 
 /// Like fs::read_to_string(), but with an asset.
-pub fn to_string(path: &str) -> Result<String, io::Error> {
+pub fn to_string(path: &str) -> Result<String> {
     let path = normalize_path(path);
     if let Some(bytes) = read(&path) {
         if let Ok(utf8) = str::from_utf8(bytes.as_ref()) {
@@ -73,4 +75,46 @@ pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
         }
     }
     None
+}
+
+pub fn iter(dir: &str) -> std::vec::IntoIter<PathBuf> {
+    if let Ok(files) = files_in_dir(".") {
+        files.into_iter()
+    } else {
+        vec![].into_iter()
+    }
+}
+
+fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
+    let mut files = vec![];
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        let meta = fs::metadata(&path)?;
+        if meta.is_dir() {
+            files.extend_from_slice(&files_in_dir(path.to_str().unwrap_or("bad"))?);
+        } else {
+            files.push(path);
+        }
+    }
+    Ok(files)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_iter() {
+        assert!(iter(".").count() > 0);
+
+        let mut expected = vec!["./Cargo.toml", "./LICENSE"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        for file in iter(".").take(2) {
+            assert_eq!(expected.remove(0), file.to_str().unwrap());
+        }
+    }
 }
