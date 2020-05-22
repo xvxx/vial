@@ -1,10 +1,28 @@
 use std::{
     borrow::Cow,
+    collections::hash_map::DefaultHasher,
     fs,
+    hash::{Hash, Hasher},
     io::{self, Read},
     path::Path,
     str,
 };
+
+pub fn hash(path: &str) -> String {
+    let mut hasher = DefaultHasher::new();
+    last_modified(path).hash(&mut hasher);
+    format!("{:x}", hasher.finish())
+}
+
+fn last_modified(path: &str) -> String {
+    let path = normalize_path(path);
+    if let Ok(meta) = fs::metadata(path) {
+        if let Ok(time) = meta.modified() {
+            return format!("{:?}", time);
+        }
+    }
+    String::new()
+}
 
 pub fn normalize_path(path: &str) -> String {
     format!(

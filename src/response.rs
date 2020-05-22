@@ -47,6 +47,10 @@ impl Response {
         &self.headers
     }
 
+    pub fn header(&mut self, key: &str, value: &str) {
+        self.headers.insert(key.to_string(), value.to_string());
+    }
+
     pub fn from<T: Into<Response>>(from: T) -> Response {
         from.into()
     }
@@ -71,6 +75,7 @@ impl Response {
             Ok(mut file) => {
                 self.content_type.clear();
                 self.content_type.push_str(util::content_type(path));
+                self.header("ETag", &asset::hash(path));
                 file.read_to_end(&mut self.buf);
                 self
             }

@@ -83,8 +83,10 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
             .join("\r\n"),
     );
 
-    header.push('\r');
-    header.push('\n');
+    if !header.ends_with("\r\n") {
+        header.push_str("\r\n");
+    }
+    header.push_str("\r\n");
 
     stream.write(header.as_bytes())?;
     if res.buf.is_empty() {
