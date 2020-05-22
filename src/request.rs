@@ -14,7 +14,7 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new() -> Request {
+    pub fn default() -> Request {
         Request {
             path: "/".to_string(),
             method: "GET".to_string(),
@@ -24,6 +24,26 @@ impl Request {
             query: HashMap::new(),
             form: HashMap::new(),
         }
+    }
+
+    pub fn from_path(path: &str) -> Request {
+        Request::default().with_path(path)
+    }
+
+    pub fn with_path(mut self, path: &str) -> Request {
+        self.path = path.to_string();
+        self.parse_query();
+        self
+    }
+
+    pub fn with_body(mut self, body: &str) -> Request {
+        self.body = body.to_string();
+        self
+    }
+
+    pub fn with_method(mut self, method: &str) -> Request {
+        self.method = method.to_string();
+        self
     }
 
     pub fn body(&self) -> &str {
@@ -62,6 +82,9 @@ impl Request {
     pub(crate) fn parse_body(&mut self) {
         if !self.form.is_empty() {
             self.form.clear();
+        }
+        if self.body.is_empty() {
+            return;
         }
         let mut map = HashMap::new();
         parse_query_into_map(&self.body, &mut map);
@@ -117,7 +140,7 @@ impl Request {
             httparse::Status::Partial => return Ok(None),
         };
 
-        let mut req = Request::new();
+        let mut req = Request::default();
         for header in hreq.headers {
             req.headers.insert(
                 header.name.to_lowercase(),
@@ -128,8 +151,7 @@ impl Request {
             req.method = method.into();
         }
         if let Some(path) = hreq.path {
-            req.path = path.into();
-            req.parse_query();
+            req = req.with_path(path);
         }
         if header_length < buf.len() {
             req.body = String::from_utf8_lossy(&buf[header_length..]).into();
