@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate horrorshow;
-use vial::{vial, Request, Responder, Response};
+use vial::{vial, Request, Responder};
 
 vial! {
     GET "/" => |_| html! {
@@ -13,7 +13,7 @@ vial! {
     POST "/echo" => post;
 }
 
-fn echo(_: Request) -> Response {
+fn echo(_: Request) -> impl Responder {
     html! {
         form(method="POST") {
             p {
@@ -25,8 +25,11 @@ fn echo(_: Request) -> Response {
     }
 }
 
-fn post(req: Request) -> Response {
-    let echoed = req.form("echo").unwrap_or("You didn't say anything!");
+fn post(req: Request) -> impl Responder {
+    let echoed = req
+        .form("echo")
+        .unwrap_or("You didn't say anything!")
+        .to_string();
     html! {
         h1: echoed;
     }
