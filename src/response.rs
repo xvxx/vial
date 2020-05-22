@@ -1,9 +1,23 @@
-use std::{fmt, fs, path::Path};
+use std::{
+    fmt, fs,
+    io::{self, Read},
+    path::Path,
+};
 
-#[derive(Debug)]
 pub struct Response {
     pub code: usize,
     pub body: String,
+    pub reader: Option<Box<dyn Read>>,
+}
+
+impl fmt::Debug for Response {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Response")
+            .field("code", &self.code)
+            .field("body", &self.body)
+            .field("reader", &self.reader.is_some())
+            .finish()
+    }
 }
 
 impl Default for Response {
@@ -11,6 +25,7 @@ impl Default for Response {
         Response {
             code: 200,
             body: String::new(),
+            reader: None,
         }
     }
 }
@@ -39,8 +54,8 @@ impl Response {
     }
 
     pub fn with_file<P: AsRef<Path>>(mut self, path: P) -> Response {
-        match fs::read_to_string(path) {
-            Ok(body) => self.body = body,
+        match fs::File::open(path) {
+            Ok(file) => self.reader = Some(Box::new(file)),
             Err(e) => {
                 self.body = format!("<h1>500 Internal Error</h1><pre>{:?}", e);
                 self.code = 500;
@@ -52,7 +67,11 @@ impl Response {
 
 impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.body)
+        if self.reader.is_some() {
+            write!(f, "(body is io::Read)")
+        } else {
+            write!(f, "{}", self.body)
+        }
     }
 }
 

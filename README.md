@@ -4,7 +4,7 @@
 
 `vial` is a small web "framework" for making small web "sites".
 
-It only includes the basics:
+It only includes a few basics:
 
 - Parsing and routing HTTP requests
 - Handling POST requests
@@ -19,7 +19,7 @@ Yes please! _À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
 have to bring your own beverage. In other words, you're gonna have a
-good time.
+good time, but you're gonna have to do some work.
 
 ## ~ hello world ~
 
@@ -146,11 +146,12 @@ activate for enhanced productivity:
 <img src="./img/alice.jpeg" alt="Alice" align="right" width="250" />
 
 - [ ] **cookies**: Cookie monster!
+- [ ] **sessions**: Session Support
 - [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
-- [ ] **htxl**: Vial's preferred, no-dependency template library: HTXL.
+- [ ] **htxl**: Barebones, no-dependency template library, via [htxl].
 - [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
       proxy.
 
@@ -169,8 +170,10 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] test POST param()
 - [ ] test static file
 - [ ] test etag
+- [ ] document everything
 - [ ] don't copy any of raw HTTP request
 - [ ] `before_filter`
+- [ ] all the bonus features
 
 ### big goals
 
@@ -180,3 +183,4 @@ _**Please note:** The list above is a work-in-progress._
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
+[htxl]: https://github.com/xvxx/htxl
