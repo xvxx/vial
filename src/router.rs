@@ -35,7 +35,10 @@ impl Router {
     ) {
         let method = method.into();
         if let Some(map) = self.routes.get_mut(&method) {
-            map.insert(pattern.to_string(), action);
+            // don't overwrite routes. ie first "/" defined wins
+            if !map.contains_key(pattern) {
+                map.insert(pattern.to_string(), action);
+            }
         } else {
             let mut map = HashMap::new();
             map.insert(pattern.to_string(), action);
@@ -47,7 +50,6 @@ impl Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Request, Response};
 
     #[test]
     fn test() {
