@@ -11,6 +11,10 @@ pub struct Router {
     routes: HashMap<Method, HashMap<String, fn(Request) -> Response>>,
 }
 
+fn serve_static_file(req: Request) -> Response {
+    Response::from_file(req.path())
+}
+
 impl Router {
     pub fn new() -> Router {
         Router {
@@ -19,6 +23,10 @@ impl Router {
     }
 
     pub fn action_for(&self, req: &Request) -> Option<&fn(Request) -> Response> {
+        if asset::exists(req.path()) {
+            return Some(&(serve_static_file as fn(Request) -> Response));
+        }
+
         if let Some(routes) = self.routes.get(&req.method().into()) {
             if let Some(action) = routes.get(req.path()) {
                 return Some(action);

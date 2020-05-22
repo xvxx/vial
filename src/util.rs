@@ -1,7 +1,7 @@
 use percent_encoding::percent_decode;
 
 /// Content type for a file based on its extension.
-pub fn get_content_type(path: &str) -> &'static str {
+pub fn content_type(path: &str) -> &'static str {
     match path.split('.').last().unwrap_or("?") {
         "gif" => "image/gif",
         "jpg" => "image/jpeg",

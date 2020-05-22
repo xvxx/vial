@@ -1,12 +1,16 @@
-use std::{
-    fmt, fs,
-    io::{self, Read},
-    path::Path,
+use {
+    crate::{asset, util},
+    std::{
+        fmt, fs,
+        io::{self, Read},
+        path::Path,
+    },
 };
 
 pub struct Response {
     pub code: usize,
     pub body: String,
+    pub content_type: String,
     pub reader: Option<Box<dyn Read>>,
 }
 
@@ -14,6 +18,7 @@ impl fmt::Debug for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Response")
             .field("code", &self.code)
+            .field("content_type", &self.content_type)
             .field("body", &self.body)
             .field("reader", &self.reader.is_some())
             .finish()
@@ -25,6 +30,7 @@ impl Default for Response {
         Response {
             code: 200,
             body: String::new(),
+            content_type: "text/html; charset=utf8".to_string(),
             reader: None,
         }
     }
@@ -39,7 +45,7 @@ impl Response {
         from.into()
     }
 
-    pub fn from_file<P: AsRef<Path>>(path: P) -> Response {
+    pub fn from_file(path: &str) -> Response {
         Response::default().with_file(path)
     }
 
@@ -53,9 +59,14 @@ impl Response {
         self
     }
 
-    pub fn with_file<P: AsRef<Path>>(mut self, path: P) -> Response {
-        match fs::File::open(path) {
-            Ok(file) => self.reader = Some(Box::new(file)),
+    pub fn with_file(mut self, path: &str) -> Response {
+        match fs::read_to_string(asset::normalize_path(path)) {
+            Ok(body) => {
+                println!("CT: {}", util::content_type(path));
+                self.content_type = util::content_type(path).to_string();
+                self.body = body;
+            }
+
             Err(e) => {
                 self.body = format!("<h1>500 Internal Error</h1><pre>{:?}", e);
                 self.code = 500;
