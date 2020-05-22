@@ -61,6 +61,7 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
     let method = req.method().to_string();
     let path = req.path().to_string();
     let router = router.lock().unwrap();
+
     let res = if asset::exists(req.path()) {
         Response::from_file(req.path())
     } else if let Some(action) = router.action_for(&req) {
@@ -69,12 +70,23 @@ fn write_response(mut stream: TcpStream, req: Request, router: &Router) -> Resul
         Response::from(404).with_body("404 Not Found")
     };
 
-    let date = http_current_date();
-    let headers = format!(
-        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-        res.code, date, res.content_type, res.len(),
+    let mut header = format!(
+        "HTTP/1.1 {} OK\r\nServer: vial (Rust)\r\nDate: {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n",
+        res.code, http_current_date(), res.content_type, res.len(),
     );
-    stream.write(headers.as_bytes())?;
+
+    header.push_str(
+        &res.headers
+            .iter()
+            .map(|(key, val)| format!("{}: {}", key, val))
+            .collect::<Vec<_>>()
+            .join("\r\n"),
+    );
+
+    header.push('\r');
+    header.push('\n');
+
+    stream.write(header.as_bytes())?;
     if res.buf.is_empty() {
         stream.write(res.body.as_bytes())?;
     } else {

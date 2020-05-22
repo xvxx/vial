@@ -162,7 +162,7 @@ _**Please note:** The list above is a work-in-progress._
 - [x] GET requests
 - [x] POST requests
 - [ ] route/:recognizer
-- [ ] static file
+- [x] static file
 - [ ] static file etag
 - [x] parse headers()
 - [ ] test headers()

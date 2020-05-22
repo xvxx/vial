@@ -1,6 +1,7 @@
 use {
     crate::{asset, util},
     std::{
+        collections::HashMap,
         fmt, fs,
         io::{self, Read},
         path::Path,
@@ -10,9 +11,9 @@ use {
 pub struct Response {
     pub code: usize,
     pub body: String,
+    pub headers: HashMap<String, String>,
     pub buf: Vec<u8>,
     pub content_type: String,
-    pub reader: Option<Box<dyn Read>>,
 }
 
 impl fmt::Debug for Response {
@@ -21,7 +22,6 @@ impl fmt::Debug for Response {
             .field("code", &self.code)
             .field("content_type", &self.content_type)
             .field("body", &self.body)
-            .field("reader", &self.reader.is_some())
             .finish()
     }
 }
@@ -32,8 +32,8 @@ impl Default for Response {
             code: 200,
             body: String::new(),
             buf: Vec::new(),
+            headers: HashMap::new(),
             content_type: "text/html; charset=utf8".to_string(),
-            reader: None,
         }
     }
 }
@@ -41,6 +41,10 @@ impl Default for Response {
 impl Response {
     pub fn new() -> Response {
         Response::default()
+    }
+
+    pub fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
     }
 
     pub fn from<T: Into<Response>>(from: T) -> Response {
@@ -88,8 +92,8 @@ impl Response {
 
 impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.reader.is_some() {
-            write!(f, "(body is io::Read)")
+        if !self.buf.is_empty() {
+            write!(f, "{}", String::from_utf8_lossy(&self.buf))
         } else {
             write!(f, "{}", self.body)
         }
