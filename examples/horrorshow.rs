@@ -26,12 +26,9 @@ fn echo(_: Request) -> impl Responder {
 }
 
 fn post(req: Request) -> impl Responder {
-    let echoed = req
-        .form("echo")
-        .unwrap_or("You didn't say anything!")
-        .to_string();
-    html! {
-        h1: echoed;
+    owned_html! {
+        h1: req.form("echo")
+            .unwrap_or("You didn't say anything!");
     }
 }
 
