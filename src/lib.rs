@@ -3,6 +3,7 @@
 #[macro_use]
 mod macros;
 mod asset;
+mod bundler;
 mod features;
 mod method;
 pub mod prelude;
@@ -21,7 +22,7 @@ extern crate horrorshow;
 pub use features::horrorshow::{box_html, html, owned_html};
 
 pub use {
-    method::Method, request::Request, responder::Responder, response::Response, router::Router,
-    server::run,
+    bundler::bundle_assets, method::Method, request::Request, responder::Responder,
+    response::Response, router::Router, server::run,
 };
 pub type Result<T> = std::result::Result<T, std::io::Error>;

@@ -78,7 +78,7 @@ pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
 }
 
 pub fn iter(dir: &str) -> std::vec::IntoIter<PathBuf> {
-    if let Ok(files) = files_in_dir(".") {
+    if let Ok(files) = files_in_dir(dir) {
         files.into_iter()
     } else {
         vec![].into_iter()
