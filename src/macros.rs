@@ -4,14 +4,10 @@ macro_rules! run {
         vial::run!("0.0.0.0:7667")
     };
     ($addr:expr) => {{
-        let mut router = ::vial::Router::new();
-        vial_add_to_router(&mut router);
-        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+        vial::run!($addr, self)
     }};
     ($($module:ident),+) => {{
-        let mut router = ::vial::Router::new();
-        $($module::vial_add_to_router(&mut router);)+
-        vial::run("0.0.0.0:7667", ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+        vial::run!("0.0.0.0:7667", $($module),+)
     }};
     ($addr:expr, $($module:ident),+) => {{
         let mut router = ::vial::Router::new();
