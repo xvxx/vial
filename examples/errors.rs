@@ -1,5 +1,4 @@
 use std::io;
-use vial::asset;
 use vial::prelude::*;
 
 vial! {
