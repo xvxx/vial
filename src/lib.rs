@@ -2,7 +2,7 @@
 
 #[macro_use]
 mod macros;
-mod asset;
+pub mod asset;
 mod bundler;
 mod features;
 mod method;
