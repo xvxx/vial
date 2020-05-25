@@ -32,8 +32,7 @@ impl Responder for usize {
 impl<T: Responder, E: error::Error> Responder for Result<T, E> {
     fn to_response(self) -> Response {
         match self {
-            Err(e) => Response::from(500)
-                .with_body(&format!("<h1>500 Internal Server Error</h1><pre>{}", e)),
+            Err(e) => Response::from_error(e),
             Ok(s) => s.to_response(),
         }
     }

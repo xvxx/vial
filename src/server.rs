@@ -70,7 +70,7 @@ fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> R
     } else if let Some(action) = router.action_for(&mut req) {
         action(req)
     } else {
-        Response::from(404).with_body("404 Not Found")
+        Response::from(404)
     };
 
     println!("{} {} {}", method, response.code, path);

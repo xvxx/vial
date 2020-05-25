@@ -2,7 +2,7 @@ use {
     crate::{asset, util, Result},
     std::{
         collections::HashMap,
-        fmt, fs,
+        error, fmt, fs,
         io::{self, BufReader, Read},
         path::Path,
     },
@@ -68,6 +68,10 @@ impl Response {
         Response::default().with_file(path)
     }
 
+    pub fn from_error<E: error::Error>(err: E) -> Response {
+        Response::from(500).with_error(err)
+    }
+
     pub fn with_code(mut self, code: usize) -> Response {
         self.code = code;
         self
@@ -98,10 +102,13 @@ impl Response {
                 self
             }
 
-            Err(e) => self
-                .with_body(&format!("<h1>500 Internal Error</h1><pre>{:?}", e))
-                .with_code(500),
+            Err(e) => self.with_error(Box::new(e)),
         }
+    }
+
+    pub fn with_error<E: error::Error>(mut self, err: E) -> Response {
+        self.with_code(500)
+            .with_body(&format!("<h1>500 Internal Error</h1><pre>{}", err))
     }
 
     pub fn len(&self) -> usize {
@@ -201,6 +208,11 @@ impl From<usize> for Response {
     fn from(i: usize) -> Response {
         Response {
             code: i.into(),
+            body: match i {
+                404 => "404 Not Found".into(),
+                500 => "500 Internal Server Error".into(),
+                _ => "".into(),
+            },
             ..Response::default()
         }
     }
