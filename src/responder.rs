@@ -33,7 +33,7 @@ impl<T: Responder, E: error::Error> Responder for Result<T, E> {
     fn to_response(self) -> Response {
         match self {
             Err(e) => Response::from(500)
-                .with_body(&format!("<h1>500 Interal Server Error</h1><pre>{}", e)),
+                .with_body(&format!("<h1>500 Internal Server Error</h1><pre>{}", e)),
             Ok(s) => s.to_response(),
         }
     }
