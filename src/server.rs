@@ -73,9 +73,12 @@ fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> R
         Response::from(404).with_body("404 Not Found")
     };
 
-    let code = response.code;
+    println!("{} {} {}", method, response.code, path);
+    if response.code == 500 {
+        eprintln!("{}", response.body);
+    }
+
     response.write(stream)?;
-    println!("{} {} {}", method, code, path);
 
     Ok(())
 }
