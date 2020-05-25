@@ -31,7 +31,8 @@ pub fn normalize_path(path: &str) -> Option<String> {
         Some(format!(
             "{}/{}",
             root,
-            path.trim_start_matches('.')
+            path.trim_start_matches(root)
+                .trim_start_matches('.')
                 .trim_start_matches('/')
                 .replace("..", ".")
         ))
