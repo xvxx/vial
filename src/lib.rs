@@ -26,3 +26,6 @@ pub use {
     response::Response, router::Router, server::run,
 };
 pub type Result<T> = std::result::Result<T, std::io::Error>;
+
+/// Directory where static assets are stored, if any.
+pub static mut STATIC_DIR: Option<&'static str> = None;

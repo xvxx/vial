@@ -60,6 +60,10 @@ impl Response {
         from.into()
     }
 
+    pub fn from_asset(path: &str) -> Response {
+        Response::default().with_asset(path)
+    }
+
     pub fn from_file(path: &str) -> Response {
         Response::default().with_file(path)
     }
@@ -75,8 +79,16 @@ impl Response {
         self
     }
 
+    pub fn with_asset(mut self, path: &str) -> Response {
+        if let Some(path) = asset::normalize_path(path) {
+            self.with_file(&path)
+        } else {
+            self.with_code(404)
+        }
+    }
+
     pub fn with_file(mut self, path: &str) -> Response {
-        match fs::File::open(asset::normalize_path(path)) {
+        match fs::File::open(path) {
             Ok(mut file) => {
                 self.header("ETag", &asset::hash(path));
                 self.content_type.clear();

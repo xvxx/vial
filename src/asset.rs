@@ -16,33 +16,39 @@ pub fn hash(path: &str) -> String {
     format!("{:x}", hasher.finish())
 }
 
-fn last_modified(path: &str) -> String {
-    let path = normalize_path(path);
+fn last_modified(path: &str) -> Option<String> {
+    let path = normalize_path(path)?;
     if let Ok(meta) = fs::metadata(path) {
         if let Ok(time) = meta.modified() {
-            return format!("{:?}", time);
+            return Some(format!("{:?}", time));
         }
     }
-    String::new()
+    None
 }
 
-pub fn normalize_path(path: &str) -> String {
-    format!(
-        "./{}",
-        path.trim_start_matches('.')
-            .trim_start_matches('/')
-            .replace("..", ".")
-    )
+pub fn normalize_path(path: &str) -> Option<String> {
+    if let Some(root) = unsafe { crate::STATIC_DIR } {
+        Some(format!(
+            "{}/{}",
+            root,
+            path.trim_start_matches('.')
+                .trim_start_matches('/')
+                .replace("..", ".")
+        ))
+    } else {
+        None
+    }
 }
 
 /// Does the asset exist on disk? `path` is the relative path,
 /// ex: asset::exists("index.html") checks for "./static/index.html"
 /// (or in the embedded fs, in release mode).
 pub fn exists(path: &str) -> bool {
-    let path = normalize_path(path);
-    if let Ok(mut file) = fs::File::open(path) {
-        if let Ok(meta) = file.metadata() {
-            return !meta.is_dir();
+    if let Some(path) = normalize_path(path) {
+        if let Ok(mut file) = fs::File::open(path) {
+            if let Ok(meta) = file.metadata() {
+                return !meta.is_dir();
+            }
         }
     }
     false
@@ -50,10 +56,11 @@ pub fn exists(path: &str) -> bool {
 
 /// Like fs::read_to_string(), but with an asset.
 pub fn to_string(path: &str) -> Result<String> {
-    let path = normalize_path(path);
-    if let Some(bytes) = read(&path) {
-        if let Ok(utf8) = str::from_utf8(bytes.as_ref()) {
-            return Ok(utf8.to_string());
+    if let Some(path) = normalize_path(path) {
+        if let Some(bytes) = read(&path) {
+            if let Ok(utf8) = str::from_utf8(bytes.as_ref()) {
+                return Ok(utf8.to_string());
+            }
         }
     }
 
@@ -65,7 +72,7 @@ pub fn to_string(path: &str) -> Result<String> {
 
 /// Read a file to [u8].
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
-    let path = normalize_path(path);
+    let path = normalize_path(path)?;
     let mut buf = vec![];
     if let Ok(mut file) = fs::File::open(path) {
         if let Ok(meta) = file.metadata() {

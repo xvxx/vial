@@ -14,7 +14,15 @@ macro_rules! run {
         $($module::vial_add_to_router(&mut router);)+
         vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
     }};
+}
 
+#[macro_export]
+macro_rules! static_dir {
+    ($dir:expr) => {
+        unsafe {
+            ::vial::STATIC_DIR = Some($dir);
+        }
+    };
 }
 
 #[macro_export]

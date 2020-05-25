@@ -62,10 +62,10 @@ fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> R
             if req_etag == asset::hash(req.path()) {
                 Response::from(304)
             } else {
-                Response::from_file(req.path())
+                Response::from_asset(req.path())
             }
         } else {
-            Response::from_file(req.path())
+            Response::from_asset(req.path())
         }
     } else if let Some(action) = router.action_for(&mut req) {
         action(req)

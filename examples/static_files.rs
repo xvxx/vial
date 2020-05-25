@@ -5,5 +5,6 @@ vial! {
 }
 
 fn main() {
+    vial::static_dir!(".");
     vial::run!().unwrap();
 }
