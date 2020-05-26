@@ -30,3 +30,5 @@ pub type Result<T> = std::result::Result<T, std::io::Error>;
 /// Directory where assets are stored, if any.
 pub static mut ASSET_DIR: Option<&'static str> = None;
 
+/// Assets bundled into the binary in release mode.
+pub static mut BUNDLED_ASSETS: Option<std::collections::HashMap<String, &'static [u8]>> = None;

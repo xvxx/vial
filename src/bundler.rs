@@ -1,30 +1,36 @@
 use {
     crate::{asset, Result},
     std::{
-        env, fs,
+        env,
+        fs::{self, File},
         io::{self, Read, Write},
         path::Path,
     },
 };
 
 pub fn bundle_assets(dir: &str) -> Result<()> {
-    let out_dir = env::var("OUT_DIR").unwrap_or_else(|_| ".".into());
-    println!("OUT: {}", out_dir);
-    let mut dest = fs::File::create(Path::new(&out_dir).join("bundled_assets.rs"))?;
-    println!("OK");
+    #[cfg(not(debug_assertions))]
+    {
+        let out_dir = env::var("OUT_DIR").unwrap();
+        let mut dest = File::create(Path::new(&out_dir).join("bundle.rs"))?;
 
-    dest.write_all(b"use std::collections::HashMap;\n")?;
-    dest.write_all(b"pub fn bundled_assets() -> HashMap<String, Vec<u8>>{\n")?;
-    dest.write_all(b"  let mut map = HashMap::new();\n")?;
-    for path in asset::iter(dir) {
-        println!("-> {:?}", path);
-        let mut bytes = vec![];
-        let mut asset = fs::File::open(Path::new(&path))?;
-        asset.read_to_end(&mut bytes);
-        dest.write_all(format!("  map.insert({:?}.into(), vec!{:?});\n", path, bytes).as_bytes());
+        dest.write_all(b"#[macro_export]\n macro_rules! vial_bundled_assets {\n  () => {{\n")?;
+        dest.write_all(b"    let mut map = std::collections::HashMap::new();\n")?;
+        for path in asset::iter(dir) {
+            println!("-> {:?}", path);
+            dest.write_all(
+                format!(
+                    "    map.insert({:?}.into(), &include_bytes!(\"../{}\")[..]);\n",
+                    path,
+                    path.as_path().to_string_lossy()
+                )
+                .as_bytes(),
+            );
+        }
+        dest.write_all(b"    map\n  }};\n}")?;
+        println!("cargo:rustc-cfg=bundle_assets");
+        println!("cargo:rustc-cfg=release");
     }
-    dest.write_all(b"  map\n}\n")?;
-
-    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rustc-env=ASSET_DIR={}", dir);
     Ok(())
 }

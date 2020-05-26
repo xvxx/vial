@@ -12,19 +12,33 @@ macro_rules! run {
     ($addr:expr, $($module:ident),+) => {{
         let mut router = ::vial::Router::new();
         $($module::vial_add_to_router(&mut router);)+
+        #[cfg(bundle_assets)]
+        unsafe {
+            vial::BUNDLED_ASSETS = Some(vial_bundled_assets!());
+        }
+        vial::asset_dir!(@option option_env!("ASSET_DIR"));
         vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
     }};
 }
 
 #[macro_export]
 macro_rules! asset_dir {
+    (@option $opt:expr) => {
+        if let Some(dir) = $opt {
+            ::vial::asset_dir!(dir);
+        }
+    };
     ($dir:expr) => {
         unsafe {
             ::vial::ASSET_DIR = Some($dir);
         }
     };
 }
-        }
+
+#[macro_export]
+macro_rules! bundle_assets {
+    ($dir:expr) => {
+        ::vial::bundle_assets($dir)
     };
 }
 
@@ -41,6 +55,9 @@ macro_rules! vial {
             fn PATCH() {}
             $($method();)*
         }
+
+        #[cfg(bundle_assets)]
+        include!(concat!(env!("OUT_DIR"), "/bundle.rs"));
 
         pub fn vial_add_to_router(router: &mut ::vial::Router) {
             $( router.insert(::vial::Method::$method, $path, |req| {
