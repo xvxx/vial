@@ -59,7 +59,7 @@ fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> R
     // route request to either a static file or code
     let mut response = if asset::exists(req.path()) {
         if let Some(req_etag) = req.header("If-None-Match") {
-            if req_etag == asset::hash(req.path()) {
+            if req_etag == asset::etag(req.path()).as_ref() {
                 Response::from(304)
             } else {
                 Response::from_asset(req.path())

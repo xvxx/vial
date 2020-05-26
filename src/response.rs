@@ -64,6 +64,10 @@ impl Response {
         Response::default().with_asset(path)
     }
 
+    pub fn from_reader(reader: Box<dyn io::Read>) -> Response {
+        Response::default().with_reader(reader)
+    }
+
     pub fn from_file(path: &str) -> Response {
         Response::default().with_file(path)
     }
@@ -83,24 +87,36 @@ impl Response {
         self
     }
 
+    pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response {
+        self.reader = reader;
+        self.is_reader = true;
+        self
+    }
+
     pub fn with_asset(mut self, path: &str) -> Response {
         if let Some(path) = asset::normalize_path(path) {
-            panic!("TODO: change this");
-            self.with_file(&path)
-        } else {
-            self.with_code(404)
+            if asset::exists(&path) {
+                if asset::is_bundled() {
+                    if let Some(reader) = asset::as_reader(&path) {
+                        self.header("ETag", asset::etag(&path).as_ref());
+                        self.content_type = util::content_type(&path).to_string();
+                        return self.with_reader(reader);
+                    }
+                } else {
+                    return self.with_file(&path);
+                }
+            }
         }
+        self.with_code(404)
     }
 
     pub fn with_file(mut self, path: &str) -> Response {
         match fs::File::open(path) {
             Ok(mut file) => {
-                self.header("ETag", &asset::hash(path));
+                self.header("ETag", &asset::etag(path).as_ref());
                 self.content_type.clear();
                 self.content_type.push_str(util::content_type(path));
-                self.is_reader = true;
-                self.reader = Box::new(BufReader::new(file));
-                self
+                self.with_reader(Box::new(BufReader::new(file)))
             }
 
             Err(e) => self.with_error(Box::new(e)),

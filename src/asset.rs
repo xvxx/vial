@@ -3,17 +3,22 @@ use std::{
     collections::hash_map::DefaultHasher,
     fs,
     hash::{Hash, Hasher},
-    io::{self, Read},
+    io::{self, BufReader, Read},
     path::{Path, PathBuf},
     str,
 };
 
 type Result<T> = std::result::Result<T, io::Error>;
 
-pub fn hash(path: &str) -> String {
-    let mut hasher = DefaultHasher::new();
-    last_modified(path).hash(&mut hasher);
-    format!("{:x}", hasher.finish())
+/// etag for an asset
+pub fn etag(path: &str) -> Cow<str> {
+    if is_bundled() {
+        Cow::from(crate::BUILD_DATE)
+    } else {
+        let mut hasher = DefaultHasher::new();
+        last_modified(path).hash(&mut hasher);
+        Cow::from(format!("{:x}", hasher.finish()))
+    }
 }
 
 fn last_modified(path: &str) -> Option<String> {
@@ -42,7 +47,7 @@ pub fn normalize_path(path: &str) -> Option<String> {
 }
 
 /// Have assets been bundled into the binary?
-fn is_bundled() -> bool {
+pub fn is_bundled() -> bool {
     unsafe { crate::BUNDLED_ASSETS.is_some() }
 }
 
@@ -52,10 +57,8 @@ fn is_bundled() -> bool {
 pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
         if is_bundled() {
-            println!("path? {}", path);
             return unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().contains_key(&path) };
         } else {
-            println!("DING");
             if let Ok(mut file) = fs::File::open(path) {
                 if let Ok(meta) = file.metadata() {
                     return !meta.is_dir();
@@ -78,6 +81,24 @@ pub fn to_string(path: &str) -> Result<String> {
         io::ErrorKind::NotFound,
         format!("{} not found", path),
     ))
+}
+
+pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
+    let path = normalize_path(path)?;
+    if is_bundled() {
+        if let Some(v) = unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().get(&path) } {
+            return Some(Box::new(*v));
+        }
+    } else {
+        if let Ok(mut file) = fs::File::open(path) {
+            if let Ok(meta) = file.metadata() {
+                if !meta.is_dir() {
+                    return Some(Box::new(BufReader::new(file)));
+                }
+            }
+        }
+    }
+    None
 }
 
 /// Read a file to [u8].
