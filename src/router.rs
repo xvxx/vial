@@ -85,6 +85,17 @@ mod tests {
         fn show_raw(r: Request) -> Response {
             format!("Raw: {}", r.arg("page").unwrap_or("?")).into()
         }
+        fn show_parts(r: Request) -> Response {
+            format!("Parts: {}", r.arg("page").unwrap_or("?")).into()
+        }
+        fn show_mix(r: Request) -> Response {
+            format!(
+                "Mix: {:?} {:?}",
+                r.arg("of").unwrap_or("?"),
+                r.arg("things").unwrap_or("?")
+            )
+            .into()
+        }
         fn about(_: Request) -> Response {
             "About".into()
         }
@@ -97,6 +108,8 @@ mod tests {
         router.insert("GET", "/:page", show);
         router.insert("GET", "/info", info);
         router.insert("GET", "/:page.md", show_raw);
+        router.insert("GET", "/*parts", show_parts);
+        router.insert("GET", "/mix/:of/*things", show_mix);
 
         let mut req = Request::from_path("/");
         assert_eq!(router.action_for(&mut req), None);
@@ -150,6 +163,15 @@ mod tests {
         );
 
         let mut req = Request::from_path("/slashes/dont/match");
-        assert_eq!(router.action_for(&mut req), None);
+        assert_eq!(
+            router.action_for(&mut req).unwrap()(req).to_string(),
+            "Parts: /slashes/dont/match".to_string()
+        );
+
+        let mut req = Request::from_path("/mix/o/magic/i/see");
+        assert_eq!(
+            router.action_for(&mut req).unwrap()(req).to_string(),
+            "Mix: o magic/i/see".to_string()
+        );
     }
 }
