@@ -39,7 +39,6 @@ macro_rules! vial_bundled_assets {
 }",
         )?;
         println!("cargo:rustc-cfg=bundle_assets");
-        println!("cargo:rustc-cfg=release");
     }
     println!("cargo:rustc-env=ASSET_DIR={}", dir);
     Ok(())

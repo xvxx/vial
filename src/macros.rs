@@ -13,12 +13,19 @@ macro_rules! run {
         let mut router = ::vial::Router::new();
         $($module::vial_add_to_router(&mut router);)+
         #[cfg(bundle_assets)]
-        unsafe {
-            vial::BUNDLED_ASSETS = Some(vial_bundled_assets!());
-        }
+        vial::include_assets!();
         vial::asset_dir!(@option option_env!("ASSET_DIR"));
         vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
     }};
+}
+
+#[macro_export]
+macro_rules! include_assets {
+    () => {
+        unsafe {
+            vial::BUNDLED_ASSETS = Some(vial_bundled_assets!());
+        }
+    };
 }
 
 #[macro_export]

@@ -41,26 +41,26 @@ pub fn normalize_path(path: &str) -> Option<String> {
     }
 }
 
+/// Have assets been bundled into the binary?
+fn is_bundled() -> bool {
+    unsafe { crate::BUNDLED_ASSETS.is_some() }
+}
+
 /// Does the asset exist on disk? `path` is the relative path,
 /// ex: asset::exists("index.html") checks for "./static/index.html"
 /// (or in the embedded fs, in release mode).
 pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
-        println!("EXISTS? {}", path);
-        #[cfg(not(bundle_assets))]
-        {
+        if is_bundled() {
+            return unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().contains_key(&path) };
+        } else {
+            println!("DING");
             if let Ok(mut file) = fs::File::open(path) {
                 if let Ok(meta) = file.metadata() {
                     return !meta.is_dir();
                 }
             }
         }
-
-        println!("DOES IT? {:?}", unsafe {
-            crate::BUNDLED_ASSETS.as_ref().unwrap().contains_key(&path)
-        });
-        #[cfg(bundle_assets)]
-        return unsafe { crate::BUNDLED_ASSETS.contains_key(path) };
     }
     false
 }
@@ -82,8 +82,11 @@ pub fn to_string(path: &str) -> Result<String> {
 /// Read a file to [u8].
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = normalize_path(path)?;
-    #[cfg(not(bundle_assets))]
-    {
+    if is_bundled() {
+        if let Some(v) = unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().get(&path) } {
+            return Some(Cow::from(*v));
+        }
+    } else {
         let mut buf = vec![];
         if let Ok(mut file) = fs::File::open(path) {
             if let Ok(meta) = file.metadata() {
@@ -91,12 +94,6 @@ pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
                     return Some(Cow::from(buf));
                 }
             }
-        }
-    }
-    #[cfg(bundle_assets)]
-    {
-        if let Some(v) = unsafe { vial::BUNDLED_ASSETS.get(path) } {
-            return Cow::from(v);
         }
     }
     None
