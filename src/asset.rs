@@ -52,6 +52,7 @@ fn is_bundled() -> bool {
 pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
         if is_bundled() {
+            println!("path? {}", path);
             return unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().contains_key(&path) };
         } else {
             println!("DING");

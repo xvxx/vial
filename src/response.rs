@@ -85,6 +85,7 @@ impl Response {
 
     pub fn with_asset(mut self, path: &str) -> Response {
         if let Some(path) = asset::normalize_path(path) {
+            panic!("TODO: change this");
             self.with_file(&path)
         } else {
             self.with_code(404)
