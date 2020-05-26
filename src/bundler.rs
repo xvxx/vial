@@ -12,30 +12,30 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     #[cfg(not(debug_assertions))]
     {
         let out_dir = env::var("OUT_DIR").unwrap();
+        // symlink assets dir into out dir
+        std::os::unix::fs::symlink(
+            std::env::current_dir()?.join(dir),
+            Path::new(&out_dir).join(dir),
+        )?;
         let mut dest = File::create(Path::new(&out_dir).join("bundle.rs"))?;
 
         dest.write_all(
-            b"
-#[macro_export]
-macro_rules! vial_bundled_assets {
-    () => {{
-        let mut map = std::collections::HashMap::new();
+            b"{
+    let mut map = std::collections::HashMap::new();
 ",
         )?;
         for path in asset::iter(dir) {
             dest.write_all(
                 format!(
-                    "        map.insert({:?}.into(), &include_bytes!(\"../{}\")[..]);\n",
+                    "    map.insert({:?}.into(), &include_bytes!(\"{}\")[..]);\n",
                     path,
-                    path.as_path().to_string_lossy()
+                    path.as_path().to_string_lossy().trim_start_matches("./")
                 )
                 .as_bytes(),
             );
         }
         dest.write_all(
-            b"
-            map
-    }};
+            b"    map
 }",
         )?;
         println!("cargo:rustc-cfg=bundle_assets");
