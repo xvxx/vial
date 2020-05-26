@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    collections::hash_map::DefaultHasher,
+    collections::{hash_map::DefaultHasher, HashMap},
     fs,
     hash::{Hash, Hasher},
     io::{self, BufReader, Read},
@@ -32,7 +32,7 @@ fn last_modified(path: &str) -> Option<String> {
 }
 
 pub fn normalize_path(path: &str) -> Option<String> {
-    if let Some(root) = unsafe { crate::ASSET_DIR } {
+    if let Some(root) = asset_dir() {
         Some(format!(
             "{}/{}",
             root,
@@ -48,7 +48,15 @@ pub fn normalize_path(path: &str) -> Option<String> {
 
 /// Have assets been bundled into the binary?
 pub fn is_bundled() -> bool {
-    unsafe { crate::BUNDLED_ASSETS.is_some() }
+    bundled_assets().is_some()
+}
+
+fn bundled_assets() -> Option<&'static HashMap<String, &'static [u8]>> {
+    unsafe { crate::BUNDLED_ASSETS.as_ref() }
+}
+
+fn asset_dir() -> Option<&'static str> {
+    unsafe { crate::ASSET_DIR }
 }
 
 /// Does the asset exist on disk? `path` is the relative path,
@@ -57,7 +65,7 @@ pub fn is_bundled() -> bool {
 pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
         if is_bundled() {
-            return unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().contains_key(&path) };
+            return bundled_assets().unwrap().contains_key(&path);
         } else {
             if let Ok(mut file) = fs::File::open(path) {
                 if let Ok(meta) = file.metadata() {
@@ -86,7 +94,7 @@ pub fn to_string(path: &str) -> Result<String> {
 pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
     let path = normalize_path(path)?;
     if is_bundled() {
-        if let Some(v) = unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().get(&path) } {
+        if let Some(v) = bundled_assets().unwrap().get(&path) {
             return Some(Box::new(*v));
         }
     } else {
@@ -105,7 +113,7 @@ pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = normalize_path(path)?;
     if is_bundled() {
-        if let Some(v) = unsafe { crate::BUNDLED_ASSETS.as_ref().unwrap().get(&path) } {
+        if let Some(v) = bundled_assets().unwrap().get(&path) {
             return Some(Cow::from(*v));
         }
     } else {
