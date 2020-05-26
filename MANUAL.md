@@ -44,7 +44,7 @@ database to store information.
 - `Response::from_asset()`
 - `Response::from_code()`
 
-## Static Files
+## Assets
 
 - `static_dir!`
 - `asset::exists()`
@@ -68,4 +68,3 @@ database to store information.
 ## Horrorshow Templates
 
 ## Tera Templates
-
