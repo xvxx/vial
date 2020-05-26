@@ -159,21 +159,12 @@ _**Please note:** The list above is a work-in-progress._
 
 ## ~ T0D0 ~
 
-- [x] GET requests
-- [x] POST requests
-- [x] route/:recognizer
-- [x] static file
-- [x] static file etag
-- [x] parse headers()
-- [ ] test headers()
-- [ ] test GET param()
-- [ ] test POST param()
-- [ ] test static file
-- [ ] test etag
-- [ ] document everything
+- [ ] tests
+- [ ] document each feature in manual
 - [ ] don't copy any of raw HTTP request
 - [ ] `before_filter`
-- [ ] all the bonus features
+- [ ] cookies
+- [ ] sessions
 
 ### big goals
 
@@ -181,8 +172,8 @@ _**Please note:** The list above is a work-in-progress._
     - [x] :segments
 - [ ] Handling POST requests
     - [ ] JSON body
-- [ ] Serving static files (css, js)
-    - [ ] bundle in release mode
+- [x] Serving static files (css, js)
+    - [x] bundle in release mode
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
