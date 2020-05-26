@@ -27,7 +27,7 @@ fn last_modified(path: &str) -> Option<String> {
 }
 
 pub fn normalize_path(path: &str) -> Option<String> {
-    if let Some(root) = unsafe { crate::STATIC_DIR } {
+    if let Some(root) = unsafe { crate::ASSET_DIR } {
         Some(format!(
             "{}/{}",
             root,

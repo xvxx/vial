@@ -27,5 +27,6 @@ pub use {
 };
 pub type Result<T> = std::result::Result<T, std::io::Error>;
 
-/// Directory where static assets are stored, if any.
-pub static mut STATIC_DIR: Option<&'static str> = None;
+/// Directory where assets are stored, if any.
+pub static mut ASSET_DIR: Option<&'static str> = None;
+

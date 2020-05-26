@@ -17,10 +17,13 @@ macro_rules! run {
 }
 
 #[macro_export]
-macro_rules! static_dir {
+macro_rules! asset_dir {
     ($dir:expr) => {
         unsafe {
-            ::vial::STATIC_DIR = Some($dir);
+            ::vial::ASSET_DIR = Some($dir);
+        }
+    };
+}
         }
     };
 }
