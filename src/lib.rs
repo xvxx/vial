@@ -33,5 +33,5 @@ pub static mut ASSET_DIR: Option<&'static str> = None;
 /// Assets bundled into the binary in release mode.
 pub static mut BUNDLED_ASSETS: Option<std::collections::HashMap<String, &'static [u8]>> = None;
 
-/// Date this program was compiled.
+/// Date and time this program was compiled.
 pub const BUILD_DATE: &str = env!("BUILD_DATE");
