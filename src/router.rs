@@ -1,5 +1,6 @@
 use {
     crate::{asset, Method, Request, Response},
+    percent_encoding::percent_decode,
     std::{
         collections::HashMap,
         path::{Path, PathBuf},
@@ -24,24 +25,33 @@ impl Router {
 
             'outer: for (pattern, action) in routes {
                 req.args.clear();
-                if pattern.len() == req_parts.len() {
-                    for (i, req_part) in req_parts.iter().enumerate() {
-                        if pattern[i].starts_with(':') && !req_part.is_empty() {
-                            req.args.insert(
-                                pattern[i].trim_start_matches(':').to_string(),
-                                percent_encoding::percent_decode(req_part.as_bytes())
-                                    .decode_utf8_lossy()
-                                    .to_string(),
-                            );
-                            continue;
-                        } else if *req_part == pattern[i] {
-                            continue;
-                        } else {
-                            continue 'outer;
-                        }
+                for (i, req_part) in req_parts.iter().enumerate() {
+                    if i >= pattern.len() {
+                        continue 'outer;
                     }
-                    return Some(action);
+                    if pattern[i].starts_with(':') && !req_part.is_empty() {
+                        req.args.insert(
+                            pattern[i].trim_start_matches(':').to_string(),
+                            percent_decode(req_part.as_bytes())
+                                .decode_utf8_lossy()
+                                .to_string(),
+                        );
+                        continue;
+                    } else if pattern[i].starts_with('*') && !req_part.is_empty() {
+                        req.args.insert(
+                            pattern[i].trim_start_matches('*').to_string(),
+                            percent_decode(req_parts[i..].join("/").as_bytes())
+                                .decode_utf8_lossy()
+                                .to_string(),
+                        );
+                        return Some(action);
+                    } else if *req_part == pattern[i] {
+                        continue;
+                    } else {
+                        continue 'outer;
+                    }
                 }
+                return Some(action);
             }
         }
         None
@@ -86,11 +96,11 @@ mod tests {
             format!("Raw: {}", r.arg("page").unwrap_or("?")).into()
         }
         fn show_parts(r: Request) -> Response {
-            format!("Parts: {}", r.arg("page").unwrap_or("?")).into()
+            format!("Parts: {}", r.arg("parts").unwrap_or("?")).into()
         }
         fn show_mix(r: Request) -> Response {
             format!(
-                "Mix: {:?} {:?}",
+                "Mix: {} {}",
                 r.arg("of").unwrap_or("?"),
                 r.arg("things").unwrap_or("?")
             )
@@ -108,8 +118,8 @@ mod tests {
         router.insert("GET", "/:page", show);
         router.insert("GET", "/info", info);
         router.insert("GET", "/:page.md", show_raw);
-        router.insert("GET", "/*parts", show_parts);
         router.insert("GET", "/mix/:of/*things", show_mix);
+        router.insert("GET", "/*parts", show_parts);
 
         let mut req = Request::from_path("/");
         assert_eq!(router.action_for(&mut req), None);
@@ -165,7 +175,7 @@ mod tests {
         let mut req = Request::from_path("/slashes/dont/match");
         assert_eq!(
             router.action_for(&mut req).unwrap()(req).to_string(),
-            "Parts: /slashes/dont/match".to_string()
+            "Parts: slashes/dont/match".to_string()
         );
 
         let mut req = Request::from_path("/mix/o/magic/i/see");
