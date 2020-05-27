@@ -128,6 +128,11 @@ impl Response {
             .with_body(&format!("<h1>500 Internal Error</h1><pre>{}", err))
     }
 
+    pub fn with_header(mut self, key: &str, value: &str) -> Response {
+        self.headers.insert(key.to_string(), value.to_string());
+        self
+    }
+
     pub fn len(&self) -> usize {
         if self.is_reader {
             0
@@ -136,6 +141,10 @@ impl Response {
         } else {
             self.buf.len()
         }
+    }
+
+    pub fn redirect_to<U: AsRef<str>>(url: U) -> Response {
+        Response::from(302).with_header("location", url.as_ref())
     }
 
     pub fn write<W: io::Write>(mut self, mut w: W) -> Result<()> {

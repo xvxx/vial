@@ -57,7 +57,7 @@ macro_rules! bundle_assets {
 }
 
 #[macro_export]
-macro_rules! vial {
+macro_rules! routes {
     ( $($method:ident $path:expr => $body:expr;)* ) => {
         fn vial_check_method() {
             #![allow(non_snake_case)]

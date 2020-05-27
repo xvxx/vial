@@ -4,7 +4,7 @@ use vial;
 mod wiki {
     use vial::prelude::*;
 
-    vial! {
+    routes! {
         GET "/" => index;
         GET "/about" => about;
 

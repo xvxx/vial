@@ -1,6 +1,6 @@
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/hi/world" => |_| "Hello, world!";
     GET "/hey/:place" => |req|
         format!("Heyo, {}!", req.arg("place").unwrap_or("?"));

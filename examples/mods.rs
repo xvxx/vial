@@ -4,8 +4,7 @@ mod blog;
 mod wiki;
 
 mod index {
-    use vial::vial;
-    vial! {
+    vial::routes! {
         GET "/" => |_| "<h1>This is the index.</h1>";
     }
 }

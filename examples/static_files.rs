@@ -1,6 +1,4 @@
-use vial::prelude::*;
-
-vial! {
+vial::routes! {
     GET "/" => |_| "<img src='examples/doctor.png'/>";
 }
 

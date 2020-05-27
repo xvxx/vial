@@ -26,9 +26,7 @@ good time, but you're gonna have to do some work.
 As is tradition:
 
 ```rust
-use vial::vial;
-
-vial! {
+vial::routes! {
     GET "/" => |_| "Hello, world!";
 }
 
@@ -42,7 +40,7 @@ For a bit more sanity, you can route to functions directly:
 ```rust
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/echo" => echo;
     POST "/echo" => post;
 }
@@ -76,8 +74,8 @@ mod wiki;
 mod blog;
 
 mod index {
-    use vial::{Response, vial};
-    vial! {
+    use vial::prelude::*;
+    routes! {
         GET "/" => |_| Response::from_file("index.html")
     }
 }
@@ -95,7 +93,7 @@ But hey, who wants to putz around with HTML when you can be writing
 ```rust
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/" => |_| html! {
         p {
             : "You're looking for this: ";

@@ -1,6 +1,6 @@
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/" => |_| html! {
         p {
             : "You're looking for this: ";

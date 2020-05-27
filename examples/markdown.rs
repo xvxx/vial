@@ -1,6 +1,6 @@
-use vial::{vial, Response};
+use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/" => |_| Response::from_file("README.md").as_markdown();
 }
 

@@ -1,6 +1,6 @@
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/echo" => echo;
     POST "/echo" => post;
 }

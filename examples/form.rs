@@ -1,6 +1,4 @@
-use vial::vial;
-
-vial! {
+vial::routes! {
     GET "/" => |_| {
         r#"
 <h3>vial form</h3>

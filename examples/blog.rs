@@ -1,7 +1,7 @@
 #![allow(unused)]
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/blog" => index;
     GET "/blog/about" => about;
 

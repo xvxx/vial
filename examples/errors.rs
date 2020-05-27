@@ -1,7 +1,7 @@
 use std::io;
 use vial::prelude::*;
 
-vial! {
+routes! {
     GET "/" => boom;
     GET "/err" => action_that_errs;
 }
