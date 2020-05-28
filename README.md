@@ -155,7 +155,7 @@ activate for enhanced productivity:
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
-- [ ] **htxl**: Barebones, no-dependency template library, via [htxl].
+- [ ] **hatter**: Barebones, no-dependency template library, via [hatter].
 - [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
       proxy.
 
@@ -181,4 +181,5 @@ _**Please note:** The list above is a work-in-progress._
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
-[htxl]: https://github.com/xvxx/htxl
+[hatter]: https://github.com/xvxx/hatter
+
