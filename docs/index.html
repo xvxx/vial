@@ -14,10 +14,31 @@
           Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
       }
 
+      /* big logo */
+      h1:first-of-type {
+        font-size: 80px;
+        margin-bottom: 0;
+        margin-top: -20px;
+        padding-top: 0;
+      }
+      h4:first-of-type {
+        margin: 0;
+        font-size: 20px;
+        color: #aaa;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        font-weight: normal;
+        font-style: italic;
+      }
+      img:first-of-type {
+        margin-top: -25px;
+        margin-right: 20px;
+      }
+
       /* structure */
       nav {
         float: left;
-        padding-top: 40px;
+        padding-top: 0;
       }
       nav ul {
         list-style-type: none;
@@ -29,40 +50,23 @@
         margin: 0 auto;
         max-width: 800px;
       }
-      @media (max-width: 1365px) {
+      @media (max-width: 1500px) {
         main {
+          padding-left: 75px;
           float: left;
+        }
+        img:first-of-type {
+          margin-top: -45px;
         }
       }
 
-      @media (max-width: 1070px) {
+      @media (max-width: 1180px) {
         nav {
           display: none;
         }
         main {
-          /* position: relative; */
           float: left;
-          /* padding: 0; */
         }
-      }
-
-      /* big logo */
-      h1:first-of-type {
-        font-size: 150px;
-        margin-bottom: 0;
-        margin-top: 0;
-      }
-      h4:first-of-type {
-        margin: 0;
-        font-size: 45px;
-        color: #aaa;
-        margin-top: -30px;
-        margin-bottom: 50px;
-        font-weight: normal;
-      }
-      img:first-of-type {
-        margin-top: -35px;
-        margin-right: 20px;
       }
 
       /* regular stuff */
@@ -345,19 +349,19 @@
 <p>You can play with it in real time by running this command in your local copy of this repository:</p>
 <pre><code>$ cargo run --example manual</code></pre>
 <p>Feel free to open it in your favorite text editor and poke around!</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; hello_world;</span>
-<span id="cb2-5"><a href="#cb2-5"></a>    POST <span class="st">&quot;/&quot;</span> =&gt; redirect_to_greeting;</span>
-<span id="cb2-6"><a href="#cb2-6"></a>    GET <span class="st">&quot;/:name&quot;</span> =&gt; hello_name;</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    GET <span class="st">&quot;/*path&quot;</span> =&gt; |req|</span>
-<span id="cb2-8"><a href="#cb2-8"></a>      <span class="pp">Response::</span>from(<span class="dv">404</span>).with_body(</span>
-<span id="cb2-9"><a href="#cb2-9"></a>        <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;404 Not Found: {}&lt;/h1&gt;&quot;</span>,</span>
-<span id="cb2-10"><a href="#cb2-10"></a>          req.arg(<span class="st">&quot;path&quot;</span>).unwrap_or(<span class="st">&quot;&quot;</span>)));</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    GET <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> hello_world<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    POST <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> redirect_to_greeting<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>    GET <span class="st">&quot;/:name&quot;</span> <span class="op">=&gt;</span> hello_name<span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>    GET <span class="st">&quot;/*path&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>req<span class="op">|</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>      <span class="pp">Response::</span>from(<span class="dv">404</span>)<span class="op">.</span>with_body(</span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;404 Not Found: {}&lt;/h1&gt;&quot;</span><span class="op">,</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>          req<span class="op">.</span>arg(<span class="st">&quot;path&quot;</span>)<span class="op">.</span>unwrap_or(<span class="st">&quot;&quot;</span>)))<span class="op">;</span></span>
 <span id="cb2-11"><a href="#cb2-11"></a><span class="op">}</span></span>
 <span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
 <span id="cb2-14"><a href="#cb2-14"></a>    <span class="st">&quot;&lt;h1&gt;Hello, world!&lt;/h1&gt;</span></span>
 <span id="cb2-15"><a href="#cb2-15"></a><span class="st">    &lt;p&gt;&lt;strong&gt;What&#39;s your name?&lt;/strong&gt;&lt;/p&gt;</span></span>
 <span id="cb2-16"><a href="#cb2-16"></a><span class="st">    &lt;form method=&#39;POST&#39; action=&#39;/&#39;&gt;</span></span>
@@ -366,17 +370,17 @@
 <span id="cb2-19"><a href="#cb2-19"></a><span class="st">    &lt;/form&gt;&quot;</span></span>
 <span id="cb2-20"><a href="#cb2-20"></a><span class="op">}</span></span>
 <span id="cb2-21"><a href="#cb2-21"></a></span>
-<span id="cb2-22"><a href="#cb2-22"></a><span class="kw">fn</span> redirect_to_greeting(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
-<span id="cb2-23"><a href="#cb2-23"></a>    <span class="kw">let</span> name = req.form(<span class="st">&quot;name&quot;</span>)?;</span>
-<span id="cb2-24"><a href="#cb2-24"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span>, name)))</span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="kw">fn</span> redirect_to_greeting(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="kw">impl</span> Responder<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>    <span class="kw">let</span> name <span class="op">=</span> req<span class="op">.</span>form(<span class="st">&quot;name&quot;</span>)<span class="op">?;</span></span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span><span class="op">,</span> name)))</span>
 <span id="cb2-25"><a href="#cb2-25"></a><span class="op">}</span></span>
 <span id="cb2-26"><a href="#cb2-26"></a></span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>    <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span>, req.arg(<span class="st">&quot;name&quot;</span>).unwrap())</span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>    <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span><span class="op">,</span> req<span class="op">.</span>arg(<span class="st">&quot;name&quot;</span>)<span class="op">.</span>unwrap())</span>
 <span id="cb2-29"><a href="#cb2-29"></a><span class="op">}</span></span>
 <span id="cb2-30"><a href="#cb2-30"></a></span>
 <span id="cb2-31"><a href="#cb2-31"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a>    <span class="pp">run!</span>().unwrap();</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="pp">run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
 <span id="cb2-33"><a href="#cb2-33"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="getting-started">Getting Started</h2>
 <ul>

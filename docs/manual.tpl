@@ -14,10 +14,31 @@
           Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
       }
 
+      /* big logo */
+      h1:first-of-type {
+        font-size: 80px;
+        margin-bottom: 0;
+        margin-top: -20px;
+        padding-top: 0;
+      }
+      h4:first-of-type {
+        margin: 0;
+        font-size: 20px;
+        color: #aaa;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        font-weight: normal;
+        font-style: italic;
+      }
+      img:first-of-type {
+        margin-top: -25px;
+        margin-right: 20px;
+      }
+
       /* structure */
       nav {
         float: left;
-        padding-top: 40px;
+        padding-top: 0;
       }
       nav ul {
         list-style-type: none;
@@ -29,40 +50,23 @@
         margin: 0 auto;
         max-width: 800px;
       }
-      @media (max-width: 1365px) {
+      @media (max-width: 1500px) {
         main {
+          padding-left: 75px;
           float: left;
+        }
+        img:first-of-type {
+          margin-top: -45px;
         }
       }
 
-      @media (max-width: 1070px) {
+      @media (max-width: 1180px) {
         nav {
           display: none;
         }
         main {
-          /* position: relative; */
           float: left;
-          /* padding: 0; */
         }
-      }
-
-      /* big logo */
-      h1:first-of-type {
-        font-size: 150px;
-        margin-bottom: 0;
-        margin-top: 0;
-      }
-      h4:first-of-type {
-        margin: 0;
-        font-size: 45px;
-        color: #aaa;
-        margin-top: -30px;
-        margin-bottom: 50px;
-        font-weight: normal;
-      }
-      img:first-of-type {
-        margin-top: -35px;
-        margin-right: 20px;
       }
 
       /* regular stuff */
