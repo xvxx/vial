@@ -61,9 +61,18 @@ impl Server {
     fn write_response(&self, mut stream: TcpStream, mut req: Request) -> Result<()> {
         let method = req.method().to_string();
         let path = req.path().to_string();
+        let mut response = self.build_response(req);
 
-        // route request to either a static file or code
-        let mut response = if asset::exists(req.path()) {
+        println!("{} {} {}", method, response.code, path);
+        if response.code == 500 {
+            eprintln!("{}", response.body);
+        }
+
+        response.write(stream)
+    }
+
+    fn build_response(&self, mut req: Request) -> Response {
+        if asset::exists(req.path()) {
             if let Some(req_etag) = req.header("If-None-Match") {
                 if req_etag == asset::etag(req.path()).as_ref() {
                     Response::from(304)
@@ -77,13 +86,6 @@ impl Server {
             action(req)
         } else {
             Response::from(404)
-        };
-
-        println!("{} {} {}", method, response.code, path);
-        if response.code == 500 {
-            eprintln!("{}", response.body);
         }
-
-        response.write(stream)
     }
 }
