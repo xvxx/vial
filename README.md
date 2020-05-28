@@ -12,14 +12,20 @@ It only includes a few basics:
 
 Everything else... well, that's up to you.
 
-The goal is a small, simple, as-few-as-possible-dependencies web
-library you can use to test out an idea quickly or get a static site
-_rolling_. Single file, server side apps? You bet! Fast compilation?
-Yes please! _À la carte_ dependencies? Now you're talkin'!
+The goal is an as-few-as-possible-dependencies web library you can
+use to test out an idea quickly or get a static site _rolling_. Single
+file, server side apps? You bet! Fast compilation? Yes please! _À la
+carte_ dependencies? Now you're really talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
-have to bring your own beverage. In other words, you're gonna have a
-good time, but you're gonna have to do some work.
+have to bring your own beverage.
+
+To get started, just add `vial` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+vial = "*"
+```
 
 ## ~ hello world ~
 
@@ -167,11 +173,11 @@ _**Please note:** The list above is a work-in-progress._
 ### big goals
 
 - [x] Parsing and routing HTTP requests
-    - [x] :segments
+  - [x] :segments
 - [ ] Handling POST requests
-    - [ ] JSON body
+  - [ ] JSON body
 - [x] Serving static files (css, js)
-    - [x] bundle in release mode
+  - [x] bundle in release mode
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
