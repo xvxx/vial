@@ -50,6 +50,13 @@
         margin: 0 auto;
         max-width: 800px;
       }
+
+      @media (min-height: 1150px) {
+        nav {
+          position: fixed;
+        }
+      }
+
       @media (max-width: 1500px) {
         main {
           padding-left: 75px;
