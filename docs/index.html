@@ -17,12 +17,13 @@
         text-align: center;
       }
       img:first-of-type {
-        margin-right: 10px;
+        margin-right: 20px;
       }
       h1 {
         font-size: 2em;
       }
       h2 {
+        border-bottom: 1px solid #ddd;
         font-size: 1.75em;
       }
 
