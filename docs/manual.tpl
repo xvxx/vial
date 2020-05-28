@@ -177,6 +177,10 @@
       }
       pre.sourceCode {
         margin: 0;
+        background-color: #111;
+        border-radius: 15px;
+        padding: 20px;
+        color: #ccc;
       }
       @media screen {
         div.sourceCode {
@@ -223,8 +227,6 @@
         border-left: 1px solid #aaaaaa;
         padding-left: 4px;
       }
-      div.sourceCode {
-      }
       @media screen {
         pre > code.sourceCode > span > a:first-child::before {
           text-decoration: underline;
@@ -255,7 +257,7 @@
         color: #4070a0;
       } /* Char */
       code span.cn {
-        color: #880000;
+        color: red;
       } /* Constant */
       code span.co {
         color: #60a0b0;
@@ -271,7 +273,7 @@
         font-style: italic;
       } /* Documentation */
       code span.dt {
-        color: #902000;
+        color: red;
       } /* DataType */
       code span.dv {
         color: #40a070;
@@ -296,7 +298,7 @@
         font-style: italic;
       } /* Information */
       code span.kw {
-        color: #007020;
+        color: #7100f5;
         font-weight: bold;
       } /* Keyword */
       code span.op {
@@ -306,7 +308,7 @@
         color: #007020;
       } /* Other */
       code span.pp {
-        color: #bc7a00;
+        color: #ccc;
       } /* Preprocessor */
       code span.sc {
         color: #4070a0;
@@ -315,7 +317,7 @@
         color: #bb6688;
       } /* SpecialString */
       code span.st {
-        color: #4070a0;
+        color: magenta;
       } /* String */
       code span.va {
         color: #19177c;
