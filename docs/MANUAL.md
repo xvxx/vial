@@ -1,6 +1,6 @@
 # ~ vial: the manual ~
 
-<img src="../img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
+<img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
 
 **vial** is a micro web "framework" for making micro web "sites". It
 only includes a handful of basic features, hopeful that you'll add
