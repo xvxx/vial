@@ -1,8 +1,8 @@
 <img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
 
-#                           Vial                                     #
+# Vial
 
-####              ~ a micro micro-framework ~                     ####
+#### ~ a micro micro-framework ~
 
 **vial** is a micro web "framework" for making micro web "sites". It
 only includes a handful of basic features, hopeful that you'll add
@@ -82,6 +82,8 @@ The order in which routes are written matters - routes written first
 will be checked for matches first, meaning you can declare many routes
 that point to `"/"`, but only the first one declared will ever match.
 
+### HTTP Methods
+
 `HTTP_METHOD` can be one of:
 
 - `GET`
@@ -91,11 +93,7 @@ that point to `"/"`, but only the first one declared will ever match.
 - `DELETE`
 - `PATCH`
 
-`ACTION` can be either of:
-
-1. A closure in the form of `|req| { code }` that returns an
-   `impl Responder`
-2. The name of a function with the signature of `fn(Request) -> impl Responder`.
+### Route Patterns
 
 `ROUTE_PATTERN` can be an exact match, such as `"/user"` or
 `"/v2/search.php3"`, or it can include a named parameter:
@@ -108,15 +106,37 @@ that point to `"/"`, but only the first one declared will ever match.
 In the three examples above, calling `req.arg("name")` in an `ACTION`
 will deliver `Some(&str)`.
 
+### Actions
+
+`ACTION` can be either of:
+
+1. A closure in the form of `|req| { code }` that returns an
+   `impl Responder`
+2. The name of a function with the signature of `fn(Request) -> impl Responder`.
+
 ## Requests
 
 When a route matches and an `ACTION` is called, it's passed a
 [Request] object.
 
+### URL Parameters
+
 - `arg(&str) -> Option<&str>`
+
+### Query Parameters
+
 - `query(&str) -> Option<&str>`
+
+### POST Form Data
+
 - `form(&str) -> Option<&str>`
+
+### Request Headers
+
 - `header(&str) -> Option<&str>`
+
+### Other Info
+
 - `method() -> &str`
 - `path() -> &str`
 

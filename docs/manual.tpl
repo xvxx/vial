@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>~ vial: a micro micro-framework ~</title>
+    <meta charset="utf-8" />
+    <title>vial: a micro micro-framework</title>
     <style type="text/css">
       body {
         margin: 40px auto;
-        max-width: 950px;
         line-height: 1.6;
         font-size: 20px;
         color: #444;
@@ -13,25 +13,68 @@
         font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica,
           Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
       }
-      h1:first-of-type {
-        text-align: center;
 
-        text-align: left;
-        margin-bottom: 0;
+      /* structure */
+      nav {
+        position: fixed;
+        float: left;
+      }
+      main {
+        margin: 0 auto;
+        max-width: 800px;
+      }
+
+      @media (max-width: 1365px) {
+        main {
+          position: fixed;
+          float: left;
+          padding-left: 265px;
+        }
+      }
+
+      @media (max-width: 1070px) {
+        nav {
+          display: none;
+        }
+        main {
+          position: relative;
+          float: none;
+          padding: 0;
+        }
+      }
+
+      /* big logo */
+      h1:first-of-type {
         font-size: 150px;
-        margin-top: 40px;
+        margin-bottom: 0;
+        margin-top: 0;
       }
       h4:first-of-type {
         margin: 0;
-        font-size: 50px;
+        font-size: 45px;
         color: #aaa;
         margin-top: -30px;
         margin-bottom: 50px;
         font-weight: normal;
       }
       img:first-of-type {
-        margin-top: -20px;
+        margin-top: -35px;
         margin-right: 20px;
+      }
+
+      /* regular stuff */
+      a {
+        color: black;
+        text-decoration: none;
+        border-bottom: 1px solid black;
+      }
+      a:hover {
+        border-bottom: none;
+        color: magenta;
+      }
+      a:visited {
+        color: #666;
+        text-decoration: none;
       }
       h1 {
         font-size: 2em;
@@ -40,18 +83,16 @@
         border-bottom: 1px solid #ddd;
         font-size: 1.75em;
       }
-
       h1,
       h2,
       h3 {
         line-height: 1.2;
       }
-
       p {
         text-align: justify;
       }
 
-      /** pandoc styles below **/
+      /* pandoc styles */
       code {
         white-space: pre-wrap;
       }
@@ -244,7 +285,7 @@
     </style>
   </head>
   <body>
-    <nav> {toc} </nav>
-    {body}
+    <nav>{toc}</nav>
+    <main>{body}</main>
   </body>
 </html>

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>~ vial: a micro micro-framework ~</title>
+    <meta charset="utf-8" />
+    <title>vial: a micro micro-framework</title>
     <style type="text/css">
       body {
         margin: 40px auto;
-        max-width: 950px;
         line-height: 1.6;
         font-size: 20px;
         color: #444;
@@ -13,25 +13,68 @@
         font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica,
           Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
       }
-      h1:first-of-type {
-        text-align: center;
 
-        text-align: left;
-        margin-bottom: 0;
+      /* structure */
+      nav {
+        position: fixed;
+        float: left;
+      }
+      main {
+        margin: 0 auto;
+        max-width: 800px;
+      }
+
+      @media (max-width: 1365px) {
+        main {
+          position: fixed;
+          float: left;
+          padding-left: 265px;
+        }
+      }
+
+      @media (max-width: 1070px) {
+        nav {
+          display: none;
+        }
+        main {
+          position: relative;
+          float: none;
+          padding: 0;
+        }
+      }
+
+      /* big logo */
+      h1:first-of-type {
         font-size: 150px;
-        margin-top: 40px;
+        margin-bottom: 0;
+        margin-top: 0;
       }
       h4:first-of-type {
         margin: 0;
-        font-size: 50px;
+        font-size: 45px;
         color: #aaa;
         margin-top: -30px;
         margin-bottom: 50px;
         font-weight: normal;
       }
       img:first-of-type {
-        margin-top: -20px;
+        margin-top: -35px;
         margin-right: 20px;
+      }
+
+      /* regular stuff */
+      a {
+        color: black;
+        text-decoration: none;
+        border-bottom: 1px solid black;
+      }
+      a:hover {
+        border-bottom: none;
+        color: magenta;
+      }
+      a:visited {
+        color: #666;
+        text-decoration: none;
       }
       h1 {
         font-size: 2em;
@@ -40,18 +83,16 @@
         border-bottom: 1px solid #ddd;
         font-size: 1.75em;
       }
-
       h1,
       h2,
       h3 {
         line-height: 1.2;
       }
-
       p {
         text-align: justify;
       }
 
-      /** pandoc styles below **/
+      /* pandoc styles */
       code {
         white-space: pre-wrap;
       }
@@ -244,7 +285,38 @@
     </style>
   </head>
   <body>
-    <p><img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" /></p>
+    <nav><ul>
+<li><a href="#hello,-world">Hello, World</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#routes">Routes</a>
+<ul>
+<li><a href="#http-methods">HTTP Methods</a></li>
+<li><a href="#route-patterns">Route Patterns</a></li>
+<li><a href="#actions">Actions</a></li>
+</ul></li>
+<li><a href="#requests">Requests</a>
+<ul>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#query-parameters">Query Parameters</a></li>
+<li><a href="#post-form-data">POST Form Data</a></li>
+<li><a href="#request-headers">Request Headers</a></li>
+<li><a href="#other-info">Other Info</a></li>
+</ul></li>
+<li><a href="#responses">Responses</a></li>
+<li><a href="#assets">Assets</a></li>
+<li><a href="#bundling-assets">Bundling Assets</a></li>
+<li><a href="#cookies">Cookies</a></li>
+<li><a href="#sessions">Sessions</a></li>
+<li><a href="#json">JSON</a></li>
+<li><a href="#state">State</a></li>
+<li><a href="#database">Database</a></li>
+<li><a href="#markdown">Markdown</a></li>
+<li><a href="#hatter-templates">Hatter Templates</a></li>
+<li><a href="#horrorshow-templates">Horrorshow Templates</a></li>
+<li><a href="#tera-templates">Tera Templates</a></li>
+</ul>
+</nav>
+    <main><p><img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" /></p>
 <h1 id="vial">Vial</h1>
 <h4 id="a-micro-micro-framework">~ a micro micro-framework ~</h4>
 <p><strong>vial</strong> is a micro web “framework” for making micro web “sites”. It only includes a handful of basic features, hopeful that you’ll add whatever other features you need on your own. Kind of like ice cream toppings at one of those ice cream places.</p>
@@ -255,19 +327,19 @@
 <p>You can play with it in real time by running this command in your local copy of this repository:</p>
 <pre><code>$ cargo run --example manual</code></pre>
 <p>Feel free to open it in your favorite text editor and poke around!</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>    GET <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> hello_world<span class="op">;</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>    POST <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> redirect_to_greeting<span class="op">;</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>    GET <span class="st">&quot;/:name&quot;</span> <span class="op">=&gt;</span> hello_name<span class="op">;</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>    GET <span class="st">&quot;/*path&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>req<span class="op">|</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>      <span class="pp">Response::</span>from(<span class="dv">404</span>)<span class="op">.</span>with_body(</span>
-<span id="cb2-9"><a href="#cb2-9"></a>        <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;404 Not Found: {}&lt;/h1&gt;&quot;</span><span class="op">,</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>          req<span class="op">.</span>arg(<span class="st">&quot;path&quot;</span>)<span class="op">.</span>unwrap_or(<span class="st">&quot;&quot;</span>)))<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; hello_world;</span>
+<span id="cb2-5"><a href="#cb2-5"></a>    POST <span class="st">&quot;/&quot;</span> =&gt; redirect_to_greeting;</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    GET <span class="st">&quot;/:name&quot;</span> =&gt; hello_name;</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    GET <span class="st">&quot;/*path&quot;</span> =&gt; |req|</span>
+<span id="cb2-8"><a href="#cb2-8"></a>      <span class="pp">Response::</span>from(<span class="dv">404</span>).with_body(</span>
+<span id="cb2-9"><a href="#cb2-9"></a>        <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;404 Not Found: {}&lt;/h1&gt;&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10"></a>          req.arg(<span class="st">&quot;path&quot;</span>).unwrap_or(<span class="st">&quot;&quot;</span>)));</span>
 <span id="cb2-11"><a href="#cb2-11"></a><span class="op">}</span></span>
 <span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
 <span id="cb2-14"><a href="#cb2-14"></a>    <span class="st">&quot;&lt;h1&gt;Hello, world!&lt;/h1&gt;</span></span>
 <span id="cb2-15"><a href="#cb2-15"></a><span class="st">    &lt;p&gt;&lt;strong&gt;What&#39;s your name?&lt;/strong&gt;&lt;/p&gt;</span></span>
 <span id="cb2-16"><a href="#cb2-16"></a><span class="st">    &lt;form method=&#39;POST&#39; action=&#39;/&#39;&gt;</span></span>
@@ -276,17 +348,17 @@
 <span id="cb2-19"><a href="#cb2-19"></a><span class="st">    &lt;/form&gt;&quot;</span></span>
 <span id="cb2-20"><a href="#cb2-20"></a><span class="op">}</span></span>
 <span id="cb2-21"><a href="#cb2-21"></a></span>
-<span id="cb2-22"><a href="#cb2-22"></a><span class="kw">fn</span> redirect_to_greeting(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="kw">impl</span> Responder<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb2-23"><a href="#cb2-23"></a>    <span class="kw">let</span> name <span class="op">=</span> req<span class="op">.</span>form(<span class="st">&quot;name&quot;</span>)<span class="op">?;</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span><span class="op">,</span> name)))</span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="kw">fn</span> redirect_to_greeting(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>    <span class="kw">let</span> name = req.form(<span class="st">&quot;name&quot;</span>)?;</span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span>, name)))</span>
 <span id="cb2-25"><a href="#cb2-25"></a><span class="op">}</span></span>
 <span id="cb2-26"><a href="#cb2-26"></a></span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>    <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span><span class="op">,</span> req<span class="op">.</span>arg(<span class="st">&quot;name&quot;</span>)<span class="op">.</span>unwrap())</span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>    <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span>, req.arg(<span class="st">&quot;name&quot;</span>).unwrap())</span>
 <span id="cb2-29"><a href="#cb2-29"></a><span class="op">}</span></span>
 <span id="cb2-30"><a href="#cb2-30"></a></span>
 <span id="cb2-31"><a href="#cb2-31"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a>    <span class="pp">run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="pp">run!</span>().unwrap();</span>
 <span id="cb2-33"><a href="#cb2-33"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="getting-started">Getting Started</h2>
 <ul>
@@ -299,6 +371,7 @@
 <p>Routes are written using the <code>routes!</code> macro in the format:</p>
 <pre><code>HTTP_METHOD ROUTE_PATTERN =&gt; ACTION;</code></pre>
 <p>The order in which routes are written matters - routes written first will be checked for matches first, meaning you can declare many routes that point to <code>"/"</code>, but only the first one declared will ever match.</p>
+<h3 id="http-methods">HTTP Methods</h3>
 <p><code>HTTP_METHOD</code> can be one of:</p>
 <ul>
 <li><code>GET</code></li>
@@ -308,11 +381,7 @@
 <li><code>DELETE</code></li>
 <li><code>PATCH</code></li>
 </ul>
-<p><code>ACTION</code> can be either of:</p>
-<ol type="1">
-<li>A closure in the form of <code>|req| { code }</code> that returns an <code>impl Responder</code></li>
-<li>The name of a function with the signature of <code>fn(Request) -&gt; impl Responder</code>.</li>
-</ol>
+<h3 id="route-patterns">Route Patterns</h3>
 <p><code>ROUTE_PATTERN</code> can be an exact match, such as <code>"/user"</code> or <code>"/v2/search.php3"</code>, or it can include a named parameter:</p>
 <ol type="1">
 <li><code>"/:name"</code> — This will match almost anything except paths with <code>/</code> in them or with <code>.</code> in them.</li>
@@ -320,13 +389,32 @@
 <li><code>"/*name"</code> — This will match everything, including <code>/</code>.</li>
 </ol>
 <p>In the three examples above, calling <code>req.arg("name")</code> in an <code>ACTION</code> will deliver <code>Some(&amp;str)</code>.</p>
+<h3 id="actions">Actions</h3>
+<p><code>ACTION</code> can be either of:</p>
+<ol type="1">
+<li>A closure in the form of <code>|req| { code }</code> that returns an <code>impl Responder</code></li>
+<li>The name of a function with the signature of <code>fn(Request) -&gt; impl Responder</code>.</li>
+</ol>
 <h2 id="requests">Requests</h2>
 <p>When a route matches and an <code>ACTION</code> is called, it’s passed a <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a> object.</p>
+<h3 id="url-parameters">URL Parameters</h3>
 <ul>
 <li><code>arg(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+</ul>
+<h3 id="query-parameters">Query Parameters</h3>
+<ul>
 <li><code>query(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+</ul>
+<h3 id="post-form-data">POST Form Data</h3>
+<ul>
 <li><code>form(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+</ul>
+<h3 id="request-headers">Request Headers</h3>
+<ul>
 <li><code>header(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+</ul>
+<h3 id="other-info">Other Info</h3>
+<ul>
 <li><code>method() -&gt; &amp;str</code></li>
 <li><code>path() -&gt; &amp;str</code></li>
 </ul>
@@ -359,6 +447,6 @@
 <h2 id="hatter-templates">Hatter Templates</h2>
 <h2 id="horrorshow-templates">Horrorshow Templates</h2>
 <h2 id="tera-templates">Tera Templates</h2>
-
+</main>
   </body>
 </html>
