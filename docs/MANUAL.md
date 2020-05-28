@@ -18,7 +18,7 @@ the few _optional_ features you can enable. It also includes
 suggestions for many "common tasks", like using a database to store
 information.
 
-## Hello, World
+## Hello World
 
 This global greeting shows off some of **vial**'s built-in features.
 
