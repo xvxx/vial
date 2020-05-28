@@ -40,17 +40,12 @@
         float: left;
         padding-top: 0;
       }
-      nav ul {
-        list-style-type: none;
-      }
-      nav ul ul {
-        list-style-type: disc;
-      }
       main {
         margin: 0 auto;
         max-width: 800px;
       }
 
+      /* responsive */
       @media (max-width: 1500px) {
         main {
           padding-left: 75px;
@@ -68,6 +63,26 @@
         main {
           float: left;
         }
+      }
+
+      /* nav  */
+      nav h3 {
+        margin: 0;
+        padding-bottom: 0;
+        padding-left: 40px;
+        font-size: 22px;
+      }
+      nav h3:not(:first-of-type) {
+        margin-top: 40px;
+      }
+      nav h3 + ul {
+        margin-top: 10px;
+      }
+      nav ul {
+        list-style-type: none;
+      }
+      nav ul ul {
+        list-style-type: disc;
       }
 
       /* regular stuff */
