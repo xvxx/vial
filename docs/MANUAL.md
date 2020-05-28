@@ -1,5 +1,7 @@
 # ~ vial: the manual ~
 
+<img src="../img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
+
 **vial** is a micro web “framework” for making micro web “sites”. It
 includes but a few basic features and was built with the idea that you,
 the programmer, will add any functionality you need that isn’t included

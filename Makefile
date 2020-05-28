@@ -15,7 +15,7 @@ check:
 
 docs/manual.html: check docs/manual.tpl
 	pandoc docs/MANUAL.md -o rendered.html
-	@ruby -e 'File.open("docs/manual.html", "w") { |f| f.write(File.read("docs/manual.tpl").sub("{{body}}", File.read("rendered.html"))) }'
+	@ruby -e 'File.open("docs/manual.html", "w") { |f| f.write(File.read("docs/manual.tpl").sub("{body}", File.read("rendered.html"))) }'
 	@-rm rendered.html
 	@echo "built docs/manual.html"
 
