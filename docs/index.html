@@ -51,12 +51,6 @@
         max-width: 800px;
       }
 
-      @media (min-height: 1150px) {
-        nav {
-          position: fixed;
-        }
-      }
-
       @media (max-width: 1500px) {
         main {
           padding-left: 75px;
@@ -84,7 +78,7 @@
       }
       a:hover {
         border-bottom: none;
-        color: magenta;
+        color: fuchsia;
       }
       a:visited {
         color: #666;
