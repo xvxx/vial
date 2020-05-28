@@ -23,8 +23,8 @@ docs/index.html: check target/docs/toc.html docs/manual.tpl docs/MANUAL.md
 
 target/docs/toc.html: check docs/MANUAL.md docs/manual.tpl
 	@echo "building target/docs/toc.html..."
-	@md-toc --min-depth 1 --max-depth 2 --bullet - docs/MANUAL.md | grep -v 'Table of Contents' > target/docs/toc.md
-	@ruby -e 'toc = File.read("target/docs/toc.md"); idx = toc.index("- [Templates]"); toc.insert(idx, "\n### Bonus Features\n"); File.write("target/docs/toc.md", "### Contents\n#{toc}")'
+	@md-toc --header '### Core' --min-depth 1 --max-depth 2 --bullet - docs/MANUAL.md  > target/docs/toc.md
+	@ruby -e 'toc = File.read("target/docs/toc.md"); idx = toc.index("- [Templates]"); toc.insert(idx, "\n### Bonus Features\n"); File.write("target/docs/toc.md", toc)'
 	@pandoc target/docs/toc.md -o target/docs/toc.html
 	@echo "DONE"
 
