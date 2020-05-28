@@ -18,11 +18,14 @@ information.
 
 ## Hello, World
 
-This global greeting shows off most of **vial's** features. Play with
-it in real time by running this command in your local copy of this
-repository:
+This global greeting shows off some of **vial**'s built-in features.
+
+You can play with it in real time by running this command in your
+local copy of this repository:
 
     $ cargo run --example manual
+
+Feel free to open it in your favorite text editor and poke around!
 
 ```rust
 use vial::prelude::*;
@@ -60,6 +63,13 @@ fn main() {
 }
 ```
 
+## Getting Started
+
+- Add it to your project
+- Include the prelude
+- Define `routes!`
+- Call `run!`
+
 ## Routes
 
 Routes are written using the `routes!` macro in the format:
@@ -70,7 +80,7 @@ The order in which routes are written matters - routes written first
 will be checked for matches first, meaning you can declare many routes
 that point to `"/"`, but only the first one declared will ever match.
 
-`HTTP_METHOD` must be one of:
+`HTTP_METHOD` can be one of:
 
 - `GET`
 - `HEAD`
@@ -79,7 +89,7 @@ that point to `"/"`, but only the first one declared will ever match.
 - `DELETE`
 - `PATCH`
 
-`ACTION` must be either of:
+`ACTION` can be either of:
 
 1. A closure in the form of `|req| { code }` that returns an
    `impl Responder`
@@ -98,12 +108,20 @@ will deliver `Some(&str)`.
 
 ## Requests
 
-- `arg()`
-- `query()`
-- `form()`
-- `header()`
+When a route matches and an `ACTION` is called, it's passed a
+[Request] object.
+
+- `arg(&str) -> Option<&str>`
+- `query(&str) -> Option<&str>`
+- `form(&str) -> Option<&str>`
+- `header(&str) -> Option<&str>`
+- `method() -> &str`
+- `path() -> &str`
 
 ## Responses
+
+All `ACTIONs` return [Responders][responder], which are turned into
+[Responses][response] before being sent back to the client.
 
 - `Response::from()`
 - `Response::from_body()`
@@ -139,3 +157,7 @@ will deliver `Some(&str)`.
 ## Horrorshow Templates
 
 ## Tera Templates
+
+[request]: https://docs.rs/vial/latest/vial/struct.Request.html
+[response]: https://docs.rs/vial/latest/vial/struct.Response.html
+[responder]: https://docs.rs/vial/latest/vial/trait.Responder.html

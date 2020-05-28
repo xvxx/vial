@@ -236,8 +236,10 @@
 <p>The goal is a small, lean core that compiles quickly and has as few dependencies as possible. Use it for HTML stuff: prototyping ideas, testing out concepts, or, perhaps, even writing tiny personal apps.</p>
 <p>This manual is an overview of <strong>vial</strong>’s built in features, as well as the few <em>optional</em> features you can enable. It also includes suggestions for many “common tasks”, like using a database to store information.</p>
 <h2 id="hello-world">Hello, World</h2>
-<p>This global greeting shows off most of <strong>vial’s</strong> features. Play with it in real time by running this command in your local copy of this repository:</p>
+<p>This global greeting shows off some of <strong>vial</strong>’s built-in features.</p>
+<p>You can play with it in real time by running this command in your local copy of this repository:</p>
 <pre><code>$ cargo run --example manual</code></pre>
+<p>Feel free to open it in your favorite text editor and poke around!</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
@@ -271,11 +273,18 @@
 <span id="cb2-31"><a href="#cb2-31"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
 <span id="cb2-32"><a href="#cb2-32"></a>    <span class="pp">run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
 <span id="cb2-33"><a href="#cb2-33"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="getting-started">Getting Started</h2>
+<ul>
+<li>Add it to your project</li>
+<li>Include the prelude</li>
+<li>Define <code>routes!</code></li>
+<li>Call <code>run!</code></li>
+</ul>
 <h2 id="routes">Routes</h2>
 <p>Routes are written using the <code>routes!</code> macro in the format:</p>
 <pre><code>HTTP_METHOD ROUTE_PATTERN =&gt; ACTION;</code></pre>
 <p>The order in which routes are written matters - routes written first will be checked for matches first, meaning you can declare many routes that point to <code>"/"</code>, but only the first one declared will ever match.</p>
-<p><code>HTTP_METHOD</code> must be one of:</p>
+<p><code>HTTP_METHOD</code> can be one of:</p>
 <ul>
 <li><code>GET</code></li>
 <li><code>HEAD</code></li>
@@ -284,7 +293,7 @@
 <li><code>DELETE</code></li>
 <li><code>PATCH</code></li>
 </ul>
-<p><code>ACTION</code> must be either of:</p>
+<p><code>ACTION</code> can be either of:</p>
 <ol type="1">
 <li>A closure in the form of <code>|req| { code }</code> that returns an <code>impl Responder</code></li>
 <li>The name of a function with the signature of <code>fn(Request) -&gt; impl Responder</code>.</li>
@@ -297,13 +306,17 @@
 </ol>
 <p>In the three examples above, calling <code>req.arg("name")</code> in an <code>ACTION</code> will deliver <code>Some(&amp;str)</code>.</p>
 <h2 id="requests">Requests</h2>
+<p>When a route matches and an <code>ACTION</code> is called, it’s passed a <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a> object.</p>
 <ul>
-<li><code>arg()</code></li>
-<li><code>query()</code></li>
-<li><code>form()</code></li>
-<li><code>header()</code></li>
+<li><code>arg(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+<li><code>query(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+<li><code>form(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+<li><code>header(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
+<li><code>method() -&gt; &amp;str</code></li>
+<li><code>path() -&gt; &amp;str</code></li>
 </ul>
 <h2 id="responses">Responses</h2>
+<p>All <code>ACTIONs</code> return <a href="https://docs.rs/vial/latest/vial/trait.Responder.html">Responders</a>, which are turned into <a href="https://docs.rs/vial/latest/vial/struct.Response.html">Responses</a> before being sent back to the client.</p>
 <ul>
 <li><code>Response::from()</code></li>
 <li><code>Response::from_body()</code></li>
