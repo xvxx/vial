@@ -90,13 +90,13 @@
         text-decoration: none;
         border-bottom: 1px solid black;
       }
-      a:hover {
-        border-bottom: none;
-        color: fuchsia;
-      }
       a:visited {
         color: #666;
         text-decoration: none;
+      }
+      a:hover {
+        border-bottom: none;
+        color: fuchsia;
       }
       h1 {
         font-size: 2em;
