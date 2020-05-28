@@ -16,19 +16,22 @@
 
       /* structure */
       nav {
-        position: fixed;
         float: left;
+        padding-top: 40px;
+      }
+      nav ul {
+        list-style-type: none;
+      }
+      nav ul ul {
+        list-style-type: disc;
       }
       main {
         margin: 0 auto;
         max-width: 800px;
       }
-
       @media (max-width: 1365px) {
         main {
-          position: fixed;
           float: left;
-          padding-left: 265px;
         }
       }
 
@@ -37,9 +40,9 @@
           display: none;
         }
         main {
-          position: relative;
-          float: none;
-          padding: 0;
+          /* position: relative; */
+          float: left;
+          /* padding: 0; */
         }
       }
 
@@ -296,24 +299,39 @@
 </ul></li>
 <li><a href="#requests">Requests</a>
 <ul>
-<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#route-arguments">Route Arguments</a></li>
 <li><a href="#query-parameters">Query Parameters</a></li>
-<li><a href="#post-form-data">POST Form Data</a></li>
+<li><a href="#form-data">Form Data</a></li>
 <li><a href="#request-headers">Request Headers</a></li>
 <li><a href="#other-info">Other Info</a></li>
 </ul></li>
-<li><a href="#responses">Responses</a></li>
-<li><a href="#assets">Assets</a></li>
+<li><a href="#responses">Responses</a>
+<ul>
+<li><a href="#html-from-string">HTML from String</a></li>
+<li><a href="#html-from-file">HTML from File</a></li>
+<li><a href="#redirect">Redirect</a></li>
+<li><a href="#status-codes">Status Codes</a></li>
+<li><a href="#headers">Headers</a></li>
+</ul></li>
+<li><a href="#assets">Assets</a>
+<ul>
+<li><a href="#setting-asset-dir">Setting asset dir</a></li>
+<li><a href="#%60asset::exists()%60"><code>asset::exists()</code></a></li>
+<li><a href="#%60asset::path()%60"><code>asset::path()</code></a></li>
 <li><a href="#bundling-assets">Bundling Assets</a></li>
+</ul></li>
+<li><a href="#templates">Templates</a>
+<ul>
+<li><a href="#hatter">Hatter</a></li>
+<li><a href="#horrorshow">Horrorshow</a></li>
+<li><a href="#tera">Tera</a></li>
+</ul></li>
 <li><a href="#cookies">Cookies</a></li>
 <li><a href="#sessions">Sessions</a></li>
 <li><a href="#json">JSON</a></li>
 <li><a href="#state">State</a></li>
 <li><a href="#database">Database</a></li>
 <li><a href="#markdown">Markdown</a></li>
-<li><a href="#hatter-templates">Hatter Templates</a></li>
-<li><a href="#horrorshow-templates">Horrorshow Templates</a></li>
-<li><a href="#tera-templates">Tera Templates</a></li>
 </ul>
 </nav>
     <main><p><img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" /></p>
@@ -397,7 +415,7 @@
 </ol>
 <h2 id="requests">Requests</h2>
 <p>When a route matches and an <code>ACTION</code> is called, it’s passed a <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a> object.</p>
-<h3 id="url-parameters">URL Parameters</h3>
+<h3 id="route-arguments">Route Arguments</h3>
 <ul>
 <li><code>arg(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
 </ul>
@@ -405,7 +423,7 @@
 <ul>
 <li><code>query(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
 </ul>
-<h3 id="post-form-data">POST Form Data</h3>
+<h3 id="form-data">Form Data</h3>
 <ul>
 <li><code>form(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
 </ul>
@@ -420,33 +438,29 @@
 </ul>
 <h2 id="responses">Responses</h2>
 <p>All <code>ACTIONs</code> return <a href="https://docs.rs/vial/latest/vial/trait.Responder.html">Responders</a>, which are turned into <a href="https://docs.rs/vial/latest/vial/struct.Response.html">Responses</a> before being sent back to the client.</p>
-<ul>
-<li><code>Response::from()</code></li>
-<li><code>Response::from_body()</code></li>
-<li><code>Response::from_text()</code></li>
-<li><code>Response::from_file()</code></li>
-<li><code>Response::from_asset()</code></li>
-<li><code>Response::from_code()</code></li>
-</ul>
+<h3 id="html-from-string">HTML from String</h3>
+<h3 id="html-from-file">HTML from File</h3>
+<h3 id="redirect">Redirect</h3>
+<h3 id="status-codes">Status Codes</h3>
+<h3 id="headers">Headers</h3>
 <h2 id="assets">Assets</h2>
-<ul>
-<li><code>static_dir!</code></li>
-<li><code>asset::exists()</code></li>
-<li><code>asset::path()</code></li>
-</ul>
-<h2 id="bundling-assets">Bundling Assets</h2>
+<h3 id="setting-asset-dir">Setting asset dir</h3>
+<h3 id="assetexists"><code>asset::exists()</code></h3>
+<h3 id="assetpath"><code>asset::path()</code></h3>
+<h3 id="bundling-assets">Bundling Assets</h3>
 <ul>
 <li><code>vial::bundle_assets(path_to_asset_dir)</code></li>
 </ul>
+<h2 id="templates">Templates</h2>
+<h3 id="hatter">Hatter</h3>
+<h3 id="horrorshow">Horrorshow</h3>
+<h3 id="tera">Tera</h3>
 <h2 id="cookies">Cookies</h2>
 <h2 id="sessions">Sessions</h2>
 <h2 id="json">JSON</h2>
 <h2 id="state">State</h2>
 <h2 id="database">Database</h2>
 <h2 id="markdown">Markdown</h2>
-<h2 id="hatter-templates">Hatter Templates</h2>
-<h2 id="horrorshow-templates">Horrorshow Templates</h2>
-<h2 id="tera-templates">Tera Templates</h2>
 </main>
   </body>
 </html>

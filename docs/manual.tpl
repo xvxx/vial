@@ -16,19 +16,22 @@
 
       /* structure */
       nav {
-        position: fixed;
         float: left;
+        padding-top: 40px;
+      }
+      nav ul {
+        list-style-type: none;
+      }
+      nav ul ul {
+        list-style-type: disc;
       }
       main {
         margin: 0 auto;
         max-width: 800px;
       }
-
       @media (max-width: 1365px) {
         main {
-          position: fixed;
           float: left;
-          padding-left: 265px;
         }
       }
 
@@ -37,9 +40,9 @@
           display: none;
         }
         main {
-          position: relative;
-          float: none;
-          padding: 0;
+          /* position: relative; */
+          float: left;
+          /* padding: 0; */
         }
       }
 

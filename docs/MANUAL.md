@@ -119,7 +119,7 @@ will deliver `Some(&str)`.
 When a route matches and an `ACTION` is called, it's passed a
 [Request] object.
 
-### URL Parameters
+### Route Arguments
 
 - `arg(&str) -> Option<&str>`
 
@@ -127,7 +127,7 @@ When a route matches and an `ACTION` is called, it's passed a
 
 - `query(&str) -> Option<&str>`
 
-### POST Form Data
+### Form Data
 
 - `form(&str) -> Option<&str>`
 
@@ -145,22 +145,35 @@ When a route matches and an `ACTION` is called, it's passed a
 All `ACTIONs` return [Responders][responder], which are turned into
 [Responses][response] before being sent back to the client.
 
-- `Response::from()`
-- `Response::from_body()`
-- `Response::from_text()`
-- `Response::from_file()`
-- `Response::from_asset()`
-- `Response::from_code()`
+### HTML from String
+
+### HTML from File
+
+### Redirect
+
+### Status Codes
+
+### Headers
 
 ## Assets
 
-- `static_dir!`
-- `asset::exists()`
-- `asset::path()`
+### Setting asset dir
 
-## Bundling Assets
+### `asset::exists()`
+
+### `asset::path()`
+
+### Bundling Assets
 
 - `vial::bundle_assets(path_to_asset_dir)`
+
+## Templates
+
+### Hatter
+
+### Horrorshow
+
+### Tera
 
 ## Cookies
 
@@ -173,12 +186,6 @@ All `ACTIONs` return [Responders][responder], which are turned into
 ## Database
 
 ## Markdown
-
-## Hatter Templates
-
-## Horrorshow Templates
-
-## Tera Templates
 
 [request]: https://docs.rs/vial/latest/vial/struct.Request.html
 [response]: https://docs.rs/vial/latest/vial/struct.Response.html
