@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>~ vial: a micro micro-framework ~</title>
+    <style></style>
+  </head>
+  <body>
+    <h1 id="vial-the-manual">~ vial: the manual ~</h1>
+<p><strong>vial</strong> is a micro web “framework” for making micro web “sites”. It includes but a few basic features and was built with the idea that you, the programmer, will add any functionality you need that isn’t included by default.</p>
+<p>The goal is a small, lean core that compiles quickly and has as few dependencies as possible - to be used for prototyping ideas, testing out a new concept, or writing tiny personal apps, perhaps.</p>
+<p>This manual will serve as an overview of <strong>vial</strong>’s built in features, as well as the few <em>optional</em> features you can enable. It will also include suggestions for many “common tasks”, like using a database to store information.</p>
+<h2 id="hello-world">Hello, World</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; hello_world;</span>
+<span id="cb1-5"><a href="#cb1-5"></a>    POST <span class="st">&quot;/&quot;</span> =&gt; redirect_to_greeting;</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    GET <span class="st">&quot;/:name&quot;</span> =&gt; hello_name;</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="op">}</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="kw">fn</span> hello_world(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="st">&quot;&lt;h1&gt;Hello, world!&lt;/h1&gt;</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="st">    &lt;p&gt;&lt;strong&gt;What&#39;s your name?&lt;/strong&gt;&lt;/p&gt;</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="st">    &lt;form method=&#39;POST&#39; action=&#39;/&#39;&gt;</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a><span class="st">        &lt;p&gt;&lt;input name=&#39;name&#39; type=&#39;text&#39;/&gt;&lt;/p&gt;</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="st">        &lt;p&gt;&lt;input type=&#39;submit&#39;/&gt;&lt;/p&gt;</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="st">    &lt;/form&gt;&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="op">}</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="kw">fn</span> redirect_to_greeting(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>    <span class="kw">let</span> name = req.form(<span class="st">&quot;name&quot;</span>)?;</span>
+<span id="cb1-20"><a href="#cb1-20"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span>, name)))</span>
+<span id="cb1-21"><a href="#cb1-21"></a><span class="op">}</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a></span>
+<span id="cb1-23"><a href="#cb1-23"></a><span class="kw">fn</span> hello_name(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb1-24"><a href="#cb1-24"></a>    <span class="pp">format!</span>(<span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span>, req.arg(<span class="st">&quot;name&quot;</span>).unwrap())</span>
+<span id="cb1-25"><a href="#cb1-25"></a><span class="op">}</span></span>
+<span id="cb1-26"><a href="#cb1-26"></a></span>
+<span id="cb1-27"><a href="#cb1-27"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a>    <span class="pp">run!</span>().unwrap();</span>
+<span id="cb1-29"><a href="#cb1-29"></a><span class="op">}</span></span></code></pre></div>
+<ul>
+<li><p><strong>vial::prelude::*</strong> This import…</p></li>
+<li><p><strong>routes!</strong> This macro…</p></li>
+<li><p><strong>run!</strong> This macro…</p></li>
+<li><p><strong>Request</strong> This struct…</p></li>
+<li><p><strong>Request</strong> This struct…</p></li>
+<li><p><strong>Responder</strong> This trait…</p></li>
+</ul>
+<h2 id="routes">Routes</h2>
+<ul>
+<li>“/blah”</li>
+<li>“/:name”</li>
+<li>“/:name.md”</li>
+<li>“/edit/*page”</li>
+<li>GET, POST, etc</li>
+</ul>
+<h2 id="requests">Requests</h2>
+<ul>
+<li><code>query()</code></li>
+<li><code>arg()</code></li>
+<li><code>form()</code></li>
+<li><code>header()</code></li>
+</ul>
+<h2 id="responses">Responses</h2>
+<ul>
+<li><code>Response::from()</code></li>
+<li><code>Response::from_body()</code></li>
+<li><code>Response::from_text()</code></li>
+<li><code>Response::from_file()</code></li>
+<li><code>Response::from_asset()</code></li>
+<li><code>Response::from_code()</code></li>
+</ul>
+<h2 id="assets">Assets</h2>
+<ul>
+<li><code>static_dir!</code></li>
+<li><code>asset::exists()</code></li>
+<li><code>asset::path()</code></li>
+</ul>
+<h2 id="bundling-assets">Bundling Assets</h2>
+<ul>
+<li><code>vial::bundle_assets(path_to_asset_dir)</code></li>
+</ul>
+<h2 id="cookies">Cookies</h2>
+<h2 id="sessions">Sessions</h2>
+<h2 id="json">JSON</h2>
+<h2 id="state">State</h2>
+<h2 id="database">Database</h2>
+<h2 id="markdown">Markdown</h2>
+<h2 id="hatter-templates">Hatter Templates</h2>
+<h2 id="horrorshow-templates">Horrorshow Templates</h2>
+<h2 id="tera-templates">Tera Templates</h2>
+
+  </body>
+</html>
