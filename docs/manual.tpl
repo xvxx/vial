@@ -45,6 +45,10 @@
         max-width: 800px;
       }
 
+      nav.show-mobile {
+        display: block;
+      }
+
       /* responsive */
       @media (max-width: 1500px) {
         main {
@@ -54,14 +58,29 @@
         img:first-of-type {
           margin-top: -45px;
         }
+        nav.show-mobile {
+          display: block;
+        }
       }
 
       @media (max-width: 1180px) {
         nav {
           display: none;
         }
+        nav.show-mobile {
+          display: block;
+          font-size: 150%;
+          margin-left: 200px;
+          width: 100%;
+        }
+        nav.show-mobile h3 {
+          font-size: 150%;
+        }
         main {
           float: left;
+        }
+        #menu-toggle {
+          display: block !important;
         }
       }
 
@@ -309,10 +328,80 @@
         font-weight: bold;
         font-style: italic;
       } /* Warning */
+
+      /* hamburger */
+      /* by Erik Terwan */
+
+      #menu-toggle {
+        display: none;
+        position: absolute;
+        top: 50px;
+        right: 50px;
+        z-index: 1;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      #menu-toggle input {
+        display: block;
+        width: 40px;
+        height: 32px;
+        position: absolute;
+        top: -7px;
+        left: -5px;
+        cursor: pointer;
+        opacity: 0; /* hide this */
+        z-index: 2; /* and place it over the hamburger */
+        -webkit-touch-callout: none;
+      }
+
+      #menu-toggle span {
+        display: block;
+        width: 33px;
+        height: 4px;
+        margin-bottom: 5px;
+        position: relative;
+        background: #cdcdcd;
+        border-radius: 3px;
+        z-index: 1;
+        transform-origin: 4px 0px;
+        transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1),
+          background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1), opacity 0.55s ease;
+      }
+
+      #menu-toggle span {
+        opacity: 1;
+        background: #232323;
+      }
+
+      #menu-toggle span:first-child {
+        transform-origin: 0% 0%;
+      }
+
+      #menu-toggle span:nth-last-child(2) {
+        transform-origin: 0% 100%;
+      }
+
+      #menu-toggle input:checked ~ span {
+        opacity: 0.25;
+      }
     </style>
   </head>
   <body>
+    <div id="menu-toggle">
+      <input type="checkbox" onclick="clickHamburger();" />
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
     <nav>{toc}</nav>
     <main>{body}</main>
+    <script>
+      function clickHamburger() {
+        let nav = document.getElementsByTagName("nav")[0];
+        if (nav.className == "show-mobile") nav.className = "";
+        else nav.className = "show-mobile";
+      }
+    </script>
   </body>
 </html>
