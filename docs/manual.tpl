@@ -244,6 +244,7 @@
     </style>
   </head>
   <body>
+    <nav> {toc} </nav>
     {body}
   </body>
 </html>
