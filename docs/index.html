@@ -103,8 +103,11 @@
         font-size: 2em;
       }
       h2 {
-        border-bottom: 1px solid #ddd;
         font-size: 1.75em;
+      }
+      h2,
+      h3 {
+        border-bottom: 1px solid #ddd;
       }
       h1,
       h2,
