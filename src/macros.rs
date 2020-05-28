@@ -22,7 +22,7 @@ macro_rules! run {
         #[cfg(bundle_assets)]
         vial::include_assets!();
         vial::asset_dir!(@option option_env!("ASSET_DIR"));
-        vial::run($addr, ::std::sync::Arc::new(::std::sync::Mutex::new(router)))
+        vial::run($addr, router)
     }};
 }
 

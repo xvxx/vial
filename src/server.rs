@@ -1,5 +1,5 @@
 use {
-    crate::{asset, Request, Response, Result},
+    crate::{asset, Request, Response, Result, Router},
     httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
@@ -11,19 +11,18 @@ use {
 
 const MAX_CONNECTIONS: usize = 10;
 
-type Router = Arc<Mutex<crate::Router>>;
-
 pub fn run<T: ToSocketAddrs>(addr: T, router: Router) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
-    let server = TcpListener::bind(&addr)?;
-    let addr = server.local_addr()?;
+    let listener = TcpListener::bind(&addr)?;
+    let addr = listener.local_addr()?;
+    let server = Arc::new(Server::new(router));
     println!("~ vial running at http://{}", addr);
 
-    for stream in server.incoming() {
-        let router = router.clone();
+    for stream in listener.incoming() {
+        let server = server.clone();
         let stream = stream?;
         pool.execute(move || {
-            if let Err(e) = handle_request(stream, &router) {
+            if let Err(e) = server.handle_request(stream) {
                 eprintln!("!! {}", e);
             }
         });
@@ -32,53 +31,59 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router) -> Result<()> {
     Ok(())
 }
 
-fn handle_request(mut stream: TcpStream, router: &Router) -> Result<()> {
-    let mut buffer = vec![];
-    let mut read_buf = [0u8; 512];
-
-    let req = loop {
-        let n = stream.read(&mut read_buf)?;
-        if n == 0 {
-            return Err(error!("Empty response"));
-        }
-        buffer.extend_from_slice(&read_buf[..n]);
-        if let Some(req) = Request::from_raw_http_request(&mut buffer)? {
-            break req;
-        }
-    };
-
-    write_response(stream, req, router)?;
-    Ok(())
+pub struct Server {
+    router: Router,
 }
 
-fn write_response(mut stream: TcpStream, mut req: Request, router: &Router) -> Result<()> {
-    let router = router.lock().unwrap();
-    let method = req.method().to_string();
-    let path = req.path().to_string();
+impl Server {
+    pub fn new(router: Router) -> Server {
+        Server { router }
+    }
 
-    // route request to either a static file or code
-    let mut response = if asset::exists(req.path()) {
-        if let Some(req_etag) = req.header("If-None-Match") {
-            if req_etag == asset::etag(req.path()).as_ref() {
-                Response::from(304)
+    fn handle_request(&self, mut stream: TcpStream) -> Result<()> {
+        let mut buffer = vec![];
+        let mut read_buf = [0u8; 512];
+
+        let req = loop {
+            let n = stream.read(&mut read_buf)?;
+            if n == 0 {
+                return Err(error!("Empty response"));
+            }
+            buffer.extend_from_slice(&read_buf[..n]);
+            if let Some(req) = Request::from_raw_http_request(&mut buffer)? {
+                break req;
+            }
+        };
+
+        self.write_response(stream, req)
+    }
+
+    fn write_response(&self, mut stream: TcpStream, mut req: Request) -> Result<()> {
+        let method = req.method().to_string();
+        let path = req.path().to_string();
+
+        // route request to either a static file or code
+        let mut response = if asset::exists(req.path()) {
+            if let Some(req_etag) = req.header("If-None-Match") {
+                if req_etag == asset::etag(req.path()).as_ref() {
+                    Response::from(304)
+                } else {
+                    Response::from_asset(req.path())
+                }
             } else {
                 Response::from_asset(req.path())
             }
+        } else if let Some(action) = self.router.action_for(&mut req) {
+            action(req)
         } else {
-            Response::from_asset(req.path())
+            Response::from(404)
+        };
+
+        println!("{} {} {}", method, response.code, path);
+        if response.code == 500 {
+            eprintln!("{}", response.body);
         }
-    } else if let Some(action) = router.action_for(&mut req) {
-        action(req)
-    } else {
-        Response::from(404)
-    };
 
-    println!("{} {} {}", method, response.code, path);
-    if response.code == 500 {
-        eprintln!("{}", response.body);
+        response.write(stream)
     }
-
-    response.write(stream)?;
-
-    Ok(())
 }

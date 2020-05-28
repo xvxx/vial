@@ -5,6 +5,11 @@ routes! {
     GET "/hey/:place" => |req|
         format!("Heyo, {}!", req.arg("place").unwrap_or("?"));
 
+    GET "/sleep" => |_| {
+        std::thread::sleep(std::time::Duration::from_secs(5));
+        "Zzzzz..."
+    };
+
     GET "/" => welcome;
 }
 
