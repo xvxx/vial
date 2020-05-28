@@ -81,9 +81,9 @@ impl Response {
         self
     }
 
-    pub fn with_body(mut self, body: &str) -> Response {
+    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Response {
         self.body.clear();
-        self.body.push_str(body);
+        self.body.push_str(body.as_ref());
         self
     }
 
