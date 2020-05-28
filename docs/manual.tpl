@@ -15,8 +15,22 @@
       }
       h1:first-of-type {
         text-align: center;
+
+        text-align: left;
+        margin-bottom: 0;
+        font-size: 150px;
+        margin-top: 40px;
+      }
+      h4:first-of-type {
+        margin: 0;
+        font-size: 50px;
+        color: #aaa;
+        margin-top: -30px;
+        margin-bottom: 50px;
+        font-weight: normal;
       }
       img:first-of-type {
+        margin-top: -20px;
         margin-right: 20px;
       }
       h1 {
