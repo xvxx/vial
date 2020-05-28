@@ -4,6 +4,10 @@ routes! {
     GET "/" => hello_world;
     POST "/" => redirect_to_greeting;
     GET "/:name" => hello_name;
+    GET "/*path" => |req|
+      Response::from(404).with_body(
+        format!("<h1>404 Not Found: {}</h1>",
+          req.arg("path").unwrap_or("")));
 }
 
 fn hello_world(_req: Request) -> impl Responder {

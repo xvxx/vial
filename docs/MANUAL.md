@@ -2,21 +2,27 @@
 
 <img src="../img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
 
-**vial** is a micro web “framework” for making micro web “sites”. It
-includes but a few basic features and was built with the idea that you,
-the programmer, will add any functionality you need that isn’t included
-by default.
+**vial** is a micro web "framework" for making micro web "sites". It
+only includes a handful of basic features, hopeful that you'll add
+whatever other features you need on your own. Kind of like ice cream
+toppings at one of those ice cream places.
 
 The goal is a small, lean core that compiles quickly and has as few
-dependencies as possible - to be used for prototyping ideas,
-testing out a new concept, or writing tiny personal apps, perhaps.
+dependencies as possible. Use it for HTML stuff: prototyping ideas,
+testing out concepts, or, perhaps, even writing tiny personal apps.
 
-This manual will serve as an overview of **vial**’s built in features,
-as well as the few _optional_ features you can enable. It will also
-include suggestions for many “common tasks”, like using a database
-to store information.
+This manual is an overview of **vial**’s built in features, as well as
+the few _optional_ features you can enable. It also includes
+suggestions for many "common tasks", like using a database to store
+information.
 
 ## Hello, World
+
+This global greeting shows off most of **vial's** features. Play with
+it in real time by running this command in your local copy of this
+repository:
+
+    $ cargo run --example manual
 
 ```rust
 use vial::prelude::*;
@@ -25,6 +31,10 @@ routes! {
     GET "/" => hello_world;
     POST "/" => redirect_to_greeting;
     GET "/:name" => hello_name;
+    GET "/*path" => |req|
+      Response::from(404).with_body(
+        format!("<h1>404 Not Found: {}</h1>",
+          req.arg("path").unwrap_or("")));
 }
 
 fn hello_world(_req: Request) -> impl Responder {
@@ -50,36 +60,46 @@ fn main() {
 }
 ```
 
-- **vial::prelude::\***
-  This import...
-
-- **routes!**
-  This macro...
-
-- **run!**
-  This macro...
-
-- **Request**
-  This struct...
-
-- **Request**
-  This struct...
-
-- **Responder**
-  This trait...
-
 ## Routes
 
-- “/blah”
-- “/:name”
-- “/:name.md”
-- “/edit/\*page”
-- GET, POST, etc
+Routes are written using the `routes!` macro in the format:
+
+    HTTP_METHOD ROUTE_PATTERN => ACTION;
+
+The order in which routes are written matters - routes written first
+will be checked for matches first, meaning you can declare many routes
+that point to `"/"`, but only the first one declared will ever match.
+
+`HTTP_METHOD` must be one of:
+
+- `GET`
+- `HEAD`
+- `POST`
+- `PUT`
+- `DELETE`
+- `PATCH`
+
+`ACTION` must be either of:
+
+1. A closure in the form of `|req| { code }` that returns an
+   `impl Responder`
+2. The name of a function with the signature of `fn(Request) -> impl Responder`.
+
+`ROUTE_PATTERN` can be an exact match, such as `"/user"` or
+`"/v2/search.php3"`, or it can include a named parameter:
+
+1. `"/:name"` — This will match almost anything except paths with `/`
+   in them or with `.` in them.
+2. `"/:name.md"` — Use this format to match on a specific file extension.
+3. `"/*name"` — This will match everything, including `/`.
+
+In the three examples above, calling `req.arg("name")` in an `ACTION`
+will deliver `Some(&str)`.
 
 ## Requests
 
-- `query()`
 - `arg()`
+- `query()`
 - `form()`
 - `header()`
 
