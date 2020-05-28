@@ -65,26 +65,6 @@
         }
       }
 
-      /* nav  */
-      nav h3 {
-        margin: 0;
-        padding-bottom: 0;
-        padding-left: 40px;
-        font-size: 22px;
-      }
-      nav h3:not(:first-of-type) {
-        margin-top: 40px;
-      }
-      nav h3 + ul {
-        margin-top: 10px;
-      }
-      nav ul {
-        list-style-type: none;
-      }
-      nav ul ul {
-        list-style-type: disc;
-      }
-
       /* regular stuff */
       a {
         color: black;
@@ -116,6 +96,27 @@
       }
       p {
         text-align: justify;
+      }
+
+      /* nav  */
+      nav h3 {
+        margin: 0;
+        padding-bottom: 0;
+        padding-left: 40px;
+        font-size: 22px;
+        border-bottom: none;
+      }
+      nav h3:not(:first-of-type) {
+        margin-top: 40px;
+      }
+      nav h3 + ul {
+        margin-top: 10px;
+      }
+      nav ul {
+        list-style-type: none;
+      }
+      nav ul ul {
+        list-style-type: disc;
       }
 
       /* pandoc styles */
