@@ -276,7 +276,7 @@
         color: red;
       } /* DataType */
       code span.dv {
-        color: #40a070;
+        color: yellow;
       } /* DecVal */
       code span.er {
         color: #ff0000;
