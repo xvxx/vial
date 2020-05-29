@@ -255,7 +255,7 @@ But visiting `/info?version=1.0` will show:
 
     Version: v1.0
 
-### Form Data
+### POST Form Data
 
 What's the web without open ended `<textarea>s`? Perish the thought.
 
