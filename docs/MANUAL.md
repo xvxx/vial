@@ -4,9 +4,9 @@
 
 #### ~ a micro micro-framework ~
 
-**Vial** is a small web "framework" for making small web "sites". It
-includes just a handful of basic features for delivering old school,
-server-side rendered HTML: request routing, form data parsing,
+**Vial** is a small web "framework" for making small web "sites" in
+Rust. It includes just a handful of basic features for delivering old
+school, server-side rendered HTML: request routing, form data parsing,
 response building, and serving static file assets.
 
 The goal is a small, lean core that compiles quickly and has as few
