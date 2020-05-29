@@ -13,11 +13,19 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     {
         let out_dir = env::var("OUT_DIR").unwrap();
         // symlink assets dir into out dir
+        let link = Path::new(&out_dir).join(dir);
+        if link.exists() {
+            fs::remove_file(&link);
+        }
         std::os::unix::fs::symlink(
             std::env::current_dir()?.join(dir),
             Path::new(&out_dir).join(dir),
         )?;
-        let mut dest = File::create(Path::new(&out_dir).join("bundle.rs"))?;
+        let bundle_rs = Path::new(&out_dir).join("bundle.rs");
+        if bundle_rs.exists() {
+            fs::remove_file(&bundle_rs);
+        }
+        let mut dest = File::create(bundle_rs)?;
 
         dest.write_all(
             b"{
