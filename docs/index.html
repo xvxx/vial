@@ -138,6 +138,13 @@
         list-style-type: disc;
       }
 
+      main li code,
+      main pre code,
+      main p code {
+        background-color: #f7f7f7;
+        padding: 5px;
+      }
+
       /* pandoc styles */
       code {
         white-space: pre-wrap;
@@ -276,7 +283,7 @@
         /* color: red; */
       } /* DataType */
       code span.dv {
-        color: darkorange;
+        color: red;
       } /* DecVal */
       code span.er {
         color: #ff0000;
@@ -299,7 +306,7 @@
       } /* Information */
       code span.kw {
         color: #7100f5;
-        font-weight: bold;
+        /* font-weight: bold; */
       } /* Keyword */
       code span.op {
         color: #666666;
@@ -318,7 +325,7 @@
         color: #bb6688;
       } /* SpecialString */
       code span.st {
-        color: magenta;
+        color: rgb(134, 0, 134);
       } /* String */
       code span.va {
         color: #19177c;
@@ -401,7 +408,7 @@
 <ul>
 <li><a href="#hello-world">Hello World</a></li>
 <li><a href="#getting-started">Getting Started</a></li>
-<li><a href="#routes">Routes</a>
+<li><a href="#routing">Routing</a>
 <ul>
 <li><a href="#http-methods">HTTP Methods</a></li>
 <li><a href="#route-patterns">Route Patterns</a></li>
@@ -410,7 +417,7 @@
 </ul></li>
 <li><a href="#requests">Requests</a>
 <ul>
-<li><a href="#route-arguments">Route Arguments</a></li>
+<li><a href="#route-parameters">Route Parameters</a></li>
 <li><a href="#query-parameters">Query Parameters</a></li>
 <li><a href="#form-data">Form Data</a></li>
 <li><a href="#request-headers">Request Headers</a></li>
@@ -517,7 +524,7 @@
 <span id="cb5-6"><a href="#cb5-6"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
 <span id="cb5-7"><a href="#cb5-7"></a><span class="op">}</span></span></code></pre></div>
 <p>This should start a server at <a href="http://0.0.0.0:7667" class="uri">http://0.0.0.0:7667</a> and tell you that it did. Congratulations! You’re on your way.</p>
-<h2 id="routes">Routes</h2>
+<h2 id="routing">Routing</h2>
 <p>Routing is the real gravy and potatoes of any web framework, if you think about it. In <strong>Vial</strong>, routes are defined with the <code>routes!</code> macro in this format:</p>
 <pre><code>HTTP_METHOD ROUTE_PATTERN =&gt; ACTION;</code></pre>
 <p>The order in which routes are written matters - routes written first will be checked for matches first, meaning you can declare many routes that point to <code>"/"</code>, but only the first one defined will ever match.</p>
@@ -534,57 +541,90 @@
 <h3 id="route-patterns">Route Patterns</h3>
 <p><code>ROUTE_PATTERN</code> can be an exact match, such as <code>"/user"</code> or <code>"/v2/search.php3"</code>, or it can include a named parameter:</p>
 <ol type="1">
-<li><code>"/:name"</code> — This will match almost anything except paths with <code>/</code> or <code>.</code> in them.</li>
+<li><code>"/:name"</code> — This will match anything except paths with <code>/</code> or <code>.</code> in them.</li>
 <li><code>"/:name.md"</code> — Use this format to match on a specific file extension.</li>
-<li><code>"/*name"</code> — This will match everything, including <code>/</code>.</li>
+<li><code>"/*name"</code> — This will match everything, including <code>/</code> and <code>.</code></li>
 </ol>
-<p>In the three examples above, calling <code>req.arg("name")</code> in an <code>ACTION</code> will deliver <code>Some(&amp;str)</code>.</p>
+<p>In the three examples above, calling <code>request.arg("name")</code> in an <code>ACTION</code> will return <code>Some(&amp;str)</code>.</p>
+<p>Note that you can have multiple parameters in the same route, as long as the “match all” pattern occurs last:</p>
+<ul>
+<li><code>"/:category/:id/*name"</code></li>
+</ul>
+<p>This route will populate <code>request.arg("category")</code>, <code>request.arg("id")</code>, and <code>request.arg("name")</code>.</p>
 <h3 id="actions">Actions</h3>
-<p><code>ACTION</code> can be either of:</p>
+<p><code>ACTIONs</code> are what routes actually route to. Your code. The app.</p>
+<p>An <code>ACTION</code> can either be a closure or the name of a function:</p>
 <ol type="1">
-<li>A closure in the form of <code>|req| { code }</code> that returns an <code>impl Responder</code></li>
-<li>The name of a function with the signature of <code>fn(Request) -&gt; impl Responder</code>.</li>
+<li>Closures take the form <code>|req: Request| { code }</code> and return an <code>impl Responder</code>.</li>
+<li>Functions have the signature <code>fn(Request) -&gt; impl Responder</code>, basically the same thing.</li>
 </ol>
+<p>Returning <code>impl Responder</code> is easy - <a href="https://docs.rs/vial/latest/vial/trait.Responder.html">Responder</a> is a <strong>Vial</strong> trait that defines a single conversion method:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">pub</span> <span class="kw">trait</span> Responder <span class="op">{</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>    <span class="kw">fn</span> to_response(<span class="kw">self</span>) <span class="op">-&gt;</span> Response<span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="op">}</span></span></code></pre></div>
+<p>Both <code>&amp;str</code> and <code>String</code> are <code>impl Responder</code>, as well as some other common types. Making your own is easy, too, because using the <code>Response</code> struct is easy.</p>
 <h3 id="route-modules">Route Modules</h3>
-<p>Routes can be defined in different modules and combined together using the <code>vial::run!</code> macro:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">mod</span> blog<span class="op">;</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="kw">mod</span> wiki <span class="op">{</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>    <span class="pp">vial::routes!</span> <span class="op">{</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a>        GET <span class="st">&quot;/wiki&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>_<span class="op">|</span> <span class="st">&quot;This is the wiki.&quot;</span><span class="op">;</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a>    <span class="op">}</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a><span class="op">}</span></span>
-<span id="cb7-8"><a href="#cb7-8"></a></span>
-<span id="cb7-9"><a href="#cb7-9"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
-<span id="cb7-10"><a href="#cb7-10"></a>    GET <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>_<span class="op">|</span> <span class="st">&quot;Index page.&quot;</span><span class="op">;</span></span>
-<span id="cb7-11"><a href="#cb7-11"></a><span class="op">}</span></span>
-<span id="cb7-12"><a href="#cb7-12"></a></span>
-<span id="cb7-13"><a href="#cb7-13"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb7-14"><a href="#cb7-14"></a>    <span class="pp">vial::run!</span>(<span class="kw">self</span><span class="op">,</span> blog<span class="op">,</span> wiki)<span class="op">;</span></span>
-<span id="cb7-15"><a href="#cb7-15"></a><span class="op">}</span></span></code></pre></div>
+<p>Routes can be defined in different modules and combined together with <code>vial::run!</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">mod</span> blog<span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">mod</span> wiki <span class="op">{</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>    <span class="pp">vial::routes!</span> <span class="op">{</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>        GET <span class="st">&quot;/wiki&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>_<span class="op">|</span> <span class="st">&quot;This is the wiki.&quot;</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>    <span class="op">}</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="op">}</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>    GET <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>_<span class="op">|</span> <span class="st">&quot;Index page.&quot;</span><span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="op">}</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>    <span class="pp">vial::run!</span>(<span class="kw">self</span><span class="op">,</span> blog<span class="op">,</span> wiki)<span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="requests">Requests</h2>
-<p>When a route matches and an <code>ACTION</code> is called, it’s passed a <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a> object.</p>
-<h3 id="route-arguments">Route Arguments</h3>
-<ul>
-<li><code>arg(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
-</ul>
+<p>When a route matches and an <code>ACTION</code> is called, it’s passed a <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a> object. <code>Request</code> contains information about the request itself, as well as a number of helper methods.</p>
+<h3 id="route-parameters">Route Parameters</h3>
+<p>As mentioned in the <a href="#routing">Routing</a> section above, you can define parameters in a route and access their value for a given request using <code>request.arg()</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">impl</span> Request <span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>    <span class="kw">fn</span> arg(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> name<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;&amp;</span><span class="dt">str</span><span class="op">&gt;;</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="query-parameters">Query Parameters</h3>
-<ul>
-<li><code>query(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
-</ul>
+<p>In addition to route parameters, <strong>Vial</strong> will also parse good ol’ fashioned query string parameters for you:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">impl</span> Request <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>    <span class="kw">fn</span> query(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> name<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;&amp;</span><span class="dt">str</span><span class="op">&gt;;</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="op">}</span></span></code></pre></div>
+<p>For example:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>    GET <span class="st">&quot;/info&quot;</span> <span class="op">=&gt;</span> <span class="op">|</span>req<span class="op">|</span> <span class="pp">format!</span>(</span>
+<span id="cb11-3"><a href="#cb11-3"></a>        <span class="st">&quot;Version: v{}&quot;</span><span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>        req<span class="op">.</span>query(<span class="st">&quot;version&quot;</span>)<span class="op">.</span>unwrap_or(<span class="st">&quot;?&quot;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>    )<span class="op">;</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="op">}</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb11-9"><a href="#cb11-9"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="op">}</span></span></code></pre></div>
+<p>Running this and visiting <code>/info</code> will show:</p>
+<pre><code>Version: v?</code></pre>
+<p>But visiting <code>/info?version=1.0</code> will show:</p>
+<pre><code>Version: v1.0</code></pre>
 <h3 id="form-data">Form Data</h3>
-<ul>
-<li><code>form(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
-</ul>
+<p>What’s the web without open ended <code>&lt;textarea&gt;s</code>? Perish the thought.</p>
+<p>POST form data follows the same pattern as query and route parameters: use <code>request.form()</code> to access a form parameter:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">impl</span> Request <span class="op">{</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>    <span class="kw">fn</span> form(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> name<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;&amp;</span><span class="dt">str</span><span class="op">&gt;;</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="request-headers">Request Headers</h3>
-<ul>
-<li><code>header(&amp;str) -&gt; Option&lt;&amp;str&gt;</code></li>
-</ul>
+<p>Headers are available without any of the peksy conveniences of type safety. Just give <code>request.header()</code> a string and hope you get one back!</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">impl</span> Request <span class="op">{</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>    <span class="kw">fn</span> header(<span class="op">&amp;</span><span class="kw">self</span><span class="op">,</span> name<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> <span class="dt">Option</span><span class="op">&lt;&amp;</span><span class="dt">str</span><span class="op">&gt;;</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="op">}</span></span></code></pre></div>
+<p>Header names are case insensitive, though, so at least you don’t have to worry about that.</p>
 <h3 id="other-info">Other Info</h3>
-<ul>
-<li><code>method() -&gt; &amp;str</code></li>
-<li><code>path() -&gt; &amp;str</code></li>
-</ul>
+<p>Beyond the headers, <code>Request</code> also surfaces a few more basic bits of information such as the <code>request.method()</code> and <code>request.path()</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">impl</span> Request <span class="op">{</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>    <span class="kw">fn</span> method(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="op">&amp;</span><span class="dt">str</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>    <span class="kw">fn</span> path(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="op">&amp;</span><span class="dt">str</span><span class="op">;</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="responses">Responses</h2>
 <p>All <code>ACTIONs</code> return <a href="https://docs.rs/vial/latest/vial/trait.Responder.html">Responders</a>, which are turned into <a href="https://docs.rs/vial/latest/vial/struct.Response.html">Responses</a> before being sent back to the client.</p>
 <h3 id="html-from-string">HTML from String</h3>

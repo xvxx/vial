@@ -138,6 +138,13 @@
         list-style-type: disc;
       }
 
+      main li code,
+      main pre code,
+      main p code {
+        background-color: #f7f7f7;
+        padding: 5px;
+      }
+
       /* pandoc styles */
       code {
         white-space: pre-wrap;
@@ -276,7 +283,7 @@
         /* color: red; */
       } /* DataType */
       code span.dv {
-        color: darkorange;
+        color: red;
       } /* DecVal */
       code span.er {
         color: #ff0000;
@@ -299,7 +306,7 @@
       } /* Information */
       code span.kw {
         color: #7100f5;
-        font-weight: bold;
+        /* font-weight: bold; */
       } /* Keyword */
       code span.op {
         color: #666666;
@@ -318,7 +325,7 @@
         color: #bb6688;
       } /* SpecialString */
       code span.st {
-        color: magenta;
+        color: rgb(134, 0, 134);
       } /* String */
       code span.va {
         color: #19177c;

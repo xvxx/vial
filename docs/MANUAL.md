@@ -108,7 +108,7 @@ fn main() {
 This should start a server at <http://0.0.0.0:7667> and tell you that
 it did. Congratulations! You're on your way.
 
-## Routes
+## Routing
 
 Routing is the real gravy and potatoes of any web framework, if you
 think about it. In **Vial**, routes are defined with the `routes!`
@@ -136,26 +136,50 @@ that point to `"/"`, but only the first one defined will ever match.
 `ROUTE_PATTERN` can be an exact match, such as `"/user"` or
 `"/v2/search.php3"`, or it can include a named parameter:
 
-1. `"/:name"` — This will match almost anything except paths with `/`
-   or `.` in them.
+1. `"/:name"` — This will match anything except paths with `/` or `.`
+   in them.
 2. `"/:name.md"` — Use this format to match on a specific file extension.
-3. `"/*name"` — This will match everything, including `/`.
+3. `"/*name"` — This will match everything, including `/` and `.`
 
-In the three examples above, calling `req.arg("name")` in an `ACTION`
-will deliver `Some(&str)`.
+In the three examples above, calling `request.arg("name")` in an
+`ACTION` will return `Some(&str)`.
+
+Note that you can have multiple parameters in the same route, as long
+as the "match all" pattern occurs last:
+
+- `"/:category/:id/*name"`
+
+This route will populate `request.arg("category")`, `request.arg("id")`,
+and `request.arg("name")`.
 
 ### Actions
 
-`ACTION` can be either of:
+`ACTIONs` are what routes actually route to. Your code. The app.
 
-1. A closure in the form of `|req| { code }` that returns an
-   `impl Responder`
-2. The name of a function with the signature of `fn(Request) -> impl Responder`.
+An `ACTION` can either be a closure or the name of a function:
+
+1. Closures take the form `|req: Request| { code }` and return an
+   `impl Responder`.
+2. Functions have the signature `fn(Request) -> impl Responder`,
+   basically the same thing.
+
+Returning `impl Responder` is easy - [Responder] is a **Vial** trait
+that defines a single conversion method:
+
+```rust
+pub trait Responder {
+    fn to_response(self) -> Response;
+}
+```
+
+Both `&str` and `String` are `impl Responder`, as well as some other
+common types. Making your own is easy, too, because using the
+`Response` struct is easy.
 
 ### Route Modules
 
-Routes can be defined in different modules and combined together using
-the `vial::run!` macro:
+Routes can be defined in different modules and combined together with
+`vial::run!`:
 
 ```rust
 mod blog;
@@ -178,28 +202,94 @@ fn main() {
 ## Requests
 
 When a route matches and an `ACTION` is called, it's passed a
-[Request] object.
+[Request] object. `Request` contains information about
+the request itself, as well as a number of helper methods.
 
-### Route Arguments
+### Route Parameters
 
-- `arg(&str) -> Option<&str>`
+As mentioned in the [Routing] section above, you can define parameters
+in a route and access their value for a given request using
+`request.arg()`:
+
+```rust
+impl Request {
+    fn arg(&self, name: &str) -> Option<&str>;
+}
+```
 
 ### Query Parameters
 
-- `query(&str) -> Option<&str>`
+In addition to route parameters, **Vial** will also parse good ol'
+fashioned query string parameters for you:
+
+```rust
+impl Request {
+    fn query(&self, name: &str) -> Option<&str>;
+}
+```
+
+For example:
+
+```rust
+vial::routes! {
+    GET "/info" => |req| format!(
+        "Version: v{}",
+        req.query("version").unwrap_or("?")
+    );
+}
+
+fn main() {
+    vial::run!();
+}
+```
+
+Running this and visiting `/info` will show:
+
+    Version: v?
+
+But visiting `/info?version=1.0` will show:
+
+    Version: v1.0
 
 ### Form Data
 
-- `form(&str) -> Option<&str>`
+What's the web without open ended `<textarea>s`? Perish the thought.
+
+POST form data follows the same pattern as query and route parameters:
+use `request.form()` to access a form parameter:
+
+```rust
+impl Request {
+    fn form(&self, name: &str) -> Option<&str>;
+}
+```
 
 ### Request Headers
 
-- `header(&str) -> Option<&str>`
+Headers are available without any of the peksy conveniences of type
+safety. Just give `request.header()` a string and hope you get one
+back!
+
+```rust
+impl Request {
+    fn header(&self, name: &str) -> Option<&str>;
+}
+```
+
+Header names are case insensitive, though, so at least you don't have
+to worry about that.
 
 ### Other Info
 
-- `method() -> &str`
-- `path() -> &str`
+Beyond the headers, `Request` also surfaces a few more basic bits of
+information such as the `request.method()` and `request.path()`:
+
+```rust
+impl Request {
+    fn method(&self) -> &str;
+    fn path(&self) -> &str;
+}
+```
 
 ## Responses
 
@@ -251,3 +341,4 @@ All `ACTIONs` return [Responders][responder], which are turned into
 [request]: https://docs.rs/vial/latest/vial/struct.Request.html
 [response]: https://docs.rs/vial/latest/vial/struct.Response.html
 [responder]: https://docs.rs/vial/latest/vial/trait.Responder.html
+[routing]: #routing
