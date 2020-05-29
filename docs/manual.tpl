@@ -103,6 +103,10 @@
       }
       h2 {
         font-size: 1.75em;
+        margin-top: 75px;
+      }
+      h2:first-of-type {
+        margin-top: 40px;
       }
       h2,
       h3 {
