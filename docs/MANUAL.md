@@ -4,30 +4,38 @@
 
 #### ~ a micro micro-framework ~
 
-**vial** is a micro web "framework" for making micro web "sites". It
-only includes a handful of basic features, hopeful that you'll add
-whatever other features you need on your own. Kind of like ice cream
-toppings at one of those ice cream places.
+**Vial** is a small web "framework" for making small web "sites". It
+includes just a handful of basic features for delivering old school,
+server-side rendered HTML: request routing, form data parsing,
+response building, and serving static file assets.
 
 The goal is a small, lean core that compiles quickly and has as few
 dependencies as possible. Use it for HTML stuff: prototyping ideas,
 testing out concepts, or, perhaps, even writing tiny personal apps.
+Nothing serious though, got it?
 
-This manual is an overview of **vial**’s built in features, as well as
+This manual is an overview of **Vial**’s built-in features, as well as
 the few _optional_ features you can enable. It also includes
-suggestions for many "common tasks", like using a database to store
+suggestions for some "common tasks", like using a database to store
 information.
 
 ## Hello World
 
-This global greeting shows off some of **vial**'s built-in features.
+First, here's the bare minimum:
 
-You can play with it in real time by running this command in your
-local copy of this repository:
+```rust
+vial::routes! {
+    GET "/" => |_| "Greetings, creature.";
+}
 
-    $ cargo run --example manual
+fn main() {
+    vial::run!();
+}
+```
 
-Feel free to open it in your favorite text editor and poke around!
+That should tell you a lot, in that there isn't a lot to **Vial**.
+
+Now here's a bigger bear, showing off most of **Vial**'s features:
 
 ```rust
 use vial::prelude::*;
@@ -68,22 +76,49 @@ fn main() {
 }
 ```
 
+You can run the above example from the root of this repository:
+
+    $ cargo run --example manual
+
 ## Getting Started
 
-- Add it to your project
-- Include the prelude
-- Define `routes!`
-- Call `run!`
+**Vial** should work on any recent, stable version of **Rust** on
+**Linux** or **macOS**.
+
+To begin, add **Vial** to your project's `Cargo.toml`:
+
+```rust
+[dependencies]
+vial = "*"
+```
+
+Now all you have to do is call `vial::routes!` to define your routes
+and `vial::run!` to start the server in `src/main.rs`:
+
+```rust
+vial::routes! {
+    GET "/" => |_| "It works!";
+}
+
+fn main() {
+    vial::run!();
+}
+```
+
+This should start a server at <http://0.0.0.0:7667> and tell you that
+it did. Congratulations! You're on your way.
 
 ## Routes
 
-Routes are written using the `routes!` macro in the format:
+Routing is the real gravy and potatoes of any web framework, if you
+think about it. In **Vial**, routes are defined with the `routes!`
+macro in this format:
 
     HTTP_METHOD ROUTE_PATTERN => ACTION;
 
 The order in which routes are written matters - routes written first
 will be checked for matches first, meaning you can declare many routes
-that point to `"/"`, but only the first one declared will ever match.
+that point to `"/"`, but only the first one defined will ever match.
 
 ### HTTP Methods
 
@@ -102,7 +137,7 @@ that point to `"/"`, but only the first one declared will ever match.
 `"/v2/search.php3"`, or it can include a named parameter:
 
 1. `"/:name"` — This will match almost anything except paths with `/`
-   in them or with `.` in them.
+   or `.` in them.
 2. `"/:name.md"` — Use this format to match on a specific file extension.
 3. `"/*name"` — This will match everything, including `/`.
 
@@ -116,6 +151,29 @@ will deliver `Some(&str)`.
 1. A closure in the form of `|req| { code }` that returns an
    `impl Responder`
 2. The name of a function with the signature of `fn(Request) -> impl Responder`.
+
+### Route Modules
+
+Routes can be defined in different modules and combined together using
+the `vial::run!` macro:
+
+```rust
+mod blog;
+
+mod wiki {
+    vial::routes! {
+        GET "/wiki" => |_| "This is the wiki.";
+    }
+}
+
+vial::routes! {
+    GET "/" => |_| "Index page.";
+}
+
+fn main() {
+    vial::run!(self, blog, wiki);
+}
+```
 
 ## Requests
 
