@@ -139,7 +139,7 @@
       }
 
       main li code,
-      main pre code,
+      main pre code:not(.sourceCode),
       main p code {
         background-color: #f7f7f7;
         padding: 5px;
