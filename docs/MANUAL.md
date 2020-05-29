@@ -35,7 +35,7 @@ fn main() {
 
 That should tell you a lot, in that there isn't a lot to **Vial**.
 
-Now here's a bigger bear, showing off most of **Vial**'s features:
+Now here's a bigger bear, showing off more of **Vial**'s features:
 
 ```rust
 use vial::prelude::*;
@@ -79,6 +79,10 @@ fn main() {
 You can run the above example from the root of this repository:
 
     $ cargo run --example manual
+
+**Vial** comes with a handful of examples in the `examples/`
+directory, so be sure to peruse them skeptically either alongside or
+after digesting this manual.
 
 ## Getting Started
 
@@ -286,19 +290,60 @@ information such as the `request.method()` and `request.path()`:
 
 ```rust
 impl Request {
+    // "GET", "POST", etc. Always uppercase.
     fn method(&self) -> &str;
+    // Always starts with "/"
     fn path(&self) -> &str;
 }
 ```
 
 ## Responses
 
-All `ACTIONs` return [Responders][responder], which are turned into
-[Responses][response] before being sent back to the client.
+Every `ACTION` returns an `impl Responder`, which is a trait with a
+single method:
 
-### HTML from String
+```rust
+pub trait Responder {
+    fn to_response(self) -> Response;
+}
+```
 
-### HTML from File
+Common types like `&str` and `Option<String>` already implement this
+trait, so you are free to be lazy and return simple objects in your
+`ACTIONs`. If, however, you want to set headers and do other fancy
+jazz, you'll need to build and return a [Response] object directly.
+
+`Response` objects can be with either a body or status code:
+
+```rust
+// Response w/ HTTP Status Code 422, No Body
+fn fourtwotwo(_req: Request) -> impl Responder {
+    Response::from(422)
+}
+
+// Response w/ HTTP Status Code 422 & Body
+fn fourtwotwo(_req: Request) -> impl Responder {
+    Response::from("404 File Not Found").with_code(404);
+}
+
+// Serve the README as HTML. Probably want to Markdownize it first...
+fn fourtwotwo(_req: Request) -> impl Responder {
+    Response::from_file("README.md");
+}
+```
+
+### from String
+
+Each `Response` defaults to a `Content-Type` of `text/html; charset=utf8`, so you can build HTML with your bare hands and **Vial**
+will lovingly deliver it to the client:
+
+```rust
+fn index(_req: Request) -> impl Responder {
+    Response::from("<marquee>Coming soon!</marquee>")
+}
+```
+
+### from Asset
 
 ### Redirect
 
