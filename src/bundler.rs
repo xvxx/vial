@@ -4,6 +4,7 @@ use {
         env,
         fs::{self, File},
         io::{self, Read, Write},
+        os::unix,
         path::Path,
     },
 };
@@ -17,10 +18,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
         if link.exists() {
             fs::remove_file(&link);
         }
-        std::os::unix::fs::symlink(
-            std::env::current_dir()?.join(dir),
-            Path::new(&out_dir).join(dir),
-        )?;
+        unix::fs::symlink(env::current_dir()?.join(dir), link)?;
         let bundle_rs = Path::new(&out_dir).join("bundle.rs");
         if bundle_rs.exists() {
             fs::remove_file(&bundle_rs);
