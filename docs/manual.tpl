@@ -177,10 +177,10 @@
       }
       pre.sourceCode {
         margin: 0;
-        background-color: #111;
+        background-color: #f7f7f7;
         border-radius: 15px;
         padding: 20px;
-        color: #ccc;
+        color: #444;
       }
       @media screen {
         div.sourceCode {
@@ -257,7 +257,7 @@
         color: #4070a0;
       } /* Char */
       code span.cn {
-        color: red;
+        /* color: red; */
       } /* Constant */
       code span.co {
         color: #60a0b0;
@@ -273,10 +273,10 @@
         font-style: italic;
       } /* Documentation */
       code span.dt {
-        color: red;
+        /* color: red; */
       } /* DataType */
       code span.dv {
-        color: yellow;
+        color: darkorange;
       } /* DecVal */
       code span.er {
         color: #ff0000;
@@ -308,7 +308,8 @@
         color: #007020;
       } /* Other */
       code span.pp {
-        color: #ccc;
+        /* color: black; */
+        /* font-weight: bold; */
       } /* Preprocessor */
       code span.sc {
         color: #4070a0;
