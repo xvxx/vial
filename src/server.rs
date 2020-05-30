@@ -41,20 +41,8 @@ impl Server {
     }
 
     fn handle_request(&self, mut stream: TcpStream) -> Result<()> {
-        let mut buffer = vec![];
-        let mut read_buf = [0u8; 512];
-
-        let req = loop {
-            let n = stream.read(&mut read_buf)?;
-            if n == 0 {
-                return Err(error!("Empty response"));
-            }
-            buffer.extend_from_slice(&read_buf[..n]);
-            if let Some(req) = Request::from_raw_http_request(&mut buffer)? {
-                break req;
-            }
-        };
-
+        let reader = stream.try_clone()?;
+        let req = Request::from_reader(reader)?;
         self.write_response(stream, req)
     }
 

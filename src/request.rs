@@ -1,28 +1,69 @@
 use crate::{util, Result};
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    io::{self, Read},
+    mem,
+    net::TcpStream,
+    str,
+};
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+struct Span(usize, usize);
+
+impl Span {
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0 && self.1 == 0
+    }
+}
 
 #[derive(Debug)]
 pub struct Request {
-    path: String,
-    method: String,
-    body: String,
+    path: Span,
+    method: Span,
+    body: Span,
+    headers: Vec<(Span, Span)>,
+    buffer: Vec<u8>,
 
-    headers: HashMap<String, String>,
     pub(crate) args: HashMap<String, String>,
     query: HashMap<String, String>,
     form: HashMap<String, String>,
 }
 
+enum Parse {
+    Complete(Request),
+    Partial(Vec<u8>),
+}
+
 impl Request {
     pub fn default() -> Request {
         Request {
-            path: "/".to_string(),
-            method: "GET".to_string(),
-            body: "".to_string(),
-            headers: HashMap::new(),
+            path: Span(0, 0),
+            method: Span(0, 0),
+            body: Span(0, 0),
+            headers: Vec::new(),
             args: HashMap::new(),
             query: HashMap::new(),
             form: HashMap::new(),
+            buffer: Vec::new(),
+        }
+    }
+
+    pub fn from_reader(mut reader: TcpStream) -> Result<Request> {
+        let mut buffer = Vec::with_capacity(512);
+        let mut read_buf = [0u8; 512];
+
+        loop {
+            let n = reader.read(&mut read_buf)?;
+            if n == 0 {
+                return Err(error!("Connection Closed"));
+            }
+            buffer.extend_from_slice(&read_buf[..n]);
+            match parse(mem::replace(&mut buffer, vec![]))? {
+                Parse::Complete(req) => return Ok(req),
+                Parse::Partial(b) => {
+                    mem::replace(&mut buffer, b);
+                }
+            }
         }
     }
 
@@ -31,41 +72,53 @@ impl Request {
     }
 
     pub fn with_path(mut self, path: &str) -> Request {
-        self.path = path.to_string();
+        self.path = Span(self.buffer.len(), self.buffer.len() + path.len());
+        self.buffer.extend(path.as_bytes());
         self.parse_query();
         self
     }
 
     pub fn with_body(mut self, body: &str) -> Request {
-        self.body = body.to_string();
+        self.body = Span(self.buffer.len(), self.buffer.len() + body.len());
+        self.buffer.extend(body.as_bytes());
         self
     }
 
     pub fn with_method(mut self, method: &str) -> Request {
-        self.method = method.to_string();
+        self.method = Span(self.buffer.len(), self.buffer.len() + method.len());
+        self.buffer.extend(method.as_bytes());
         self
     }
 
     pub fn body(&self) -> &str {
-        &self.body
+        str::from_utf8(&self.buffer[self.body.0..self.body.1]).unwrap_or("?")
     }
 
     pub fn method(&self) -> &str {
-        &self.method
+        str::from_utf8(&self.buffer[self.method.0..self.method.1]).unwrap_or("?")
     }
 
     pub fn path(&self) -> &str {
-        &self.path
+        str::from_utf8(&self.buffer[self.path.0..self.path.1]).unwrap_or("?")
     }
 
     pub fn arg(&self, name: &str) -> Option<&str> {
         self.args.get(name).and_then(|v| Some(v.as_ref()))
     }
 
+    fn span_as_str(&self, span: Span) -> &str {
+        if span.1 < self.buffer.len() && span.1 >= span.0 {
+            str::from_utf8(&self.buffer[span.0..span.1]).unwrap_or("?")
+        } else {
+            ""
+        }
+    }
+
     pub fn header(&self, name: &str) -> Option<&str> {
         self.headers
-            .get(&name.to_lowercase())
-            .and_then(|v| Some(v.as_ref()))
+            .iter()
+            .find(|(n, _)| self.span_as_str(*n).to_lowercase() == name)
+            .and_then(|(_, v)| Some(self.span_as_str(*v)))
     }
 
     /// Was the given form value sent?
@@ -87,7 +140,7 @@ impl Request {
             return;
         }
         let mut map = HashMap::new();
-        parse_query_into_map(&self.body, &mut map);
+        parse_query_into_map(self.body(), &mut map);
         if !map.is_empty() {
             self.form = map;
         }
@@ -120,45 +173,11 @@ impl Request {
 
         if !map.is_empty() {
             // strip ?querystring from /path
-            if let Some(idx) = self.path.find('?') {
-                self.path = self.path[..idx].to_string();
+            if let Some(idx) = self.path().find('?') {
+                self.path = Span(self.path.0, self.path.0 + idx);
             }
             self.query = map;
         }
-    }
-
-    pub(crate) fn from_raw_http_request(buf: &[u8]) -> Result<Option<Request>> {
-        let mut headers = [httparse::EMPTY_HEADER; 100];
-        let mut hreq = httparse::Request::new(&mut headers);
-
-        let headers = hreq
-            .parse(buf)
-            .map_err(|e| error!("Unable to parse HTTP headers: {}", e))?;
-
-        let header_length = match headers {
-            httparse::Status::Complete(n) => n,
-            httparse::Status::Partial => return Ok(None),
-        };
-
-        let mut req = Request::default();
-        for header in hreq.headers {
-            req.headers.insert(
-                header.name.to_lowercase(),
-                String::from_utf8_lossy(header.value).to_string(),
-            );
-        }
-        if let Some(method) = hreq.method {
-            req.method = method.into();
-        }
-        if let Some(path) = hreq.path {
-            req = req.with_path(path);
-        }
-        if header_length < buf.len() {
-            req.body = String::from_utf8_lossy(&buf[header_length..]).into();
-            req.parse_body();
-        }
-
-        Ok(Some(req))
     }
 }
 
@@ -175,4 +194,94 @@ fn parse_query_into_map(params: &str, map: &mut HashMap<String, String>) {
             }
         }
     }
+}
+
+/// Parse a raw HTTP request into a Request struct.
+fn parse(buffer: Vec<u8>) -> Result<Parse> {
+    let method_len = loop {
+        if buffer.len() < 10 {
+            return Ok(Parse::Partial(buffer));
+        }
+        match &buffer[0..3] {
+            b"GET" | b"PUT" => break 3,
+            _ => {}
+        }
+        match &buffer[0..4] {
+            b"HEAD" | b"POST" => break 4,
+            _ => {}
+        }
+        match &buffer[0..5] {
+            b"PATCH" | b"TRACE" => break 5,
+            _ => {}
+        }
+        if &buffer[0..6] == b"DELETE" {
+            break 6;
+        }
+        match &buffer[0..7] {
+            b"CONNECT" | b"OPTIONS" => break 7,
+            _ => {}
+        }
+        return Err(error!("Unknown HTTP method"));
+    };
+
+    let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
+    if path_len.is_none() {
+        return Ok(Parse::Partial(buffer));
+    }
+    let path_len = path_len.unwrap();
+
+    let pos = method_len + 1 + path_len + 1;
+
+    if buffer.len() <= pos + 8 {
+        return Ok(Parse::Partial(buffer));
+    }
+    if &buffer[pos..pos + 8] != b"HTTP/1.1" {
+        return Err(error!(
+            "Error parsing HTTP: {}",
+            str::from_utf8(&buffer).unwrap_or("???")
+        ));
+    }
+
+    let pos = pos + 8;
+    if &buffer[pos..pos + 2] != b"\r\n" {
+        return Err(error!("Error parsing HTTP"));
+    }
+
+    let mut pos = pos + 2;
+    let mut start = pos;
+    let mut headers = vec![];
+    let mut name = Span(0, 0);
+    let mut saw_end = false;
+
+    for (i, c) in buffer[pos..].iter().enumerate() {
+        if *c == b':' {
+            name = Span(start, start + i);
+            start = pos + 1;
+        } else if *c == b'\r' && buffer.get(pos + 1) == Some(&b'\n') {
+            headers.push((name, Span(start, start + i)));
+            start = pos + 1;
+            if buffer.get(pos + 2) == Some(&b'\r') && buffer.get(pos + 3) == Some(&b'\n') {
+                pos += 4;
+                saw_end = true;
+                break;
+            }
+        }
+        pos += 1;
+    }
+
+    // didn't receive full headers, abort
+    if !saw_end {
+        return Ok(Parse::Partial(buffer));
+    }
+
+    let mut req = Request::default();
+    req.method = Span(0, method_len);
+    req.path = Span(method_len + 1, method_len + 1 + path_len);
+    req.headers = headers;
+    req.buffer = buffer;
+    if let Some(size) = req.header("Content-Length") {
+        req.body = Span(pos, size.parse().unwrap_or(0));
+    }
+
+    Ok(Parse::Complete(req))
 }
