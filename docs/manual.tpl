@@ -195,7 +195,7 @@
       }
       @media screen {
         div.sourceCode {
-          overflow: auto;
+          overflow: visible;
         }
       }
       @media print {
