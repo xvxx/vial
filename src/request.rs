@@ -115,6 +115,15 @@ impl Request {
     }
 
     pub fn header(&self, name: &str) -> Option<&str> {
+        println!("header: {}", name);
+        println!(
+            "headers: {:?}",
+            self.headers
+                .iter()
+                .map(|(n, v)| format!("{} = {};", self.span_as_str(*n), self.span_as_str(*v)))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
         self.headers
             .iter()
             .find(|(n, _)| self.span_as_str(*n).to_lowercase() == name)
@@ -278,6 +287,8 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
         return Ok(Parse::Partial(buffer));
     }
 
+    println!("BUF: {}", str::from_utf8(&buffer).unwrap());
+
     let mut req = Request::default();
     req.method = Span(0, method_len);
     req.path = Span(method_len + 1, method_len + 1 + path_len);
@@ -286,6 +297,15 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
     if let Some(size) = req.header("Content-Length") {
         req.body = Span(pos, size.parse().unwrap_or(0));
     }
+
+    println!(
+        "PARSED: {:?}",
+        req.headers
+            .iter()
+            .map(|(n, v)| format!("{} = {};", req.span_as_str(*n), req.span_as_str(*v)))
+            .collect::<Vec<_>>()
+            .join(" ")
+    );
 
     Ok(Parse::Complete(req))
 }
