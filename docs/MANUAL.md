@@ -21,7 +21,7 @@ information.
 
 ## Hello World
 
-First, here's the bare minimum:
+Here's the bare minimum:
 
 ```rust
 vial::routes! {
@@ -151,24 +151,54 @@ In the three examples above, calling `request.arg("name")` in an
 Note that you can have multiple parameters in the same route, as long
 as the "match all" pattern occurs last:
 
-- `"/:category/:id/*name"`
+```rust
+vial::routes! {
+    GET "/:category/:id/*name" => |req| format!(
+        "<p>Category: {}</p>
+        <p>ID: {}</p>
+        <p>Name: {}</p>",
+        req.arg("category").unwrap_or("None"),
+        req.arg("id").unwrap_or("None"),
+        req.arg("name").unwrap_or("None"),
+    );
+}
 
-This route will populate `request.arg("category")`, `request.arg("id")`,
-and `request.arg("name")`.
+fn main() {
+    vial::run!();
+}
+```
 
 ### Actions
 
 `ACTIONs` are what routes actually route to. Your code. The app.
 
-An `ACTION` can either be a closure or the name of a function:
+They are functions or closures take a [Request] and return a
+[Responder]:
 
-1. Closures take the form `|req: Request| { code }` and return an
-   `impl Responder`.
-2. Functions have the signature `fn(Request) -> impl Responder`,
-   basically the same thing.
+```rust
+use vial::prelude::*;
+
+routes! {
+    GET "/info" => |req| format!(
+        "<p>Name: {}</p>", req.query("name").unwrap_or("None")
+    );
+    GET "/" => index;
+}
+
+fn index(req: Request) -> impl Responder {
+    "<form method='GET'>
+        <p>Enter your name: <input type='text' name='name'/></p>
+        <input type='submit'/>
+    </form>"
+}
+
+fn main() {
+    run!();
+}
+```
 
 Returning `impl Responder` is easy - [Responder] is a **Vial** trait
-that defines a single conversion method:
+that defines a single conversion method that returns a [Response]:
 
 ```rust
 pub trait Responder {
@@ -176,9 +206,15 @@ pub trait Responder {
 }
 ```
 
-Both `&str` and `String` are `impl Responder`, as well as some other
-common types. Making your own is easy, too, because using the
-`Response` struct is easy.
+These types implement `Responder` by default:
+
+- `&str`
+- `String`
+- `usize` - Empty response with this number as the status code.
+- `Option<impl Responder>` - 404 on `None`
+- `Result<impl Responder, Error>` - 500 on Error
+
+Making your own is easy, too, by creating a [Response].
 
 ### Route Modules
 
@@ -216,8 +252,10 @@ in a route and access their value for a given request using
 `request.arg()`:
 
 ```rust
-impl Request {
-    fn arg(&self, name: &str) -> Option<&str>;
+vial::routes! {
+    GET "/:animal" => |req| format!(
+        "Animal: {}", req.arg("animal").unwrap_or("None")
+    );
 }
 ```
 
@@ -225,14 +263,6 @@ impl Request {
 
 In addition to route parameters, **Vial** will also parse good ol'
 fashioned query string parameters for you:
-
-```rust
-impl Request {
-    fn query(&self, name: &str) -> Option<&str>;
-}
-```
-
-For example:
 
 ```rust
 vial::routes! {
@@ -255,6 +285,8 @@ But visiting `/info?version=1.0` will show:
 
     Version: v1.0
 
+Like `arg()`, `query()` returns `Option<&str>`.
+
 ### POST Form Data
 
 What's the web without open ended `<textarea>s`? Perish the thought.
@@ -263,8 +295,43 @@ POST form data follows the same pattern as query and route parameters:
 use `request.form()` to access a form parameter:
 
 ```rust
-impl Request {
-    fn form(&self, name: &str) -> Option<&str>;
+use vial::prelude::*;
+use db;
+
+routes! {
+    GET "/show/:id" => show;
+    GET "/new" => new;
+    POST "/new" => create;
+}
+
+fn new(_req: Request) -> impl Responder {
+    "<form method='POST'>
+        <p>Name: <input type='text' name='name'/></p>
+        <p>Location: <input type='text' name='location'/></p>
+        <p><input type='submit'/></p>
+    </form>"
+}
+
+fn create(req: Request) -> Result<impl Responder, io::Error> {
+    let id = db::insert!(
+        "name" => req.form("name").unwrap(),
+        "location" => req.form("location").unwrap()
+    )?;
+    Ok(Response::redirect_to(format!("/show/{}", id)))
+}
+
+fn show(req: Request) -> Option<impl Responder> {
+    let record = db::query!("id" => id).ok()?;
+    format!(
+        "<p>Name: {}</p>
+        <p>Location: {}</p>",
+        record.get("name").unwrap_or("None"),
+        record.get("location").unwrap_or("None"),
+    )
+}
+
+fn main() {
+    run!();
 }
 ```
 
@@ -275,8 +342,33 @@ safety. Just give `request.header()` a string and hope you get one
 back!
 
 ```rust
-impl Request {
-    fn header(&self, name: &str) -> Option<&str>;
+use vial::prelude::*;
+use std::{fs, path::Path};
+
+routes! {
+    GET "/:file" => show;
+}
+
+fn show(req: Request) -> Option<impl Responder> {
+    let path = format!("./{}", req.arg("file")?);
+    if Path::new(&path).exists() {
+        if req.header("Accept").unwrap_or("?").starts_with("text/plain") {
+            Some(Response::from_header("Content-Type", "text/plain")
+                .with_file(&path))
+        } else {
+            let file = fs::read_to_string(&path).unwrap();
+            Some(Response::from_body(format!(
+                "<html><body>
+                <pre style='width:50%;margin:0 auto'>{}</pre>
+                </body></html>", file)))
+        }
+    } else {
+        None
+    }
+}
+
+fn main() {
+    run!();
 }
 ```
 

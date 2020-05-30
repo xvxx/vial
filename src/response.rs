@@ -76,6 +76,18 @@ impl Response {
         Response::from(500).with_error(err)
     }
 
+    pub fn from_header(name: &str, value: &str) -> Response {
+        Response::default().with_header(name, value)
+    }
+
+    pub fn from_body<S: AsRef<str>>(body: S) -> Response {
+        Response::default().with_body(body)
+    }
+
+    pub fn from_text<S: AsRef<str>>(text: S) -> Response {
+        Response::default().with_text(text)
+    }
+
     pub fn with_code(mut self, code: usize) -> Response {
         self.code = code;
         self
@@ -85,6 +97,11 @@ impl Response {
         self.body.clear();
         self.body.push_str(body.as_ref());
         self
+    }
+
+    pub fn with_text<S: AsRef<str>>(mut self, text: S) -> Response {
+        self.with_body(text)
+            .with_header("Content-Type", "text/plain")
     }
 
     pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response {
