@@ -37,9 +37,9 @@ pub struct Request {
     body: Span,
     headers: Vec<(Span, Span)>,
     buffer: Vec<u8>,
+    form: HashMap<String, String>,
 
     pub(crate) args: HashMap<String, String>,
-    form: HashMap<String, String>,
 }
 
 impl Request {
@@ -60,19 +60,35 @@ impl Request {
         let mut buffer = Vec::with_capacity(512);
         let mut read_buf = [0u8; 512];
 
-        loop {
+        let mut req = loop {
             let n = reader.read(&mut read_buf)?;
             if n == 0 {
                 return Err(error!("Connection Closed"));
             }
             buffer.extend_from_slice(&read_buf[..n]);
             match parse(mem::replace(&mut buffer, vec![]))? {
-                ParseStatus::Complete(req) => return Ok(req),
+                ParseStatus::Complete(req) => break req,
                 ParseStatus::Partial(b) => {
                     mem::replace(&mut buffer, b);
                 }
             }
+        };
+
+        if let Some(size) = req.header("Content-Length") {
+            let size = size.parse().unwrap_or(0);
+            let start = req.body.0;
+            while req.buffer[start..].len() < size {
+                let n = reader.read(&mut read_buf)?;
+                if n == 0 {
+                    return Err(error!("Connection Closed"));
+                }
+                req.buffer.extend_from_slice(&read_buf[..n]);
+            }
+            req.body.1 = req.body.0 + size;
+            req.parse_form();
         }
+
+        Ok(req)
     }
 
     pub fn from_path(path: &str) -> Request {
@@ -135,7 +151,7 @@ impl Request {
 
     /// Was the given form value sent?
     pub fn has_form(&mut self, name: &str) -> bool {
-        self.form.contains_key(name)
+        self.form(name).is_some()
     }
 
     /// Return a value from the POSTed form data.
@@ -143,19 +159,20 @@ impl Request {
         self.form.get(name).and_then(|s| Some(s.as_ref()))
     }
 
-    /// Turn POSTed form data into a nice 'n tidy HashMap.
-    pub(crate) fn parse_body(&mut self) {
-        if !self.form.is_empty() {
-            self.form.clear();
-        }
-        if self.body.is_empty() {
-            return;
-        }
+    /// Parse and decode form POST data into a Hash.
+    fn parse_form(&mut self) {
         let mut map = HashMap::new();
-        parse_query_into_map(self.body(), &mut map);
-        if !map.is_empty() {
-            self.form = map;
+        for kv in self.body().split('&') {
+            let mut parts = kv.splitn(2, '=');
+            if let Some(key) = parts.next() {
+                if let Some(val) = parts.next() {
+                    map.insert(key.to_string(), util::decode_form_value(val));
+                } else {
+                    map.insert(key.to_string(), String::new());
+                };
+            }
         }
+        self.form = map;
     }
 
     /// Was the given query value sent?
@@ -176,21 +193,6 @@ impl Request {
                 }
             })
             .next()
-    }
-}
-
-/// Parses a query string like "name=jimbo&other_data=sure" into a
-/// map!("name" => "jimbo", "other_data" => "sure") HashMap
-fn parse_query_into_map(params: &str, map: &mut HashMap<String, String>) {
-    for kv in params.split('&') {
-        let mut parts = kv.splitn(2, '=');
-        if let Some(key) = parts.next() {
-            if let Some(val) = parts.next() {
-                map.insert(key.to_string(), util::decode_form_value(val));
-            } else {
-                map.insert(key.to_string(), "".to_string());
-            }
-        }
     }
 }
 
@@ -222,7 +224,6 @@ fn parse(buffer: Vec<u8>) -> Result<ParseStatus> {
 
             _ => {}
         }
-
         return Err(error!("Unknown HTTP method"));
     };
 
@@ -231,9 +232,7 @@ fn parse(buffer: Vec<u8>) -> Result<ParseStatus> {
         return Ok(ParseStatus::Partial(buffer));
     }
     let path_len = path_len.unwrap();
-
     let pos = method_len + 1 + path_len + 1;
-
     if buffer.len() <= pos + 10 {
         return Ok(ParseStatus::Partial(buffer));
     }
@@ -313,6 +312,7 @@ fn parse(buffer: Vec<u8>) -> Result<ParseStatus> {
         req.path = req.full_path;
     }
     req.headers = headers;
+    req.body = Span(pos, pos + buffer.len());
     req.buffer = buffer;
 
     Ok(ParseStatus::Complete(req))
