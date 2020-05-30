@@ -204,23 +204,27 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
         }
         match &buffer[0..3] {
             b"GET" | b"PUT" => break 3,
+            b"HEA" | b"POS" => match &buffer[0..4] {
+                b"HEAD" | b"POST" => break 4,
+                _ => {}
+            },
+            b"PAT" | b"TRA" => match &buffer[0..5] {
+                b"PATCH" | b"TRACE" => break 5,
+                _ => {}
+            },
+            b"DEL" => {
+                if &buffer[0..6] == b"DELETE" {
+                    break 6;
+                }
+            }
+            b"CON" | b"OPT" => match &buffer[0..7] {
+                b"CONNECT" | b"OPTIONS" => break 7,
+                _ => {}
+            },
+
             _ => {}
         }
-        match &buffer[0..4] {
-            b"HEAD" | b"POST" => break 4,
-            _ => {}
-        }
-        match &buffer[0..5] {
-            b"PATCH" | b"TRACE" => break 5,
-            _ => {}
-        }
-        if &buffer[0..6] == b"DELETE" {
-            break 6;
-        }
-        match &buffer[0..7] {
-            b"CONNECT" | b"OPTIONS" => break 7,
-            _ => {}
-        }
+
         return Err(error!("Unknown HTTP method"));
     };
 
