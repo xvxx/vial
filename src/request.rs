@@ -14,6 +14,14 @@ impl Span {
     pub fn is_empty(&self) -> bool {
         self.0 == 0 && self.1 == 0
     }
+
+    pub fn from_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
+        if self.1 >= self.0 && self.1 <= buf.len() {
+            str::from_utf8(&buf[self.0..self.1]).unwrap_or("?")
+        } else {
+            ""
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -127,7 +135,7 @@ impl Request {
         self.headers
             .iter()
             .find(|(n, _)| self.span_as_str(*n).to_lowercase() == name)
-            .and_then(|(_, v)| Some(self.span_as_str(*v)))
+            .and_then(|(_, v)| Some(self.span_as_str(*v).trim()))
     }
 
     /// Was the given form value sent?
@@ -245,7 +253,7 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
 
     let pos = method_len + 1 + path_len + 1;
 
-    if buffer.len() <= pos + 8 {
+    if buffer.len() <= pos + 10 {
         return Ok(Parse::Partial(buffer));
     }
     if &buffer[pos..pos + 8] != b"HTTP/1.1" {
@@ -254,29 +262,56 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
             str::from_utf8(&buffer).unwrap_or("???")
         ));
     }
-
     let pos = pos + 8;
     if &buffer[pos..pos + 2] != b"\r\n" {
-        return Err(error!("Error parsing HTTP"));
+        return Err(error!("Error parsing HTTP: expected \\r\\n"));
     }
 
     let mut pos = pos + 2;
     let mut start = pos;
-    let mut headers = vec![];
+    let mut headers = Vec::with_capacity(16);
     let mut name = Span(0, 0);
     let mut saw_end = false;
+    let mut parsing_key = true;
 
-    for (i, c) in buffer[pos..].iter().enumerate() {
-        if *c == b':' {
-            name = Span(start, start + i);
-            start = pos + 1;
-        } else if *c == b'\r' && buffer.get(pos + 1) == Some(&b'\n') {
-            headers.push((name, Span(start, start + i)));
-            start = pos + 1;
-            if buffer.get(pos + 2) == Some(&b'\r') && buffer.get(pos + 3) == Some(&b'\n') {
-                pos += 4;
-                saw_end = true;
-                break;
+    let mut iter = buffer[pos..].iter();
+    while let Some(c) = iter.next() {
+        if parsing_key {
+            match *c {
+                b':' => {
+                    name = Span(start, pos);
+                    start = pos + 1;
+                    parsing_key = false;
+                }
+                b'\r' | b'\n' | b' ' => return Err(error!("Error parsing HTTP: header key")),
+                _ => {}
+            }
+        } else {
+            match *c {
+                b'\r' => {
+                    if buffer.get(pos + 1) == Some(&b'\n') {
+                        if name == Span(0, 0) {
+                            return Err(error!("Error parsing HTTP"));
+                        }
+
+                        headers.push((name, Span(start, pos)));
+                        name = Span(0, 0);
+                        iter.next();
+                        parsing_key = true;
+
+                        if buffer.get(pos + 2) == Some(&b'\r')
+                            && buffer.get(pos + 3) == Some(&b'\n')
+                        {
+                            pos += 4;
+                            saw_end = true;
+                            break;
+                        }
+
+                        start = pos + 2;
+                        pos += 1;
+                    }
+                }
+                _ => {}
             }
         }
         pos += 1;
@@ -287,8 +322,6 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
         return Ok(Parse::Partial(buffer));
     }
 
-    println!("BUF: {}", str::from_utf8(&buffer).unwrap());
-
     let mut req = Request::default();
     req.method = Span(0, method_len);
     req.path = Span(method_len + 1, method_len + 1 + path_len);
@@ -297,15 +330,6 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
     if let Some(size) = req.header("Content-Length") {
         req.body = Span(pos, size.parse().unwrap_or(0));
     }
-
-    println!(
-        "PARSED: {:?}",
-        req.headers
-            .iter()
-            .map(|(n, v)| format!("{} = {};", req.span_as_str(*n), req.span_as_str(*v)))
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
 
     Ok(Parse::Complete(req))
 }
