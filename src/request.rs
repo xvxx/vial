@@ -24,6 +24,11 @@ impl Span {
     }
 }
 
+enum ParseStatus {
+    Complete(Request),
+    Partial(Vec<u8>),
+}
+
 #[derive(Debug)]
 pub struct Request {
     path: Span,
@@ -35,11 +40,6 @@ pub struct Request {
 
     pub(crate) args: HashMap<String, String>,
     form: HashMap<String, String>,
-}
-
-enum Parse {
-    Complete(Request),
-    Partial(Vec<u8>),
 }
 
 impl Request {
@@ -67,8 +67,8 @@ impl Request {
             }
             buffer.extend_from_slice(&read_buf[..n]);
             match parse(mem::replace(&mut buffer, vec![]))? {
-                Parse::Complete(req) => return Ok(req),
-                Parse::Partial(b) => {
+                ParseStatus::Complete(req) => return Ok(req),
+                ParseStatus::Partial(b) => {
                     mem::replace(&mut buffer, b);
                 }
             }
@@ -195,10 +195,10 @@ fn parse_query_into_map(params: &str, map: &mut HashMap<String, String>) {
 }
 
 /// Parse a raw HTTP request into a Request struct.
-fn parse(buffer: Vec<u8>) -> Result<Parse> {
+fn parse(buffer: Vec<u8>) -> Result<ParseStatus> {
     let method_len = loop {
         if buffer.len() < 10 {
-            return Ok(Parse::Partial(buffer));
+            return Ok(ParseStatus::Partial(buffer));
         }
         match &buffer[0..3] {
             b"GET" | b"PUT" => break 3,
@@ -228,14 +228,14 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
 
     let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
     if path_len.is_none() {
-        return Ok(Parse::Partial(buffer));
+        return Ok(ParseStatus::Partial(buffer));
     }
     let path_len = path_len.unwrap();
 
     let pos = method_len + 1 + path_len + 1;
 
     if buffer.len() <= pos + 10 {
-        return Ok(Parse::Partial(buffer));
+        return Ok(ParseStatus::Partial(buffer));
     }
     if &buffer[pos..pos + 8] != b"HTTP/1.1" {
         return Err(error!(
@@ -300,7 +300,7 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
 
     // didn't receive full headers, abort
     if !saw_end {
-        return Ok(Parse::Partial(buffer));
+        return Ok(ParseStatus::Partial(buffer));
     }
 
     let mut req = Request::default();
@@ -315,5 +315,5 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
     req.headers = headers;
     req.buffer = buffer;
 
-    Ok(Parse::Complete(req))
+    Ok(ParseStatus::Complete(req))
 }
