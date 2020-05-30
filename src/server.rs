@@ -1,6 +1,5 @@
 use {
     crate::{asset, Request, Response, Result, Router},
-    httparse,
     std::{
         io::{self, prelude::*, BufReader, Read, Write},
         net::{SocketAddr, TcpListener, TcpStream, ToSocketAddrs},
