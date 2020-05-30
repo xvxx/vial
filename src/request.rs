@@ -27,13 +27,13 @@ impl Span {
 #[derive(Debug)]
 pub struct Request {
     path: Span,
+    full_path: Span,
     method: Span,
     body: Span,
     headers: Vec<(Span, Span)>,
     buffer: Vec<u8>,
 
     pub(crate) args: HashMap<String, String>,
-    query: HashMap<String, String>,
     form: HashMap<String, String>,
 }
 
@@ -46,11 +46,11 @@ impl Request {
     pub fn default() -> Request {
         Request {
             path: Span(0, 0),
+            full_path: Span(0, 0),
             method: Span(0, 0),
             body: Span(0, 0),
             headers: Vec::new(),
             args: HashMap::new(),
-            query: HashMap::new(),
             form: HashMap::new(),
             buffer: Vec::new(),
         }
@@ -82,7 +82,6 @@ impl Request {
     pub fn with_path(mut self, path: &str) -> Request {
         self.path = Span(self.buffer.len(), self.buffer.len() + path.len());
         self.buffer.extend(path.as_bytes());
-        self.parse_query();
         self
     }
 
@@ -99,15 +98,19 @@ impl Request {
     }
 
     pub fn body(&self) -> &str {
-        str::from_utf8(&self.buffer[self.body.0..self.body.1]).unwrap_or("?")
+        self.body.from_buf(&self.buffer)
     }
 
     pub fn method(&self) -> &str {
-        str::from_utf8(&self.buffer[self.method.0..self.method.1]).unwrap_or("?")
+        self.method.from_buf(&self.buffer)
     }
 
     pub fn path(&self) -> &str {
-        str::from_utf8(&self.buffer[self.path.0..self.path.1]).unwrap_or("?")
+        self.path.from_buf(&self.buffer)
+    }
+
+    pub fn full_path(&self) -> &str {
+        self.full_path.from_buf(&self.buffer)
     }
 
     pub fn arg(&self, name: &str) -> Option<&str> {
@@ -123,18 +126,10 @@ impl Request {
     }
 
     pub fn header(&self, name: &str) -> Option<&str> {
-        println!("header: {}", name);
-        println!(
-            "headers: {:?}",
-            self.headers
-                .iter()
-                .map(|(n, v)| format!("{} = {};", self.span_as_str(*n), self.span_as_str(*v)))
-                .collect::<Vec<_>>()
-                .join(" ")
-        );
+        let name = name.to_lowercase();
         self.headers
             .iter()
-            .find(|(n, _)| self.span_as_str(*n).to_lowercase() == name)
+            .find(|(n, _)| self.span_as_str(*n).to_ascii_lowercase() == name)
             .and_then(|(_, v)| Some(self.span_as_str(*v).trim()))
     }
 
@@ -165,36 +160,22 @@ impl Request {
 
     /// Was the given query value sent?
     pub fn has_query(&mut self, name: &str) -> bool {
-        self.query.contains_key(name)
+        self.query(name).is_some()
     }
 
     /// Return a value from the ?querystring=
     pub fn query(&self, name: &str) -> Option<&str> {
-        self.query.get(name).and_then(|s| Some(s.as_ref()))
-    }
-
-    /// Turn a query string into a nice 'n tidy HashMap.
-    pub(crate) fn parse_query(&mut self) {
-        if !self.query.is_empty() {
-            self.query.clear();
-        }
-
-        // temp value
-        let mut map = HashMap::new();
-
-        // parse url
-        let path = self.path();
-        if let Some(start) = path.find('?') {
-            parse_query_into_map(&path[start + 1..], &mut map);
-        }
-
-        if !map.is_empty() {
-            // strip ?querystring from /path
-            if let Some(idx) = self.path().find('?') {
-                self.path = Span(self.path.0, self.path.0 + idx);
-            }
-            self.query = map;
-        }
+        let idx = self.full_path().find('?')?;
+        self.full_path()[idx + 1..]
+            .split("&")
+            .filter_map(|s| {
+                if s.starts_with(name) && *&s[name.len()..].chars().next() == Some('=') {
+                    Some(&s[name.len() + 1..])
+                } else {
+                    None
+                }
+            })
+            .next()
     }
 }
 
@@ -324,12 +305,15 @@ fn parse(buffer: Vec<u8>) -> Result<Parse> {
 
     let mut req = Request::default();
     req.method = Span(0, method_len);
-    req.path = Span(method_len + 1, method_len + 1 + path_len);
+    req.full_path = Span(method_len + 1, method_len + 1 + path_len);
+    // path doesn't include ?query
+    if let Some(idx) = req.full_path.from_buf(&buffer).find('?') {
+        req.path = Span(method_len + 1, method_len + 1 + idx)
+    } else {
+        req.path = req.full_path;
+    }
     req.headers = headers;
     req.buffer = buffer;
-    if let Some(size) = req.header("Content-Length") {
-        req.body = Span(pos, size.parse().unwrap_or(0));
-    }
 
     Ok(Parse::Complete(req))
 }
