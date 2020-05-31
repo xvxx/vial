@@ -156,6 +156,7 @@ activate for enhanced productivity:
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
 - [ ] **hatter**: Barebones, no-dependency template library, via [hatter].
+- [ ] **gzip**: Serve pages with gzip compression.
 - [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
       proxy.
 
@@ -169,15 +170,19 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] `before_filter`
 - [ ] cookies
 - [ ] sessions
+- [ ] state
 
-### big goals
+### warp's features:
 
-- [x] Parsing and routing HTTP requests
-  - [x] :segments
-- [ ] Handling POST requests
-  - [ ] JSON body
-- [x] Serving static files (css, js)
-  - [x] bundle in release mode
+- [x] Path routing and parameter extraction
+- [x] Header requirements and extraction
+- [x] Query string deserialization
+- [ ] JSON and [x] Form bodies
+- [ ] Multipart form data
+- [x] Static Files and Directories
+- [ ] Websockets
+- [ ] Access logging
+- [ ] Gzip, Deflate, and Brotli compression
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
