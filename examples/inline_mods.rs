@@ -11,5 +11,5 @@ vial::routes! {
 mod blog;
 
 fn main() {
-    vial::run!(self, blog, wiki);
+    vial::run!(self, blog, wiki).unwrap();
 }
