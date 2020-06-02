@@ -35,3 +35,52 @@ pub static mut BUNDLED_ASSETS: Option<std::collections::HashMap<String, &'static
 
 /// Date and time this program was compiled.
 pub const BUILD_DATE: &str = env!("BUILD_DATE");
+
+#[cfg(feature = "stateful")]
+use state;
+
+#[cfg(feature = "stateful")]
+static mut STORAGE: Option<state::Container> = None;
+
+#[cfg(feature = "stateful")]
+pub fn storage_init() {
+    unsafe {
+        STORAGE = Some(state::Container::new());
+    }
+}
+
+#[cfg(feature = "stateful")]
+pub fn storage_get<T: Send + Sync + 'static>() -> &'static T {
+    unsafe { STORAGE.as_ref().unwrap().get::<T>() }
+}
+
+#[cfg(feature = "stateful")]
+pub fn storage_set<T: Send + Sync + 'static>(o: T) {
+    unsafe {
+        STORAGE.as_ref().unwrap().set(o);
+    }
+}
+
+#[cfg(feature = "stateful")]
+pub struct State<T: Send + Sync + 'static> {
+    request: Request,
+    phantom: std::marker::PhantomData<T>,
+}
+
+#[cfg(feature = "stateful")]
+impl<T: Send + Sync + 'static> std::ops::Deref for State<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        storage_get::<T>()
+    }
+}
+
+#[cfg(feature = "stateful")]
+impl<T: Send + Sync + 'static> From<Request> for State<T> {
+    fn from(request: Request) -> State<T> {
+        State {
+            request,
+            phantom: std::marker::PhantomData,
+        }
+    }
+}

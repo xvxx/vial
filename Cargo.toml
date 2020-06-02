@@ -20,9 +20,14 @@ required-features = ["horror"]
 name = "markdown"
 required-features = ["markdown"]
 
+[[example]]
+name = "state"
+required-features = ["stateful"]
+
 [features]
 markdown = ['pulldown-cmark', 'autolink']
 horror = ['horrorshow']
+stateful = ['state']
 default = []
 
 [dependencies]
@@ -34,3 +39,5 @@ pulldown-cmark = { version = "0.7", default-features = false, optional = true }
 autolink = { version = "0.3.0", optional = true }
 
 horrorshow = { version = "0.8.3", optional = true }
+
+state = { version = "0.4", features = ["tls"], optional = true }
