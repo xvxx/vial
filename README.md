@@ -151,14 +151,13 @@ activate for enhanced productivity:
 
 - [ ] **cookies**: Cookie monster!
 - [ ] **sessions**: Session Support
+- [x] **stateful**: Global State
 - [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
 - [ ] **hatter**: Barebones, no-dependency template library, via [hatter].
 - [ ] **gzip**: Serve pages with gzip compression.
-- [ ] **ssl**: Add support for SSL/TLS. Normally you should be using a
-      proxy.
 
 _**Please note:** The list above is a work-in-progress._
 
@@ -170,7 +169,6 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] `before_filter`
 - [ ] cookies
 - [ ] sessions
-- [ ] state
 
 ### warp's features:
 
