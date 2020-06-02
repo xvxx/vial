@@ -18,5 +18,6 @@ fn count(hit_count: State<HitCount>) -> String {
 struct HitCount(AtomicUsize);
 
 fn main() {
-    run_with_state!(HitCount(AtomicUsize::new(0))).unwrap();
+    use_state!(HitCount(AtomicUsize::new(0)));
+    run!().unwrap();
 }

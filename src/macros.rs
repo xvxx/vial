@@ -17,32 +17,18 @@ macro_rules! run {
     }};
 }
 
+#[cfg(feature = "stateful")]
 #[macro_export]
-macro_rules! run_with_state {
+macro_rules! use_state {
     ($state:expr) => {
-        vial::run_with_state!($state, "0.0.0.0:7667")
-    };
-    ($state:expr, $addr:expr) => {{
-        vial::run_with_state!($state, $addr, self)
-    }};
-    ($state:expr, $($module:ident),+) => {{
-        vial::run_with_state!($state, "0.0.0.0:7667", $($module),+)
-    }};
-    ($state:expr, $addr:expr, $($module:ident),+) => {{
-        vial::setup!();
-        let mut router = ::vial::Router::new();
-        $($module::vial_add_to_router(&mut router);)+
+        vial::storage::init();
         vial::storage::set($state);
-        vial::run($addr, router)
-    }};
+    };
 }
 
 #[macro_export]
 macro_rules! setup {
     () => {
-        #[cfg(feature="stateful")]
-        vial::storage::init();
-
         #[cfg(bundle_assets)]
         #[macro_export]
         macro_rules! vial_bundled_assets {
