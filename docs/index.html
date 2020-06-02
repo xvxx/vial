@@ -778,7 +778,7 @@
 <p>There are two types of state available in <strong>Vial</strong>:</p>
 <ol type="1">
 <li><p>Local State - Built-in to <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a>. Allows caching of expensive algorithms (like DB lookups) on a per-request basis.</p></li>
-<li><p>Global State - Requires the <code>stateful</code> feature. Allows you to share database connections and whatnot across all requests.</p></li>
+<li><p>Global State - Requires the <code>state</code> feature. Allows you to share database connections and whatnot across all requests.</p></li>
 </ol>
 <h3 id="local-state">Local State</h3>
 <p>Local state lives for only a single <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a>, but can be useful to prevent looking up the same data over and over. The cache is based on the return type of the function or closure you pass to <code>cache()</code>, so make sure to create little wrapper structs if you want different functions to return the same type, like <code>Vec&lt;String&gt;</code>:</p>
@@ -839,10 +839,10 @@
 <h3 id="global-state">Global State</h3>
 <p>There are four steps involved in setting up shared, global state in <strong>Vial</strong>:</p>
 <ol type="1">
-<li>Enable the <code>stateful</code> feature in your <code>Cargo.toml</code>:</li>
+<li>Enable the <code>state</code> feature in your <code>Cargo.toml</code>:</li>
 </ol>
 <pre class="toml"><code>[Dependencies]
-vial = { version = &quot;*&quot;, features=[&quot;stateful&quot;] }</code></pre>
+vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <ol start="2" type="1">
 <li>Create a struct that is <code>Send + Sync</code> to hold your application’s shared state:</li>
 </ol>

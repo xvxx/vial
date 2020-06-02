@@ -17,7 +17,7 @@ macro_rules! run {
     }};
 }
 
-#[cfg(feature = "stateful")]
+#[cfg(feature = "state")]
 #[macro_export]
 macro_rules! use_state {
     ($state:expr) => {
@@ -87,9 +87,9 @@ macro_rules! routes {
         pub fn vial_add_to_router(router: &mut ::vial::Router) {
             $( router.insert(::vial::Method::$method, $path, |req| {
                 use ::vial::Responder;
-                #[cfg(not(feature = "stateful"))]
+                #[cfg(not(feature = "state"))]
                 let b: fn(::vial::Request) -> _ = $body;
-                #[cfg(feature = "stateful")]
+                #[cfg(feature = "state")]
                 let b: fn(::vial::State<_>) -> _ = $body;
                 b(req.into()).to_response()
             }); )*

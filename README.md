@@ -151,7 +151,7 @@ activate for enhanced productivity:
 
 - [ ] **cookies**: Cookie monster!
 - [ ] **sessions**: Session Support
-- [x] **stateful**: Global State
+- [x] **state**: Global State
 - [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.

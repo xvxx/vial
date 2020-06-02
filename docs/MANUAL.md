@@ -476,7 +476,7 @@ There are two types of state available in **Vial**:
 1. Local State - Built-in to [Request]. Allows caching of expensive
    algorithms (like DB lookups) on a per-request basis.
 
-2. Global State - Requires the `stateful` feature. Allows you to share
+2. Global State - Requires the `state` feature. Allows you to share
    database connections and whatnot across all requests.
 
 ### Local State
@@ -553,11 +553,11 @@ fn main() {
 There are four steps involved in setting up shared, global state in
 **Vial**:
 
-1. Enable the `stateful` feature in your `Cargo.toml`:
+1. Enable the `state` feature in your `Cargo.toml`:
 
 ```toml
 [Dependencies]
-vial = { version = "*", features=["stateful"] }
+vial = { version = "*", features=["state"] }
 ```
 
 2. Create a struct that is `Send + Sync` to hold your application's

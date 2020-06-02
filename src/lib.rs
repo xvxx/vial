@@ -15,9 +15,9 @@ mod router;
 mod server;
 mod util;
 
-#[cfg(feature = "stateful")]
+#[cfg(feature = "state")]
 pub mod storage;
-#[cfg(feature = "stateful")]
+#[cfg(feature = "state")]
 pub use storage::State;
 
 #[cfg(features = "horror")]

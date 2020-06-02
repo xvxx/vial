@@ -3,5 +3,5 @@ pub use crate::{
     router::Router, routes, run,
 };
 
-#[cfg(feature = "stateful")]
+#[cfg(feature = "state")]
 pub use crate::{storage::State, use_state};
