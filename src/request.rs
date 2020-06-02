@@ -1,9 +1,10 @@
-use crate::{util, Result};
+use crate::{cache, util, Result};
 use std::{
     collections::HashMap,
     io::{self, Read},
     mem,
     net::TcpStream,
+    rc::Rc,
     str,
 };
 
@@ -38,6 +39,7 @@ pub struct Request {
     headers: Vec<(Span, Span)>,
     buffer: Vec<u8>,
     form: HashMap<String, String>,
+    cache: Rc<cache::TypeCache>,
 
     pub(crate) args: HashMap<String, String>,
 }
@@ -53,6 +55,7 @@ impl Request {
             args: HashMap::new(),
             form: HashMap::new(),
             buffer: Vec::new(),
+            cache: Rc::new(cache::TypeCache::new()),
         }
     }
 
@@ -131,6 +134,17 @@ impl Request {
 
     pub fn arg(&self, name: &str) -> Option<&str> {
         self.args.get(name).and_then(|v| Some(v.as_ref()))
+    }
+
+    pub fn cache<T, F>(&self, fun: F) -> &T
+    where
+        F: FnOnce() -> T,
+        T: Send + Sync + 'static,
+    {
+        self.cache.get().unwrap_or_else(|| {
+            self.cache.set(fun());
+            self.cache.get().unwrap()
+        })
     }
 
     fn span_as_str(&self, span: Span) -> &str {

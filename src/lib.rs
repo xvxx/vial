@@ -4,6 +4,7 @@
 mod macros;
 pub mod asset;
 mod bundler;
+pub mod cache;
 pub mod features;
 mod method;
 pub mod prelude;

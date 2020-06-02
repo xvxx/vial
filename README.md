@@ -13,12 +13,12 @@ It only includes a few basics:
 Everything else... well, that's up to you.
 
 The goal is an as-few-as-possible-dependencies web library you can
-use to test out an idea quickly or get a static site _rolling_. Single
-file, server side apps? You bet! Fast compilation? Yes please! _À la
-carte_ dependencies? Now you're really talkin'!
+use to test out an idea quickly or get a personal project _rolling_.
+Single file, server side apps? You bet! Fast compilation? Yes please!
+_À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
-have to bring your own beverage.
+have to bring your own beverage. And food.
 
 To get started, just add `vial` to your `Cargo.toml`:
 
@@ -51,14 +51,14 @@ routes! {
     POST "/echo" => post;
 }
 
-fn echo(_: Request) -> impl Responder {
+fn echo(_: Request) -> &'static str {
     "<form method='POST'>
         <input type='text' name='echo'/>
         <input type='submit'/>
     </form>"
 }
 
-fn post(req: Request) -> impl Responder {
+fn post(req: Request) -> String {
     format!(
         "<h1>{}</h1>",
         req.form("echo").unwrap_or("You didn't say anything!")
