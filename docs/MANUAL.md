@@ -471,6 +471,148 @@ fn index(_req: Request) -> impl Responder {
 
 ## State
 
+There are two types of state available in **Vial**:
+
+1. Local State - Built-in to [Request]. Allows caching of expensive
+   algorithms (like DB lookups) on a per-request basis.
+
+2. Global State - Requires the `stateful` feature. Allows you to share
+   database connections and whatnot across all requests.
+
+### Local State
+
+Local state lives for only a single [Request], but can be useful to
+prevent looking up the same data over and over. The cache is based on
+the return type of the function or closure you pass to `cache()`, so
+make sure to create little wrapper structs if you want different
+functions to return the same type, like `Vec<String>`:
+
+```rust
+struct PageNames(Vec<String>);
+struct UserNames(Vec<String>);
+```
+
+Here's a longer winded example:
+
+```rust
+use vial::prelude::*;
+use page::Page;
+use db;
+
+routes! {
+    GET "/" => list;
+}
+
+struct PageNames(Vec<String>);
+
+fn all_pages(_: &Request) -> Vec<Page> {
+    db::lookup("select * from pages")
+}
+
+fn page_names(req: &Request) -> PageNames {
+    PageNames(req.cache(all_pages)
+        .iter()
+        .map(|page| page.name.clone())
+        .collect::<Vec<_>>())
+}
+
+fn list_of_names(req: &Request) -> String {
+    req.cache(page_names)
+        .0
+        .iter()
+        .map(|name| format!("<li>{}</li>", name))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn list(req: Request) -> impl Responder {
+    format!(
+        "<html>
+            <head><title>{title}</title></head>
+            <body>
+                <h1>{title}</h1>
+                <h3>There are {page_count} pages:</h3>
+                <ul>
+                    {pages}
+                </ul>
+            </body>
+        </html>",
+        title = "List Pages",
+        page_count = req.cache(all_pages).len(),
+        pages = req.cache(list_of_names),
+    )
+}
+
+fn main() {
+    run!().unwrap();
+}
+```
+
+### Global State
+
+There are four steps involved in setting up shared, global state in
+**Vial**:
+
+1. Enable the `stateful` feature in your `Cargo.toml`:
+
+```toml
+[Dependencies]
+vial = { version = "*", features=["stateful"] }
+```
+
+2. Create a struct that is `Send + Sync` to hold your application's
+   shared state:
+
+```rust
+use vial;
+use std::sync::{Arc, Mutx, atomic::{AtomicUsize, Ordering}};
+use some_db_crate::DB;
+
+struct MyConfig {
+    db: Arc<Mutex<DB>>,
+    counter: AtomicUsize,
+}
+
+impl MyConfig {
+    pub fn new(db: DB) {
+        MyConfig {
+            db: Arc::new(Mutex::new(db)),
+            counter: AtomicUsize::new(0),
+        }
+    }
+}
+```
+
+3. Write your actions to take `State<MyConfig>` instead of `Request`:
+
+```rust
+use vial::prelude::*;
+
+routes! {
+    GET "/list" => list;
+}
+
+fn find_names(db: Arc<Mutex<DB>>) -> Result<Vec<String>, db::Error> {
+    Ok(db.lock()?.query("SELECT name FROM names")?
+        .map(|row| row.get("name")?)
+        .collect::<Vec<_>>())
+}
+
+fn list(state: State<MyConfig>) -> VialResult {
+    Ok(find_names(state.db.clone())?.map(|name| format!("<li>{}</li>", name)))
+}
+```
+
+4. Tell **Vial** about your state object before calling `run!`:
+
+```rust
+fn main() {
+    let db = DB::new();
+    vial::use_state!(MyConfig::new(db));
+    vial::run!();
+}
+```
+
 ## Database
 
 ## Markdown
@@ -479,3 +621,7 @@ fn index(_req: Request) -> impl Responder {
 [response]: https://docs.rs/vial/latest/vial/struct.Response.html
 [responder]: https://docs.rs/vial/latest/vial/trait.Responder.html
 [routing]: #routing
+
+```
+
+```

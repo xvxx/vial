@@ -31,7 +31,7 @@ fn current_user(req: &Request) -> Option<User> {
 }
 
 fn profile(req: Request) -> Option<impl Responder> {
-    let user = req.cache(|| current_user(&req)).as_ref()?;
+    let user = req.cache(current_user).as_ref()?;
     Some(format!("<b>{}</b>", user))
 }
 

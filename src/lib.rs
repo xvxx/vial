@@ -31,6 +31,7 @@ pub use {
     bundler::bundle_assets, method::Method, request::Request, responder::Responder,
     response::Response, router::Router, server::run,
 };
+
 pub type Result<T> = std::result::Result<T, std::io::Error>;
 
 /// Directory where assets are stored, if any.

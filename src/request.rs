@@ -138,11 +138,11 @@ impl Request {
 
     pub fn cache<T, F>(&self, fun: F) -> &T
     where
-        F: FnOnce() -> T,
+        F: FnOnce(&Request) -> T,
         T: Send + Sync + 'static,
     {
         self.cache.get().unwrap_or_else(|| {
-            self.cache.set(fun());
+            self.cache.set(fun(&self));
             self.cache.get().unwrap()
         })
     }
