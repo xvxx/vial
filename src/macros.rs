@@ -32,7 +32,7 @@ macro_rules! run_with_state {
         vial::setup!();
         let mut router = ::vial::Router::new();
         $($module::vial_add_to_router(&mut router);)+
-        vial::storage_set($state);
+        vial::storage::set($state);
         vial::run($addr, router)
     }};
 }
@@ -41,7 +41,7 @@ macro_rules! run_with_state {
 macro_rules! setup {
     () => {
         #[cfg(feature="stateful")]
-        vial::storage_init();
+        vial::storage::init();
 
         #[cfg(bundle_assets)]
         #[macro_export]

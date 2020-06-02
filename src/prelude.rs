@@ -4,4 +4,4 @@ pub use crate::{
 };
 
 #[cfg(feature = "stateful")]
-pub use crate::{run_with_state, State};
+pub use crate::{run_with_state, storage::State};
