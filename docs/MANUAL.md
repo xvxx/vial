@@ -455,20 +455,6 @@ fn index(_req: Request) -> impl Responder {
 
 - `vial::bundle_assets(path_to_asset_dir)`
 
-## Templates
-
-### Hatter
-
-### Horrorshow
-
-### Tera
-
-## Cookies
-
-## Sessions
-
-## JSON
-
 ## State
 
 There are two types of state available in **Vial**:
@@ -492,7 +478,7 @@ struct PageNames(Vec<String>);
 struct UserNames(Vec<String>);
 ```
 
-Here's a longer winded example:
+Here's an example:
 
 ```rust
 use vial::prelude::*;
@@ -612,6 +598,20 @@ fn main() {
     vial::run!();
 }
 ```
+
+## Templates
+
+### Hatter
+
+### Horrorshow
+
+### Tera
+
+## Cookies
+
+## Sessions
+
+## JSON
 
 ## Database
 

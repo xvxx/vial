@@ -443,6 +443,11 @@
 <li><a href="#%60asset::path()%60"><code>asset::path()</code></a></li>
 <li><a href="#bundling-assets">Bundling Assets</a></li>
 </ul></li>
+<li><a href="#state">State</a>
+<ul>
+<li><a href="#local-state">Local State</a></li>
+<li><a href="#global-state">Global State</a></li>
+</ul></li>
 </ul>
 <h3 id="bonus-features">Bonus Features</h3>
 <ul>
@@ -455,11 +460,6 @@
 <li><a href="#cookies">Cookies</a></li>
 <li><a href="#sessions">Sessions</a></li>
 <li><a href="#json">JSON</a></li>
-<li><a href="#state">State</a>
-<ul>
-<li><a href="#local-state">Local State</a></li>
-<li><a href="#global-state">Global State</a></li>
-</ul></li>
 <li><a href="#database">Database</a></li>
 <li><a href="#markdown">Markdown</a></li>
 </ul>
@@ -767,13 +767,6 @@
 <ul>
 <li><code>vial::bundle_assets(path_to_asset_dir)</code></li>
 </ul>
-<h2 id="templates">Templates</h2>
-<h3 id="hatter">Hatter</h3>
-<h3 id="horrorshow">Horrorshow</h3>
-<h3 id="tera">Tera</h3>
-<h2 id="cookies">Cookies</h2>
-<h2 id="sessions">Sessions</h2>
-<h2 id="json">JSON</h2>
 <h2 id="state">State</h2>
 <p>There are two types of state available in <strong>Vial</strong>:</p>
 <ol type="1">
@@ -784,7 +777,7 @@
 <p>Local state lives for only a single <a href="https://docs.rs/vial/latest/vial/struct.Request.html">Request</a>, but can be useful to prevent looking up the same data over and over. The cache is based on the return type of the function or closure you pass to <code>cache()</code>, so make sure to create little wrapper structs if you want different functions to return the same type, like <code>Vec&lt;String&gt;</code>:</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span>)<span class="op">;</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="kw">struct</span> UserNames(<span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span>)<span class="op">;</span></span></code></pre></div>
-<p>Here’s a longer winded example:</p>
+<p>Here’s an example:</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
 <span id="cb22-2"><a href="#cb22-2"></a><span class="kw">use</span> <span class="pp">page::</span>Page<span class="op">;</span></span>
 <span id="cb22-3"><a href="#cb22-3"></a><span class="kw">use</span> db<span class="op">;</span></span>
@@ -889,6 +882,13 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <span id="cb26-3"><a href="#cb26-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db))<span class="op">;</span></span>
 <span id="cb26-4"><a href="#cb26-4"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
 <span id="cb26-5"><a href="#cb26-5"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="templates">Templates</h2>
+<h3 id="hatter">Hatter</h3>
+<h3 id="horrorshow">Horrorshow</h3>
+<h3 id="tera">Tera</h3>
+<h2 id="cookies">Cookies</h2>
+<h2 id="sessions">Sessions</h2>
+<h2 id="json">JSON</h2>
 <h2 id="database">Database</h2>
 <h2 id="markdown">Markdown</h2>
 <pre><code></code></pre>
