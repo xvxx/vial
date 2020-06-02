@@ -42,7 +42,7 @@
       }
       main {
         margin: 0 auto;
-        max-width: 800px;
+        max-width: 900px;
       }
 
       nav.show-mobile {
@@ -52,7 +52,7 @@
       /* responsive */
       @media (max-width: 1500px) {
         main {
-          padding-left: 75px;
+          padding-left: 25px;
           float: left;
         }
         img:first-of-type {
@@ -63,7 +63,7 @@
         }
       }
 
-      @media (max-width: 1180px) {
+      @media (max-width: 1220px) {
         nav {
           display: none;
         }
@@ -77,7 +77,8 @@
           font-size: 150%;
         }
         main {
-          float: left;
+          float: none;
+          margin: 0 auto;
         }
         #menu-toggle {
           display: block !important;
