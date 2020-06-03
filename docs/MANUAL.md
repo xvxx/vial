@@ -522,15 +522,126 @@ fn download(req: Request) -> Option<impl Responder> {
 
 ## Assets
 
+**Vial** can serve static files out of an asset directory, complete
+with proper ETag handling, and optionally bundle them into your
+application in `--release` mode.
+
+### `asset::methods()`
+
+By setting an asset directory, either through the
+[`vial::asset_dir!()`][macro.asset_dir.html] or
+[`vial::bundle_assets!()`][macro.bundle_assets.html] macro,
+you can then use the methods in the `asset::` module to work with
+them:
+
+- **[asset::etag()](#method.etag)**: Get the ETag for an asset.
+  Used automatically by the Router if a web request matches an
+  asset's path.
+
+- **[asset::exists()](#method.exists)**: Does an asset exist?
+  Works regardless of whether the asset is bundled or not.
+
+- **[asset::is_bundled()](#method.is_bundled)**: Are assets
+  bundled? Only true in `--release` mode and when used with the
+  `vial::bundle_assets!()` macro.
+
+- **[asset::to_string()](#method.to_string)**: Like
+  `fs::read_to_string()`, delivers the content of an asset as a
+  `String`.
+
+- **[asset::as_reader()](#method.as_reader)**: Like
+  `asset::to_string()` but provides an `io::Read` of an asset,
+  whether or not it's bundled.
+
 ### Setting asset dir
 
-### `asset::exists()`
+To get started, put all your `.js` and `.css` and other static
+assets into a directory in the root of your project, then
+reference them in HTML as if the root of your Vial web
+application was that asset directory.
 
-### `asset::path()`
+Next call [`vial::asset_dir!()`][macro.asset_dir.html] with the
+path to your asset directory (maybe `assets/`?) before starting
+your application with [`vial::run!`](macro.run.html):
+
+If we had a directory structure like this:
+.
+├── README.md
+├── assets
+│   └── img
+│   ├── banker.png
+│   └── doctor.png
+└── src
+└── main.rs
+
+We could serve our images like so:
+
+```rust
+vial::routes! {
+    GET "/" => |_| "
+        <p><img src='/img/doctor.png'/></p>
+        <p><img src='/img/banker.png'/></p>
+    ";
+}
+fn main() {
+    vial::asset_dir!("assets/");
+    vial::run!().unwrap();
+}
+```
 
 ### Bundling Assets
 
-- `vial::bundle_assets(path_to_asset_dir)`
+**Vial** is meant to be small and swift, like a ninja star. Part of
+that means **Vial** apps should be able to compile into _standalone
+binaries_ that don't rely on the filesystem. In order to accomplish
+this, **Vial** can bundle your assets into your final `--release`
+binary for you. As long as you the `asset::()` API described above to
+access them, all your code will work the same whether your assets are
+bundled or not.
+
+Combined with the ETag support, this means all assets will be reloaded
+by your browser whenever they're modified in dev mode for a smoother
+developmental experience.
+
+To bundle your assets into your final binary in release mode, you
+must:
+
+1. **REMOVE** any calls to the `vial::asset_dir!()` macro.
+
+2. Add `vial` as to `[build-dependencies]` in your `Cargo.toml`:
+
+```toml
+[build-dependencies]
+vial = "*"
+```
+
+(_Yes, you should now have `vial` in there twice. Once for
+`build-dependencies` and once for `dependencies`. Only the one under
+`dependencies` needs to list any optional features you want to use,
+however._)
+
+3. Create a `bundle.rs` and call `vial::bundle_assets!()` in it,
+   passing your asset directory as the sole argument:
+
+```rust
+fn main() {
+    vial::bundle_assets!("assets/").unwrap();
+}
+```
+
+Bundling assets and setting an asset path using
+[`vial::asset_dir!()`](macro.asset_dir.html) are mutually
+exclusive - you can't do both, as enabling bundling will set the
+asset path for you. Therefor if you are making the transition from
+using-assets-but-not-bundling to using-assets-and-bundling-them,
+make sure to remove your call to `vial::asset_dir!`.
+
+Other than that, you're all set! Your application will now bundle your
+assets in `--release` mode and use the disk in debug and test mode.
+
+All calls to functions in the [`assets`](assets/index.html) module
+should work with the files in your asset directory. Add more and get
+to it!
 
 ## State
 

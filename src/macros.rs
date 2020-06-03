@@ -190,7 +190,7 @@ macro_rules! asset_dir {
 /// using-assets-but-not-bundling to using-assets-and-bundling-them,
 /// make sure to remove your call to `vial::asset_dir!`.
 ///
-/// To bundle your assets, fir add `vial` as a `build-dependency` in
+/// To bundle your assets, first add `vial` as a `build-dependency` in
 /// your toml file:
 ///
 /// ```toml

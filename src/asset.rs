@@ -29,34 +29,34 @@
 //! Next call [`vial::asset_dir!()`][macro.asset_dir.html] with the
 //! path to your asset directory (maybe `assets/`?) before starting
 //! your application with [`vial::run!`](macro.run.html):
-///
-/// If we had a directory structure like this:
-///     .
-///     ├── README.md
-///     ├── assets
-///     │   └── img
-///     │       ├── banker.png
-///     │       └── doctor.png
-///     └── src
-///         └── main.rs
-///
-/// We could serve our images like so:
-///
-/// ```rust
-/// vial::routes! {
-///     GET "/" => |_| "
-///         <p><img src='/img/doctor.png'/></p>
-///         <p><img src='/img/banker.png'/></p>
-///     ";
-/// }
-///
-/// fn main() {
-///     vial::asset_dir!("assets/");
-///     vial::run!().unwrap();
-/// }
-/// ```
-///
-///
+//!
+//! If we had a directory structure like this:
+//!     .
+//!     ├── README.md
+//!     ├── assets
+//!     │   └── img
+//!     │       ├── banker.png
+//!     │       └── doctor.png
+//!     └── src
+//!         └── main.rs
+//!
+//! We could serve our images like so:
+//!
+//! ```rust
+//! vial::routes! {
+//!     GET "/" => |_| "
+//!         <p><img src='/img/doctor.png'/></p>
+//!         <p><img src='/img/banker.png'/></p>
+//!     ";
+//! }
+//!
+//! fn main() {
+//!     vial::asset_dir!("assets/");
+//!     vial::run!().unwrap();
+//! }
+//! ```
+//!
+//!
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, HashMap},
