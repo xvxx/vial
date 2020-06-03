@@ -81,9 +81,15 @@ impl Response {
         &self.headers
     }
 
+    /// Get an individual header. `name` is case insensitive.
+    pub fn header(&mut self, name: &str) -> Option<&String> {
+        self.headers.get(&name.to_lowercase())
+    }
+
     /// Set an individual header.
-    pub fn header(&mut self, key: &str, value: &str) {
-        self.headers.insert(key.to_string(), value.to_string());
+    pub fn set_header(&mut self, name: &str, value: &str) {
+        self.headers
+            .insert(name.to_string().to_lowercase(), value.to_string());
     }
 
     /// Convert into a Response.
@@ -166,7 +172,7 @@ impl Response {
             if asset::exists(&path) {
                 if asset::is_bundled() {
                     if let Some(reader) = asset::as_reader(&path) {
-                        self.header("ETag", asset::etag(&path).as_ref());
+                        self.set_header("ETag", asset::etag(&path).as_ref());
                         self.content_type = util::content_type(&path).to_string();
                         return self.with_reader(reader);
                     }
@@ -183,7 +189,7 @@ impl Response {
     pub fn with_file(mut self, path: &str) -> Response {
         match fs::File::open(path) {
             Ok(file) => {
-                self.header("ETag", &asset::etag(path).as_ref());
+                self.set_header("ETag", &asset::etag(path).as_ref());
                 self.content_type.clear();
                 self.content_type.push_str(util::content_type(path));
                 self.with_reader(Box::new(BufReader::new(file)))

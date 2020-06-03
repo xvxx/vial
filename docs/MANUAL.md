@@ -112,6 +112,23 @@ fn main() {
 This should start a server at <http://0.0.0.0:7667> and tell you that
 it did. Congratulations! You're on your way.
 
+## Overview
+
+Like most web library thingy-jingies that only focus on server-side
+rendering, there are three main parts to a **Vial** application:
+
+- **[Routing]**: You write actions that take a [Request] and return
+  either a [Response] or a [Responder], then map them to URLs and
+  URL patterns using the `vial::routes!` macro.
+
+- **[Request]**: The [Request] object provides information about the
+  client's humble request.
+
+- **[Response]** and **[Responder]**: Your actions return either a
+  [Response] object, which can be easily built, or they return a type
+  that implements the [Responder] trait which is then converted into a
+  [Response] and delivered to the waiting client.
+
 ## Routing
 
 Routing is the real gravy and potatoes of any web framework, if you
@@ -170,10 +187,9 @@ fn main() {
 
 ### Actions
 
-`ACTIONs` are what routes actually route to. Your code. The app.
-
-They are functions or closures take a [Request] and return a
-[Responder]:
+Actions are what routes actually route to. They are functions or
+closures take a [Request] and return either a [Response] or something
+that implements the [Responder] trait:
 
 ```rust
 use vial::prelude::*;
@@ -185,7 +201,7 @@ routes! {
     GET "/" => index;
 }
 
-fn index(req: Request) -> impl Responder {
+fn index(req: Request) -> &'static str {
     "<form method='GET'>
         <p>Enter your name: <input type='text' name='name'/></p>
         <input type='submit'/>
@@ -213,8 +229,6 @@ These types implement `Responder` by default:
 - `usize` - Empty response with this number as the status code.
 - `Option<impl Responder>` - 404 on `None`
 - `Result<impl Responder, Error>` - 500 on Error
-
-Making your own is easy, too, by creating a [Response].
 
 ### Route Modules
 
@@ -287,12 +301,12 @@ But visiting `/info?version=1.0` will show:
 
 Like `arg()`, `query()` returns `Option<&str>`.
 
-### POST Form Data
+### Form Data
 
 What's the web without open ended `<textarea>s`? Perish the thought.
 
-POST form data follows the same pattern as query and route parameters:
-use `request.form()` to access a form parameter:
+POSTed form data follows the same pattern as query and route
+parameters: use `request.form()` to access a form parameter:
 
 ```rust
 use vial::prelude::*;
@@ -391,8 +405,8 @@ impl Request {
 
 ## Responses
 
-Every `ACTION` returns an `impl Responder`, which is a trait with a
-single method:
+Every Action returns either a [Response] or a type that implements the
+[Responder] trait's single method:
 
 ```rust
 pub trait Responder {
@@ -400,34 +414,22 @@ pub trait Responder {
 }
 ```
 
-Common types like `&str` and `Option<String>` already implement this
-trait, so you are free to be lazy and return simple objects in your
-`ACTIONs`. If, however, you want to set headers and do other fancy
-jazz, you'll need to build and return a [Response] object directly.
+Common types like `&str` and `Option<String>` already implement this,
+so you are free to be lazy and return simple types in your Actions.
+If, however, you want to set headers and do other fancy jazz, you'll
+need to build and return a [Response] directly.
 
-`Response` objects can be with either a body or status code:
+Rather than use the "Builder" pattern like more mature and better
+designed libraries, **Vial's** [Response] lets you set properties
+either directly or using Builder-style methods:
 
 ```rust
-// Response w/ HTTP Status Code 422, No Body
-fn fourtwotwo(_req: Request) -> impl Responder {
-    Response::from(422)
-}
-
-// Response w/ HTTP Status Code 422 & Body
-fn fourtwotwo(_req: Request) -> impl Responder {
-    Response::from("404 File Not Found").with_code(404);
-}
-
-// Serve the README as HTML. Probably want to Markdownize it first...
-fn fourtwotwo(_req: Request) -> impl Responder {
-    Response::from_file("README.md");
+vial::routes! {
+    GET "/404" => |_| Response::from(404).with_text("404 Not Found");
 }
 ```
 
-### from String
-
-Each `Response` defaults to a `Content-Type` of `text/html; charset=utf8`, so you can build HTML with your bare hands and **Vial**
-will lovingly deliver it to the client:
+Each `Response` defaults to a `Content-Type` of `text/html; charset=utf8`, so you can build HTML with your bare hands:
 
 ```rust
 fn index(_req: Request) -> impl Responder {
@@ -435,7 +437,42 @@ fn index(_req: Request) -> impl Responder {
 }
 ```
 
-### from Asset
+To produce plain text, set the header using `with_header()` or
+`set_header()`, or use `with_text()` instead of `with_body()` or
+`from_body()`:
+
+```rust
+fn readme(_req: Request) -> Response {
+    // This will be rendered as plain text.
+    Response::from_file("README.md")
+        .with_header("Content-Type", "text/plain")
+}
+```
+
+### Building Responses
+
+The [Response](https://docs.rs/vial/latest/vial/struct.Response.html)
+documentation contains more information on all the methods available,
+but here are some of the properties you can set on a [Response] in
+your actions:
+
+- `fn from_text<S: AsRef<str>>(text: S) -> Response;`
+
+- `fn with_code(mut self, code: usize) -> Response;`
+
+- `fn with_body<S: AsRef<str>>(mut self, body: S) -> Response;`
+
+- `fn with_text<S: AsRef<str>>(self, text: S) -> Response;`
+
+- `fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response;`
+
+- `fn with_asset(mut self, path: &str) -> Response;`
+
+- `fn with_file(mut self, path: &str) -> Response;`
+
+- `fn with_error<E: error::Error>(self, err: E) -> Response;`
+
+- `fn with_header(mut self, key: &str, value: &str) -> Response;`
 
 ### Redirect
 
@@ -617,10 +654,10 @@ fn main() {
 
 ## Markdown
 
-[request]: https://docs.rs/vial/latest/vial/struct.Request.html
-[response]: https://docs.rs/vial/latest/vial/struct.Response.html
-[responder]: https://docs.rs/vial/latest/vial/trait.Responder.html
-[routing]: #routing
+[request]: #Requests
+[response]: #Responses
+[responder]: #Responses
+[routing]: #Routing
 
 ```
 
