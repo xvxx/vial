@@ -7,15 +7,43 @@ use {
     },
 };
 
+/// Each request ultimately ends in a `Response` that is served to the
+/// client and then discarded, like fallen flower petals. Together
+/// with [`Request`](struct.request.html) and
+/// [`Responder`](trait.Responder.html) it forms the holy trinity of
+/// `R`'s in Vial.
+///
+/// Rather than use the "Builder" pattern like more mature and better
+/// designed libraries, Vial's `Response` lets you set properties
+/// either directly or using Builder-style methods:
+///
+/// ```rust
+/// vial::routes! {
+///     GET "/404" => |_| Response::from(404)
+///         .with_header("Content-Type", "text/plain")
+///         .with_body("404 Not Found");
+/// }
+/// ```
+///
+/// It also defaults to `text/html`, so you need to use
+/// [`with_header()`](#method.with_header) or
+/// [`header()`](#method.header) to send plain text.
 pub struct Response {
+    /// HTTP Status Code
     pub code: usize,
-    pub body: String,
+    /// The headers we're sending back.
     pub headers: HashMap<String, String>,
+    /// Unclear why we need this...
+    pub content_type: String,
+
+    /// TODO: remove this
+    pub body: String,
+    /// TODO: remove this
     pub buf: Vec<u8>,
+    /// TODO: only use this
     pub reader: Box<dyn io::Read>,
     /// TODO: hax
     pub is_reader: bool,
-    pub content_type: String,
 }
 
 impl fmt::Debug for Response {
@@ -43,72 +71,96 @@ impl Default for Response {
 }
 
 impl Response {
+    /// Create a new, empty, 200 response - ready for HTML!
     pub fn new() -> Response {
         Response::default()
     }
 
+    /// Take a peek at all the headers for this response.
     pub fn headers(&self) -> &HashMap<String, String> {
         &self.headers
     }
 
+    /// Set an individual header.
     pub fn header(&mut self, key: &str, value: &str) {
         self.headers.insert(key.to_string(), value.to_string());
     }
 
+    /// Convert into a Response.
     pub fn from<T: Into<Response>>(from: T) -> Response {
         from.into()
     }
 
+    /// Create a response from an asset. See the
+    /// [`asset`](asset/index.html) module for more information on
+    /// using assets.
     pub fn from_asset(path: &str) -> Response {
         Response::default().with_asset(path)
     }
 
+    /// Create a response from a (boxed) io::Read.
     pub fn from_reader(reader: Box<dyn io::Read>) -> Response {
         Response::default().with_reader(reader)
     }
 
+    /// Creates a response from a file on disk.
+    /// TODO: Path?
     pub fn from_file(path: &str) -> Response {
         Response::default().with_file(path)
     }
 
+    /// Creates a 500 response from an error, displaying it.
     pub fn from_error<E: error::Error>(err: E) -> Response {
         Response::from(500).with_error(err)
     }
 
+    /// Creates a new Response and sets the given header, in
+    /// addition to the defaults.
     pub fn from_header(name: &str, value: &str) -> Response {
         Response::default().with_header(name, value)
     }
 
+    /// Creates a new default Response with the given body.
     pub fn from_body<S: AsRef<str>>(body: S) -> Response {
         Response::default().with_body(body)
     }
 
+    /// Creates a new `text/plain` Response with the given body.
     pub fn from_text<S: AsRef<str>>(text: S) -> Response {
         Response::default().with_text(text)
     }
 
+    /// Creates a new response with the given HTTP Status Code.
     pub fn with_code(mut self, code: usize) -> Response {
         self.code = code;
         self
     }
 
+    /// Body builder. Returns a Response with the given body.
     pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Response {
         self.body.clear();
         self.body.push_str(body.as_ref());
         self
     }
 
-    pub fn with_text<S: AsRef<str>>(mut self, text: S) -> Response {
+    /// Returns a `text/plain` Response with the given body.
+    pub fn with_text<S: AsRef<str>>(self, text: S) -> Response {
         self.with_body(text)
             .with_header("Content-Type", "text/plain")
     }
 
+    /// Returns a Response using the given reader for the body.
     pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response {
         self.reader = reader;
         self.is_reader = true;
         self
     }
 
+    /// Uses an asset for the given body and sets the `Content-Type`
+    /// header based on the file's extension.
+    ///
+    /// See the [`asset`](asset/index.html) module for more
+    /// information on using assets.
     pub fn with_asset(mut self, path: &str) -> Response {
         if let Some(path) = asset::normalize_path(path) {
             if asset::exists(&path) {
@@ -126,9 +178,11 @@ impl Response {
         self.with_code(404)
     }
 
+    /// Sets this Response's body to the body of the given file and
+    /// sets the `Content-Type` header based on the file's extension.
     pub fn with_file(mut self, path: &str) -> Response {
         match fs::File::open(path) {
-            Ok(mut file) => {
+            Ok(file) => {
                 self.header("ETag", &asset::etag(path).as_ref());
                 self.content_type.clear();
                 self.content_type.push_str(util::content_type(path));
@@ -139,16 +193,19 @@ impl Response {
         }
     }
 
-    pub fn with_error<E: error::Error>(mut self, err: E) -> Response {
+    /// Sets the response code to 500 and the body to the error's text.
+    pub fn with_error<E: error::Error>(self, err: E) -> Response {
         self.with_code(500)
             .with_body(&format!("<h1>500 Internal Error</h1><pre>{}", err))
     }
 
+    /// Returns a Response with the given header set to the value.
     pub fn with_header(mut self, key: &str, value: &str) -> Response {
         self.headers.insert(key.to_string(), value.to_string());
         self
     }
 
+    /// Length of the body.
     pub fn len(&self) -> usize {
         if self.is_reader {
             0
@@ -159,10 +216,12 @@ impl Response {
         }
     }
 
+    /// Returns a 302 redirect to the given URL.
     pub fn redirect_to<U: AsRef<str>>(url: U) -> Response {
         Response::from(302).with_header("location", url.as_ref())
     }
 
+    /// Writes this response to a stream.
     pub fn write<W: io::Write>(mut self, mut w: W) -> Result<()> {
         // we don't set Content-Length on static files we stream
         let content_length = if self.len() > 0 {
@@ -196,7 +255,7 @@ impl Response {
         w.write(header.as_bytes())?;
 
         if self.is_reader {
-            io::copy(&mut self.reader, &mut w);
+            io::copy(&mut self.reader, &mut w)?;
         } else if self.buf.is_empty() {
             w.write(self.body.as_bytes())?;
         } else {

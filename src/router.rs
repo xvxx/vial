@@ -4,18 +4,30 @@ use {
     std::collections::HashMap,
 };
 
+/// `Router` keeps track of all the routes defined by
+/// [`vial::routes!`](macro.routes.html) and can produce an action for
+/// a given HTTP Method and URL path combination using [`action_for`](#method.action_for).
+///
+/// You never have to create a `Router`, except maybe in testing.
 #[derive(Default)]
 pub struct Router {
     routes: HashMap<Method, Vec<(Vec<String>, fn(Request) -> Response)>>,
 }
 
 impl Router {
+    /// Create a new `Router`. You shouldn't have to do this.
     pub fn new() -> Router {
         Router {
             routes: HashMap::new(),
         }
     }
 
+    /// Given a [`Request`](struct.Request.html), produce a match as
+    /// determined by the calls to
+    /// [`vial::routes!`](macro.routes.html) in this application.
+    ///
+    /// It will also modify the passed `Request` object with any
+    /// arguments that may have matched in the URL.
     pub fn action_for(&self, req: &mut Request) -> Option<&fn(Request) -> Response> {
         if let Some(routes) = self.routes.get(&req.method().into()) {
             let req_parts = Self::pattern_to_vec(req.path());
@@ -59,6 +71,8 @@ impl Router {
             .collect::<Vec<_>>()
     }
 
+    /// Insert a route into the router. Routes are checked in FIFO
+    /// manner when we are trying to match a URL and HTTP Method.
     pub fn insert<T: Into<Method>>(
         &mut self,
         method: T,
