@@ -1,4 +1,4 @@
-use crate::{cache, util, Result};
+use crate::{util, Result, TypeCache};
 use std::{
     collections::HashMap,
     io::{self, Read},
@@ -39,7 +39,7 @@ pub struct Request {
     headers: Vec<(Span, Span)>,
     buffer: Vec<u8>,
     form: HashMap<String, String>,
-    cache: Rc<cache::TypeCache>,
+    cache: Rc<TypeCache>,
     args: HashMap<String, String>,
 }
 
@@ -54,7 +54,7 @@ impl Request {
             args: HashMap::new(),
             form: HashMap::new(),
             buffer: Vec::new(),
-            cache: Rc::new(cache::TypeCache::new()),
+            cache: Rc::new(TypeCache::new()),
         }
     }
 

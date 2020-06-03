@@ -1,14 +1,13 @@
 use {
-    crate::{asset, Result},
-    std::{
-        env,
-        fs::{self, File},
-        io::{self, Read, Write},
-        os::unix,
-        path::Path,
-    },
+    crate::Result,
+    std::{fs, path::PathBuf},
 };
 
+/// Prepares everything in `dir` to be bundled into a binary.
+/// Sets `ASSET_DIR` and `cfg(bundle_assets)` for the user's program,
+/// which uses them to find the assets.
+///
+/// Only runs in release mode.
 pub fn bundle_assets(dir: &str) -> Result<()> {
     #[cfg(not(debug_assertions))]
     {
@@ -30,7 +29,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     let mut map = std::collections::HashMap::new();
 ",
         )?;
-        for path in asset::iter(dir) {
+        for path in walk(dir) {
             dest.write_all(
                 format!(
                     "    map.insert({:?}.into(), &include_bytes!(\"{}\")[..]);\n",
@@ -48,4 +47,49 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     }
     println!("cargo:rustc-env=ASSET_DIR={}", dir);
     Ok(())
+}
+
+#[allow(dead_code)]
+/// Iterator over all the files in a directory.
+fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
+    if let Ok(files) = files_in_dir(dir) {
+        files.into_iter()
+    } else {
+        vec![].into_iter()
+    }
+}
+
+#[allow(dead_code)]
+fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
+    let mut files = vec![];
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        let meta = fs::metadata(&path)?;
+        if meta.is_dir() {
+            files.extend_from_slice(&files_in_dir(path.to_str().unwrap_or("bad"))?);
+        } else {
+            files.push(path);
+        }
+    }
+    Ok(files)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_walk() {
+        assert!(walk(".").count() > 0);
+
+        let mut expected = vec!["./Cargo.toml", "./LICENSE-APACHE"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        for file in walk(".").take(2) {
+            assert_eq!(expected.remove(0), file.to_str().unwrap());
+        }
+    }
 }

@@ -2,9 +2,34 @@ use std::{
     any::{Any, TypeId},
     cell::RefCell,
     collections::HashMap,
-    sync::atomic::{AtomicBool, AtomicUsize, Ordering},
+    sync::atomic::{AtomicUsize, Ordering},
 };
 
+/// The TypeCache is heavily inspired by the `state` crate and the way
+/// the Rocket framework handles global and local state. You could say
+/// we've immutably borrowed some ideas. *Rim-shot!*
+///
+/// Basically, we've got a hash that can store different types but
+/// only one of each type. The type id is the key, and you need to
+/// know what type you're asking for when you call `get()` to be able
+/// to do anything with it:
+///
+/// ```rust
+/// # use vial::cache::TypeCache;
+/// # fn main() {
+/// let cache = TypeCache::new();
+///
+/// cache.set::<String>("Hi friends".to_string());
+/// assert_eq!(Some(&"Hi friends".to_string()), cache.get::<String>());
+///
+/// cache.set::<usize>(12345);
+/// assert_eq!(Some(&12345), cache.get::<usize>());
+/// # }
+/// ```
+///
+/// We use this in Vial for global state (available when compiling
+/// with `--features state`) as well as local request state, which is
+/// always available.
 #[derive(Debug)]
 pub struct TypeCache {
     map: RefCell<HashMap<TypeId, *mut dyn Any>>,
@@ -12,6 +37,7 @@ pub struct TypeCache {
 }
 
 impl TypeCache {
+    /// Create a new, empty TypeCache.
     pub fn new() -> TypeCache {
         TypeCache {
             map: RefCell::new(HashMap::new()),
@@ -19,6 +45,9 @@ impl TypeCache {
         }
     }
 
+    /// TypeCache works like a regular hash map, but with types as
+    /// keys. Meaning it can only store one of each type.
+    /// Choose wisely.
     pub fn get<T: Send + Sync + 'static>(&self) -> Option<&T> {
         self.lock();
         let item = unsafe {
@@ -31,6 +60,8 @@ impl TypeCache {
         item
     }
 
+    /// As long as your object is `Send + Sync + 'static`, TypeCache
+    /// can store it.
     pub fn set<T: Send + Sync + 'static>(&self, v: T) {
         self.lock();
         let boxed = Box::into_raw(Box::new(v) as Box<dyn Any>);

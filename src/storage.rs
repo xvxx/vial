@@ -1,5 +1,5 @@
 use {
-    crate::{cache::TypeCache, Request},
+    crate::{Request, TypeCache},
     std::marker::PhantomData,
 };
 
