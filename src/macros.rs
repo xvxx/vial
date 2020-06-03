@@ -58,7 +58,7 @@ macro_rules! run {
         vial::setup!();
         let mut router = ::vial::Router::new();
         $($module::vial_add_to_router(&mut router);)+
-        vial::run($addr, router)
+        vial::run($addr, router, None)
     }};
 }
 
