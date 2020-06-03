@@ -1,9 +1,8 @@
 use {
     crate::{asset, Request, Response, Result, Router},
     std::{
-        io::{self, prelude::*, BufReader, Read, Write},
-        net::{SocketAddr, TcpListener, TcpStream, ToSocketAddrs},
-        sync::{Arc, Mutex},
+        net::{TcpListener, TcpStream, ToSocketAddrs},
+        sync::Arc,
     },
     threadpool::ThreadPool,
 };

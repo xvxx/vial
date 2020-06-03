@@ -1,17 +1,27 @@
+/// Method is just an enum representing the HTTP methods Vial
+/// supports. Which is not all of them.
 #[derive(PartialEq, Eq, Hash)]
 pub enum Method {
+    /// HTTP GET
     GET,
+    /// HTTP HEAD
     HEAD,
+    /// HTTP POST
     POST,
+    /// HTTP PUT
     PUT,
+    /// HTTP DELETE
     DELETE,
+    /// HTTP PATCH
     PATCH,
-    CONNECT,
+    /// HTTP OPTIONS
     OPTIONS,
+    /// HTTP TRACE
     TRACE,
 }
 
 impl Method {
+    /// Converts an ALL-CAPS HTTP method into our enum.
     pub fn from_str(s: &str) -> Method {
         match s {
             "GET" => Method::GET,

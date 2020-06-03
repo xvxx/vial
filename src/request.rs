@@ -1,21 +1,14 @@
-use crate::{util, Result, TypeCache};
-use std::{
-    collections::HashMap,
-    io::{self, Read},
-    mem,
-    net::TcpStream,
-    rc::Rc,
-    str,
-};
+use crate::{http_parser, util, Result, TypeCache};
+use std::{collections::HashMap, io::Read, mem, net::TcpStream, rc::Rc, str};
 
+/// A `(start, end)` tuple representing a the location of some part of
+/// a Request in a raw buffer, such as the requested URL's path.
 #[derive(Debug, Copy, Clone, PartialEq)]
-struct Span(usize, usize);
+pub struct Span(pub usize, pub usize);
 
 impl Span {
-    pub fn is_empty(&self) -> bool {
-        self.0 == 0 && self.1 == 0
-    }
-
+    /// Find and return the str this span represents from the given
+    /// buffer, which should be the raw HTTP request.
     pub fn from_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
         if self.1 >= self.0 && self.1 <= buf.len() {
             str::from_utf8(&buf[self.0..self.1]).unwrap_or("?")
@@ -24,26 +17,89 @@ impl Span {
         }
     }
 }
+// TODO:
+/// - [x] **[set_arg(&str, &str)](#method.set_arg)**
+/// - [x] **[set_form(&str, &str)](#method.set_form)**
+/// - [ ] **[set_query(&str, &str)](#method.set_query)**
+/// - [x] **[set_path(&str, &str)](#method.set_path)**
+/// - [ ] **[set_method(&str, &str)](#method.set_method)**
+/// - [ ] **[set_body(&str, &str)](#method.set_body)**
 
-enum ParseStatus {
-    Complete(Request),
-    Partial(Vec<u8>),
-}
-
+/// Request contains all the info about a client's request. It's
+/// handed to your actions and filters, and is dropped after
+/// responding to the client.
+///
+/// The main ways you'll be using Request are:
+///
+/// - **[arg(&str)](#method.arg)**: Getting arguments from routes that
+///   include parameters, such as `GET "/:page.md" => show;`. You'd
+///   use `request.arg("page")` in this case.
+/// - **[query(&str)](#method.query)**: Getting decoded query
+///   parameters. If a request includes `?id=5&loc=CA` you can use
+///   `request.query("id")` and `request.query("loc")` to get both
+///   values.
+/// - **[form(&str)](#method.form)**: Same as above, but with
+///   submitted `<form>` data. Make sure your `<input>` elements have
+///   the right `name=` attribute.
+/// - **[path()](#method.path)**: The path requested, starting with an
+///   `/`, not including any `?query`.
+/// - **[full_path()](#method.full_path)**: The full path starting
+///   with `/`, including `?query`.
+/// - **[method()](#method.method)**: If you need the HTTP method.
+///
+/// You may also modify a Request in a `filter` using:
+///
+/// - **[set_arg(&str, &str)](#method.set_arg)**
+/// - **[set_form(&str, &str)](#method.set_form)**
+/// - **[set_query(&str, &str)](#method.set_query)**
+/// - **[set_path(&str, &str)](#method.set_path)**
+/// - **[set_method(&str, &str)](#method.set_method)**
+/// - **[set_body(&str, &str)](#method.set_body)**
+///
 #[derive(Debug)]
 pub struct Request {
+    /// The raw request.
+    buffer: Vec<u8>,
+
+    /// These all reference `buffer`.
+    /// Path starts with `/` and doesn't include `?query`.
     path: Span,
+    /// Same as `path` but includes `?query`.
     full_path: Span,
     method: Span,
     body: Span,
     headers: Vec<(Span, Span)>,
-    buffer: Vec<u8>,
-    form: HashMap<String, String>,
-    cache: Rc<TypeCache>,
+
+    /// Maps of form and URL args, percent decoded.
     args: HashMap<String, String>,
+    form: HashMap<String, String>,
+
+    /// Local request cache.
+    cache: Rc<TypeCache>,
 }
 
 impl Request {
+    /// Create a new Request from a raw one. You probably want
+    /// `default()` to get an empty `Request`.
+    pub fn new(
+        method: Span,
+        full_path: Span,
+        path: Span,
+        headers: Vec<(Span, Span)>,
+        body: Span,
+        buffer: Vec<u8>,
+    ) -> Request {
+        Request {
+            method,
+            full_path,
+            path,
+            headers,
+            body,
+            buffer,
+            ..Request::default()
+        }
+    }
+    /// Produce an empty Request.
     pub fn default() -> Request {
         Request {
             path: Span(0, 0),
@@ -58,6 +114,8 @@ impl Request {
         }
     }
 
+    /// Read a raw HTTP request from `reader` and create an
+    /// appropriate `Request` to represent it.
     pub fn from_reader(mut reader: TcpStream) -> Result<Request> {
         let mut buffer = Vec::with_capacity(512);
         let mut read_buf = [0u8; 512];
@@ -68,9 +126,9 @@ impl Request {
                 return Err(error!("Connection Closed"));
             }
             buffer.extend_from_slice(&read_buf[..n]);
-            match parse(mem::replace(&mut buffer, vec![]))? {
-                ParseStatus::Complete(req) => break req,
-                ParseStatus::Partial(b) => {
+            match http_parser::parse(mem::replace(&mut buffer, vec![]))? {
+                http_parser::Status::Complete(req) => break req,
+                http_parser::Status::Partial(b) => {
                     mem::replace(&mut buffer, b);
                 }
             }
@@ -93,11 +151,24 @@ impl Request {
         Ok(req)
     }
 
+    /// Path requested, starting with `/` and not including `?query`.
+    pub fn path(&self) -> &str {
+        self.path.from_buf(&self.buffer)
+    }
+
+    /// Full path requested, starting with `/` and including `?query`.
+    pub fn full_path(&self) -> &str {
+        self.full_path.from_buf(&self.buffer)
+    }
+
+    /// Create a request from an arbitrary path. Used in testing.
     pub fn from_path(path: &str) -> Request {
         Request::default().with_path(path)
     }
 
-    pub fn with_path(mut self, path: &str) -> Request {
+    /// Give a request an arbitrary `path`. Can be used in tests or
+    /// with `filter`.
+    pub fn set_path(&mut self, path: &str) {
         self.full_path = Span(self.buffer.len(), self.buffer.len() + path.len());
         self.buffer.extend(path.as_bytes());
         // path doesn't include ?query
@@ -106,71 +177,72 @@ impl Request {
         } else {
             self.path = self.full_path;
         }
+    }
 
+    /// Give a request an arbitrary `path`. Can be used in tests or
+    /// with `filter`.
+    pub fn with_path(mut self, path: &str) -> Request {
+        self.set_path(path);
         self
     }
 
-    pub fn with_body(mut self, body: &str) -> Request {
-        self.body = Span(self.buffer.len(), self.buffer.len() + body.len());
-        self.buffer.extend(body.as_bytes());
-        self
-    }
-
-    pub fn with_method(mut self, method: &str) -> Request {
-        self.method = Span(self.buffer.len(), self.buffer.len() + method.len());
-        self.buffer.extend(method.as_bytes());
-        self
-    }
-
+    /// Raw body of HTTP request. If you are using methods like
+    /// `with_path` or `set_arg` this will not accurately represent
+    /// the raw HTTP request that was made.
     pub fn body(&self) -> &str {
         self.body.from_buf(&self.buffer)
     }
 
+    /// Give this Request an arbitrary body from a string.
+    pub fn set_body<S: AsRef<str>>(&mut self, body: S) {
+        self.body = Span(self.buffer.len(), self.buffer.len() + body.as_ref().len());
+        self.buffer.extend(body.as_ref().as_bytes());
+    }
+
+    /// Give this Request an arbitrary body from a string and return
+    /// the new Request.
+    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Request {
+        self.set_body(body);
+        self
+    }
+
+    /// HTTP Method
     pub fn method(&self) -> &str {
         self.method.from_buf(&self.buffer)
     }
 
-    pub fn path(&self) -> &str {
-        self.path.from_buf(&self.buffer)
+    /// Give this Request a new HTTP Method.
+    pub fn set_method(&mut self, method: &str) {
+        self.method = Span(self.buffer.len(), self.buffer.len() + method.len());
+        self.buffer.extend(method.as_bytes());
     }
 
-    pub fn full_path(&self) -> &str {
-        self.full_path.from_buf(&self.buffer)
+    /// Give this Request a new HTTP Method and return the new Request.
+    pub fn with_method(mut self, method: &str) -> Request {
+        self.set_method(method);
+        self
     }
 
+    /// In a route defined with `routes!` like `"/names/:name"`,
+    /// calling `request.arg("name")` will return `Some("peter")` when
+    /// the request is `/names/peter`.
     pub fn arg(&self, name: &str) -> Option<&str> {
         self.args.get(name).and_then(|v| Some(v.as_ref()))
     }
 
+    /// Replace or set a new value for an arbitrary URL argument from
+    /// a `filter` or in a test.
     pub fn set_arg(&mut self, name: &str, value: &str) {
         self.args.insert(name.to_string(), value.to_string());
     }
 
-    pub fn cache<T, F>(&self, fun: F) -> &T
-    where
-        F: FnOnce(&Request) -> T,
-        T: Send + Sync + 'static,
-    {
-        self.cache.get().unwrap_or_else(|| {
-            self.cache.set(fun(&self));
-            self.cache.get().unwrap()
-        })
-    }
-
-    fn span_as_str(&self, span: Span) -> &str {
-        if span.1 < self.buffer.len() && span.1 >= span.0 {
-            str::from_utf8(&self.buffer[span.0..span.1]).unwrap_or("?")
-        } else {
-            ""
-        }
-    }
-
+    /// Get a header value. `name` is case insensitive.
     pub fn header(&self, name: &str) -> Option<&str> {
         let name = name.to_lowercase();
         self.headers
             .iter()
-            .find(|(n, _)| self.span_as_str(*n).to_ascii_lowercase() == name)
-            .and_then(|(_, v)| Some(self.span_as_str(*v).trim()))
+            .find(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
+            .and_then(|(_, v)| Some(v.from_buf(&self.buffer).trim()))
     }
 
     /// Was the given form value sent?
@@ -183,7 +255,14 @@ impl Request {
         self.form.get(name).and_then(|s| Some(s.as_ref()))
     }
 
-    /// Parse and decode form POST data into a Hash.
+    /// Replace or set a new value for an arbitrary URL argument from
+    /// a `filter` or in a test.
+    pub fn set_form(&mut self, name: &str, value: &str) {
+        self.form.insert(name.to_string(), value.to_string());
+    }
+
+    /// Parse and decode form POST data into a Hash. Should be called
+    /// when this Request is created.
     fn parse_form(&mut self) {
         let mut map = HashMap::new();
         for kv in self.body().split('&') {
@@ -218,126 +297,18 @@ impl Request {
             })
             .next()
     }
-}
 
-/// Parse a raw HTTP request into a Request struct.
-fn parse(buffer: Vec<u8>) -> Result<ParseStatus> {
-    let method_len = loop {
-        if buffer.len() < 10 {
-            return Ok(ParseStatus::Partial(buffer));
-        }
-        match &buffer[0..3] {
-            b"GET" | b"PUT" => break 3,
-            b"HEA" | b"POS" => match &buffer[0..4] {
-                b"HEAD" | b"POST" => break 4,
-                _ => {}
-            },
-            b"PAT" | b"TRA" => match &buffer[0..5] {
-                b"PATCH" | b"TRACE" => break 5,
-                _ => {}
-            },
-            b"DEL" => {
-                if &buffer[0..6] == b"DELETE" {
-                    break 6;
-                }
-            }
-            b"CON" | b"OPT" => match &buffer[0..7] {
-                b"CONNECT" | b"OPTIONS" => break 7,
-                _ => {}
-            },
-
-            _ => {}
-        }
-        return Err(error!("Unknown HTTP method"));
-    };
-
-    let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
-    if path_len.is_none() {
-        return Ok(ParseStatus::Partial(buffer));
+    /// Local TypeCache. Can store one value of each type, so make
+    /// sure your functions all have different return types or wrap
+    /// common types like `Vec<String>`.
+    pub fn cache<T, F>(&self, fun: F) -> &T
+    where
+        F: FnOnce(&Request) -> T,
+        T: Send + Sync + 'static,
+    {
+        self.cache.get().unwrap_or_else(|| {
+            self.cache.set(fun(&self));
+            self.cache.get().unwrap()
+        })
     }
-    let path_len = path_len.unwrap();
-    let pos = method_len + 1 + path_len + 1;
-    if buffer.len() <= pos + 10 {
-        return Ok(ParseStatus::Partial(buffer));
-    }
-    if &buffer[pos..pos + 8] != b"HTTP/1.1" {
-        return Err(error!(
-            "Error parsing HTTP: {}",
-            str::from_utf8(&buffer).unwrap_or("???")
-        ));
-    }
-    let pos = pos + 8;
-    if &buffer[pos..pos + 2] != b"\r\n" {
-        return Err(error!("Error parsing HTTP: expected \\r\\n"));
-    }
-
-    let mut pos = pos + 2;
-    let mut start = pos;
-    let mut headers = Vec::with_capacity(16);
-    let mut name = Span(0, 0);
-    let mut saw_end = false;
-    let mut parsing_key = true;
-
-    let mut iter = buffer[pos..].iter();
-    while let Some(c) = iter.next() {
-        if parsing_key {
-            match *c {
-                b':' => {
-                    name = Span(start, pos);
-                    start = pos + 1;
-                    parsing_key = false;
-                }
-                b'\r' | b'\n' | b' ' => return Err(error!("Error parsing HTTP: header key")),
-                _ => {}
-            }
-        } else {
-            match *c {
-                b'\r' => {
-                    if buffer.get(pos + 1) == Some(&b'\n') {
-                        if name == Span(0, 0) {
-                            return Err(error!("Error parsing HTTP"));
-                        }
-
-                        headers.push((name, Span(start, pos)));
-                        name = Span(0, 0);
-                        iter.next();
-                        parsing_key = true;
-
-                        if buffer.get(pos + 2) == Some(&b'\r')
-                            && buffer.get(pos + 3) == Some(&b'\n')
-                        {
-                            pos += 4;
-                            saw_end = true;
-                            break;
-                        }
-
-                        start = pos + 2;
-                        pos += 1;
-                    }
-                }
-                _ => {}
-            }
-        }
-        pos += 1;
-    }
-
-    // didn't receive full headers, abort
-    if !saw_end {
-        return Ok(ParseStatus::Partial(buffer));
-    }
-
-    let mut req = Request::default();
-    req.method = Span(0, method_len);
-    req.full_path = Span(method_len + 1, method_len + 1 + path_len);
-    // path doesn't include ?query
-    if let Some(idx) = req.full_path.from_buf(&buffer).find('?') {
-        req.path = Span(method_len + 1, method_len + 1 + idx)
-    } else {
-        req.path = req.full_path;
-    }
-    req.headers = headers;
-    req.body = Span(pos, pos + buffer.len());
-    req.buffer = buffer;
-
-    Ok(ParseStatus::Complete(req))
 }

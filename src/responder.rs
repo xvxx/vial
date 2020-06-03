@@ -1,7 +1,13 @@
 use crate::Response;
-use std::{error, fmt};
+use std::error;
 
+/// The `Responder` trait converts your custom types or a few basic
+/// Rust types into a [Response](struct.Response.html) that gets hand
+/// delivered to the HTTP client in a timley fashion, barring any
+/// weather delays.
 pub trait Responder {
+    /// Consume this object and return a
+    /// [Response](struct.Response.html) representing it.
     fn to_response(self) -> Response;
 }
 

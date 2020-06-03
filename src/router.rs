@@ -1,10 +1,7 @@
 use {
-    crate::{asset, Method, Request, Response},
+    crate::{Method, Request, Response},
     percent_encoding::percent_decode,
-    std::{
-        collections::HashMap,
-        path::{Path, PathBuf},
-    },
+    std::collections::HashMap,
 };
 
 #[derive(Default)]

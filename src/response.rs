@@ -3,8 +3,7 @@ use {
     std::{
         collections::HashMap,
         error, fmt, fs,
-        io::{self, BufReader, Read},
-        path::Path,
+        io::{self, BufReader},
     },
 };
 

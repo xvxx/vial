@@ -200,6 +200,7 @@ pub mod asset;
 mod bundler;
 mod cache;
 pub mod features;
+mod http_parser;
 mod method;
 pub mod prelude;
 mod request;
@@ -226,6 +227,8 @@ pub use {
     responder::Responder, response::Response, router::Router, server::run,
 };
 
+/// Convenience Result that, for now, returns io::Error.
+/// TODO: replace with vial::Error.
 pub type Result<T> = std::result::Result<T, std::io::Error>;
 
 /// Directory where assets are stored, if any.
