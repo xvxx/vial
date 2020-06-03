@@ -192,7 +192,6 @@ mod macros;
 pub mod asset;
 mod bundler;
 mod cache;
-pub mod features;
 mod http_parser;
 mod method;
 pub mod prelude;

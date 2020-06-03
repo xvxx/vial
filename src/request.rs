@@ -38,6 +38,7 @@ impl Span {
 /// - **[full_path()](#method.full_path)**: The full path starting
 ///   with `/`, including `?query`.
 /// - **[method()](#method.method)**: If you need the HTTP method.
+/// - **[cache()](#method.cache)**: The request local cache.
 ///
 /// You may also modify a Request in a `filter` using:
 ///
@@ -290,9 +291,74 @@ impl Request {
             .next()
     }
 
-    /// Local TypeCache. Can store one value of each type, so make
-    /// sure your functions all have different return types or wrap
-    /// common types like `Vec<String>`.
+    /// Request's `cache()` lives for only a single Request, but can
+    /// nonethenevertheless be useful to prevent looking up the same
+    /// data over and over. The cache is based on the return type of
+    /// the function or closure you pass to `cache()` using
+    /// [`TypeCache`](struct.TypeCache.html), so make sure to create
+    /// little wrapper structs if you want different functions to
+    /// return the same common types, like `Vec<String>`:
+    ///
+    /// ```rust
+    /// struct PageNames(Vec<String>);
+    /// struct UserNames(Vec<String>);
+    /// ```
+    ///
+    /// Here's an example:
+    ///
+    /// ```rust
+    /// use vial::prelude::*;
+    /// use page::Page;
+    /// use db;
+    ///
+    /// routes! {
+    ///     GET "/" => list;
+    /// }
+    ///
+    /// struct PageNames(Vec<String>);
+    ///
+    /// fn all_pages(_: &Request) -> Vec<Page> {
+    ///     db::lookup("select * from pages")
+    /// }
+    ///
+    /// fn page_names(req: &Request) -> PageNames {
+    ///     PageNames(req.cache(all_pages)
+    ///         .iter()
+    ///         .map(|page| page.name.clone())
+    ///         .collect::<Vec<_>>())
+    /// }
+    ///
+    /// fn list_of_names(req: &Request) -> String {
+    ///     req.cache(page_names)
+    ///         .0
+    ///         .iter()
+    ///         .map(|name| format!("<li>{}</li>", name))
+    ///         .collect::<Vec<_>>()
+    ///         .join("\n")
+    /// }
+    ///
+    /// fn list(req: Request) -> impl Responder {
+    ///     format!(
+    ///         "<html>
+    ///             <head><title>{title}</title></head>
+    ///             <body>
+    ///                 <h1>{title}</h1>
+    ///                 <h3>There are {page_count} pages:</h3>
+    ///                 <ul>
+    ///                     {pages}
+    ///                 </ul>
+    ///             </body>
+    ///         </html>",
+    ///         title = "List Pages",
+    ///         page_count = req.cache(all_pages).len(),
+    ///         pages = req.cache(list_of_names),
+    ///     )
+    /// }
+    ///
+    /// fn main() {
+    ///     run!().unwrap();
+    /// }
+    /// ```
     pub fn cache<T, F>(&self, fun: F) -> &T
     where
         F: FnOnce(&Request) -> T,
