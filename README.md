@@ -2,7 +2,7 @@
 
 # ~ vial: a micro micro-framework ~
 
-`vial` is a small web "framework" for making small web "sites".
+`vial` is a small web "framework" for making small web sites.
 
 It only includes a few basics:
 
@@ -18,7 +18,7 @@ Single file, server side apps? You bet! Fast compilation? Yes please!
 _À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
-have to bring your own beverage. And food.
+have to bring your own beverages. And food.
 
 To get started, just add `vial` to your `Cargo.toml`:
 
@@ -144,31 +144,24 @@ Install [cargo-watch]:
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
-fancy stuff, but there are a few compile-time `--features` you can
-activate for enhanced productivity:
+fancy stuff by default, but there are a few compile-time `--features`
+you can activate for enhanced productivity:
 
 <img src="./img/alice.jpeg" alt="Alice" align="right" width="250" />
 
-- [ ] **cookies**: Cookie monster!
-- [ ] **sessions**: Session Support
 - [x] **state**: Global State
-- [x] **markdown**: Add Markdown rendering capabilities.
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
+- [ ] **cookies**: Cookie monster!
+- [ ] **sessions**: Session support
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
-- [ ] **hatter**: Barebones, no-dependency template library, via [hatter].
-- [ ] **gzip**: Serve pages with gzip compression.
 
 _**Please note:** The list above is a work-in-progress._
 
 ## ~ T0D0 ~
 
 - [ ] tests
-- [ ] document each feature in manual
-- [ ] don't copy any of raw HTTP request
 - [ ] `before_filter`
-- [ ] cookies
-- [ ] sessions
 
 ### warp's features:
 

@@ -17,15 +17,10 @@ name = "horrorshow"
 required-features = ["horror"]
 
 [[example]]
-name = "markdown"
-required-features = ["markdown"]
-
-[[example]]
 name = "state"
 required-features = ["state"]
 
 [features]
-markdown = ['pulldown-cmark', 'autolink']
 horror = ['horrorshow']
 state = []
 default = []
@@ -34,9 +29,6 @@ default = []
 threadpool = "1.7.1"
 libc-strftime = "0.2.0"
 percent-encoding = "2.1.0"
-
-pulldown-cmark = { version = "0.7", default-features = false, optional = true }
-autolink = { version = "0.3.0", optional = true }
 
 horrorshow = { version = "0.8.3", optional = true }
 
