@@ -789,21 +789,27 @@ fn main() {
 
 ## Templates
 
-### Hatter
-
-### Horrorshow
-
-### Tera
+_Optional Feature: Coming soon._
 
 ## Cookies
 
+_Optional Feature: Coming soon._
+
 ## Sessions
+
+_Optional Feature: Coming soon._
 
 ## JSON
 
+_Optional Feature: Coming soon._
+
 ## Database
 
+_"Pro Tip": Coming soon._
+
 ## Markdown
+
+_"Pro Tip": Coming soon._
 
 [request]: #Requests
 [response]: #Responses
