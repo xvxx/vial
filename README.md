@@ -153,6 +153,8 @@ you can activate for enhanced productivity:
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 - [ ] **cookies**: Cookie monster!
 - [ ] **sessions**: Session support
+- [ ] **multipart**: Multipart form data (file uploads)
+- [ ] **log**: Access logging
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 - [ ] **tera**: Templating, via Tera.
 
