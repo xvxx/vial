@@ -40,8 +40,7 @@ pub struct Request {
     buffer: Vec<u8>,
     form: HashMap<String, String>,
     cache: Rc<cache::TypeCache>,
-
-    pub(crate) args: HashMap<String, String>,
+    args: HashMap<String, String>,
 }
 
 impl Request {
@@ -99,8 +98,15 @@ impl Request {
     }
 
     pub fn with_path(mut self, path: &str) -> Request {
-        self.path = Span(self.buffer.len(), self.buffer.len() + path.len());
+        self.full_path = Span(self.buffer.len(), self.buffer.len() + path.len());
         self.buffer.extend(path.as_bytes());
+        // path doesn't include ?query
+        if let Some(idx) = self.full_path().find('?') {
+            self.path = Span(self.full_path.0, self.full_path.0 + idx)
+        } else {
+            self.path = self.full_path;
+        }
+
         self
     }
 
@@ -134,6 +140,10 @@ impl Request {
 
     pub fn arg(&self, name: &str) -> Option<&str> {
         self.args.get(name).and_then(|v| Some(v.as_ref()))
+    }
+
+    pub fn set_arg(&mut self, name: &str, value: &str) {
+        self.args.insert(name.to_string(), value.to_string());
     }
 
     pub fn cache<T, F>(&self, fun: F) -> &T

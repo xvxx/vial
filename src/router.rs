@@ -24,25 +24,21 @@ impl Router {
             let req_parts = Self::pattern_to_vec(req.path());
 
             'outer: for (pattern, action) in routes {
-                req.args.clear();
                 for (i, req_part) in req_parts.iter().enumerate() {
                     if i >= pattern.len() {
                         continue 'outer;
                     }
                     if pattern[i].starts_with(':') && !req_part.is_empty() {
-                        req.args.insert(
-                            pattern[i].trim_start_matches(':').to_string(),
-                            percent_decode(req_part.as_bytes())
-                                .decode_utf8_lossy()
-                                .to_string(),
+                        req.set_arg(
+                            pattern[i].trim_start_matches(':'),
+                            &percent_decode(req_part.as_bytes()).decode_utf8_lossy(),
                         );
                         continue;
                     } else if pattern[i].starts_with('*') && !req_part.is_empty() {
-                        req.args.insert(
-                            pattern[i].trim_start_matches('*').to_string(),
-                            percent_decode(req_parts[i..].join("/").as_bytes())
-                                .decode_utf8_lossy()
-                                .to_string(),
+                        req.set_arg(
+                            pattern[i].trim_start_matches('*'),
+                            &percent_decode(req_parts[i..].join("/").as_bytes())
+                                .decode_utf8_lossy(),
                         );
                         return Some(action);
                     } else if *req_part == pattern[i] {
