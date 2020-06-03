@@ -1,10 +1,3 @@
-// Copyright 2020 The Vial Authors
-//
-// Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
-// http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
-// http://opensource.org/licenses/MIT>, at your option. This file may not be
-// copied, modified, or distributed except according to those terms.
-
 //! # ~ vial: a micro micro-framework ~
 //!
 //! **Vial** is a small web "framework" for making small web sites.
@@ -19,7 +12,7 @@
 //!   client.
 //! - **[Responder](trait.Responder.html)**: Trait to convert your
 //!   types or a few built-ins like `String` into a `Response`.
-//! - **[asset](module.Asset.html)**: Serving of static files and
+//! - **[asset](asset/index.html)**: Serving of static files and
 //!   support for bundling into the release binary.
 //!
 //! Everything else... well, that's up to you.

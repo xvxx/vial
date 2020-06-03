@@ -3,11 +3,19 @@ use {
     std::{fs, path::PathBuf},
 };
 
-/// Prepares everything in `dir` to be bundled into a binary.
+/// You should use the
+/// [`vial::bundle_assets!()`](macro.bundle_assets.html) macro instead
+/// of calling this function directly.
+///
+/// Prepares everything in `dir` to be bundled into a binary by
+/// writing a `bundle.rs` file in `$OUT_DIR` and symlinking the assets
+/// directory.
+///
 /// Sets `ASSET_DIR` and `cfg(bundle_assets)` for the user's program,
 /// which uses them to find the assets.
 ///
 /// Only runs in release mode.
+#[doc(hidden)]
 pub fn bundle_assets(dir: &str) -> Result<()> {
     #[cfg(not(debug_assertions))]
     {

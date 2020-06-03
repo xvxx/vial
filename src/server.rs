@@ -9,12 +9,22 @@ use {
 
 const MAX_CONNECTIONS: usize = 10;
 
-pub fn run<T: ToSocketAddrs>(addr: T, router: Router) -> Result<()> {
+/// Starts a new Vial server. Should always be invoked via the
+/// [`vial::run!()`](macro.run.html) macro, since there is some setup
+/// that needs to happen.
+#[doc(hidden)]
+pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> Result<()> {
     let pool = ThreadPool::new(MAX_CONNECTIONS);
     let listener = TcpListener::bind(&addr)?;
     let addr = listener.local_addr()?;
     let server = Arc::new(Server::new(router));
-    println!("~ vial running at http://{}", addr);
+    if let Some(banner) = banner {
+        if !banner.is_empty() {
+            println!("{}", banner.replace("{}", &format!("http://{}", addr)));
+        }
+    } else {
+        println!("~ vial running at http://{}", addr);
+    }
 
     for stream in listener.incoming() {
         let server = server.clone();
@@ -29,7 +39,7 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router) -> Result<()> {
     Ok(())
 }
 
-pub struct Server {
+struct Server {
     router: Router,
 }
 
@@ -38,16 +48,16 @@ impl Server {
         Server { router }
     }
 
-    fn handle_request(&self, mut stream: TcpStream) -> Result<()> {
+    fn handle_request(&self, stream: TcpStream) -> Result<()> {
         let reader = stream.try_clone()?;
         let req = Request::from_reader(reader)?;
         self.write_response(stream, req)
     }
 
-    fn write_response(&self, mut stream: TcpStream, mut req: Request) -> Result<()> {
+    fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
         let method = req.method().to_string();
         let path = req.path().to_string();
-        let mut response = self.build_response(req);
+        let response = self.build_response(req);
 
         println!("{} {} {}", method, response.code, path);
         if response.code == 500 {

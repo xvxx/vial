@@ -17,14 +17,6 @@ impl Span {
         }
     }
 }
-// TODO:
-/// - [x] **[set_arg(&str, &str)](#method.set_arg)**
-/// - [x] **[set_form(&str, &str)](#method.set_form)**
-/// - [ ] **[set_query(&str, &str)](#method.set_query)**
-/// - [x] **[set_path(&str, &str)](#method.set_path)**
-/// - [ ] **[set_method(&str, &str)](#method.set_method)**
-/// - [ ] **[set_body(&str, &str)](#method.set_body)**
-
 /// Request contains all the info about a client's request. It's
 /// handed to your actions and filters, and is dropped after
 /// responding to the client.
