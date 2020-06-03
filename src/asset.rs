@@ -1,7 +1,62 @@
-//! # Assets
+//! Vial can serve static files out of an asset directory and
+//! optionally bundle them into your application in `--release` mode.
 //!
-//! 
+//! By setting an asset directory, either through the
+//! [`vial::asset_dir!()`][macro.asset_dir.html] or
+//! [`vial::bundle_assets!()`][macro.bundle_assets.html] macro,
+//! you can then use the methods in this module to work with them:
 //!
+//! - **[asset::etag()](#method.etag)**: Get the ETag for an asset.
+//!   Used automatically by the Router if a web request matches an
+//!   asset's path.
+//! - **[asset::exists()](#method.exists)**: Does an asset exist?
+//!   Works regardless of whether the asset is bundled or not.
+//! - **[asset::is_bundled()](#method.is_bundled)**: Are assets
+//!   bundled? Only true in `--release` mode and when used with the
+//!   `vial::bundle_assets!()` macro.
+//! - **[asset::to_string()](#method.to_string)**: Like
+//!   `fs::read_to_string()`, delivers the content of an asset as a
+//!   `String`.
+//! - **[asset::as_reader()](#method.as_reader)**: Like
+//!   `asset::to_string()` but provides an `io::Read` of an asset,
+//!   whether or not it's bundled.
+//!
+//! To get started, put all your `.js` and `.css` and other static
+//! assets into a directory in the root of your project, then
+//! reference them in HTML  as if the root of your Vial web
+//! application was that asset directory.
+//!
+//! Next call [`vial::asset_dir!()`][macro.asset_dir.html] with the
+//! path to your asset directory (maybe `assets/`?) before starting
+//! your application with [`vial::run!`](macro.run.html):
+///
+/// If we had a directory structure like this:
+///     .
+///     ├── README.md
+///     ├── assets
+///     │   └── img
+///     │       ├── banker.png
+///     │       └── doctor.png
+///     └── src
+///         └── main.rs
+///
+/// We could serve our images like so:
+///
+/// ```rust
+/// vial::routes! {
+///     GET "/" => |_| "
+///         <p><img src='/img/doctor.png'/></p>
+///         <p><img src='/img/banker.png'/></p>
+///     ";
+/// }
+///
+/// fn main() {
+///     vial::asset_dir!("assets/");
+///     vial::run!().unwrap();
+/// }
+/// ```
+///
+///
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, HashMap},

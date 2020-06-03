@@ -769,8 +769,35 @@
 <li><p><code>fn with_header(mut self, key: &amp;str, value: &amp;str) -&gt; Response;</code></p></li>
 </ul>
 <h3 id="redirect">Redirect</h3>
+<p>To issue a 302 redirect, use the <code>redirect_to</code> static method:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">fn</span> search(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>    <span class="kw">let</span> url = <span class="pp">format!</span>(</span>
+<span id="cb22-3"><a href="#cb22-3"></a>        <span class="st">&quot;https://en.wikipedia.org/wiki/Special:Search?search={}&quot;</span>,</span>
+<span id="cb22-4"><a href="#cb22-4"></a>        req.arg(<span class="st">&quot;search&quot;</span>)?</span>
+<span id="cb22-5"><a href="#cb22-5"></a>    )</span>
+<span id="cb22-6"><a href="#cb22-6"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(url))</span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="status-codes">Status Codes</h3>
+<p>Empty responses with status codes can be created from <code>usize</code>:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">fn</span> fourohfour(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>    <span class="pp">Response::</span>from(<span class="dv">404</span>)</span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="op">}</span></span>
+<span id="cb23-4"><a href="#cb23-4"></a></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="kw">fn</span> pay_me(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb23-6"><a href="#cb23-6"></a>    <span class="dv">402</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="headers">Headers</h3>
+<p>Headers can be set Builder-style using <code>with_header</code> or imperative-style using <code>set_header</code>:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb24-1"><a href="#cb24-1"></a><span class="kw">fn</span> not_found(_req: Request) -&gt; Response <span class="op">{</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a>    <span class="pp">Response::</span>from(<span class="dv">404</span>)</span>
+<span id="cb24-3"><a href="#cb24-3"></a>        .with_header(<span class="st">&quot;Content-Type&quot;</span>, <span class="st">&quot;text/plain&quot;</span>)</span>
+<span id="cb24-4"><a href="#cb24-4"></a>        .with_body(<span class="st">&quot;404 Not Found&quot;</span>)</span>
+<span id="cb24-5"><a href="#cb24-5"></a><span class="op">}</span></span>
+<span id="cb24-6"><a href="#cb24-6"></a></span>
+<span id="cb24-7"><a href="#cb24-7"></a><span class="kw">fn</span> download(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
+<span id="cb24-8"><a href="#cb24-8"></a>    <span class="pp">Response::</span>from_file(req.arg(<span class="st">&quot;file&quot;</span>)?)</span>
+<span id="cb24-9"><a href="#cb24-9"></a>        .with_header(<span class="st">&quot;Content-Type&quot;</span>, <span class="st">&quot;application/octet-stream&quot;</span>)</span>
+<span id="cb24-10"><a href="#cb24-10"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="assets">Assets</h2>
 <h3 id="setting-asset-dir">Setting asset dir</h3>
 <h3 id="assetexists"><code>asset::exists()</code></h3>
@@ -787,60 +814,60 @@
 </ol>
 <h3 id="local-state">Local State</h3>
 <p>Local state lives for only a single <a href="#Requests">Request</a>, but can be useful to prevent looking up the same data over and over. The cache is based on the return type of the function or closure you pass to <code>cache()</code>, so make sure to create little wrapper structs if you want different functions to return the same type, like <code>Vec&lt;String&gt;</code>:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">struct</span> UserNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
+<span id="cb25-2"><a href="#cb25-2"></a><span class="kw">struct</span> UserNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span></code></pre></div>
 <p>Here’s an example:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="kw">use</span> <span class="pp">page::</span>Page;</span>
-<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">use</span> db;</span>
-<span id="cb23-4"><a href="#cb23-4"></a></span>
-<span id="cb23-5"><a href="#cb23-5"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb23-6"><a href="#cb23-6"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; list;</span>
-<span id="cb23-7"><a href="#cb23-7"></a><span class="op">}</span></span>
-<span id="cb23-8"><a href="#cb23-8"></a></span>
-<span id="cb23-9"><a href="#cb23-9"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
-<span id="cb23-10"><a href="#cb23-10"></a></span>
-<span id="cb23-11"><a href="#cb23-11"></a><span class="kw">fn</span> all_pages(_: &amp;Request) -&gt; <span class="dt">Vec</span>&lt;Page&gt; <span class="op">{</span></span>
-<span id="cb23-12"><a href="#cb23-12"></a>    <span class="pp">db::</span>lookup(<span class="st">&quot;select * from pages&quot;</span>)</span>
-<span id="cb23-13"><a href="#cb23-13"></a><span class="op">}</span></span>
-<span id="cb23-14"><a href="#cb23-14"></a></span>
-<span id="cb23-15"><a href="#cb23-15"></a><span class="kw">fn</span> page_names(req: &amp;Request) -&gt; PageNames <span class="op">{</span></span>
-<span id="cb23-16"><a href="#cb23-16"></a>    PageNames(req.cache(all_pages)</span>
-<span id="cb23-17"><a href="#cb23-17"></a>        .iter()</span>
-<span id="cb23-18"><a href="#cb23-18"></a>        .map(|page| page.name.clone())</span>
-<span id="cb23-19"><a href="#cb23-19"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
-<span id="cb23-20"><a href="#cb23-20"></a><span class="op">}</span></span>
-<span id="cb23-21"><a href="#cb23-21"></a></span>
-<span id="cb23-22"><a href="#cb23-22"></a><span class="kw">fn</span> list_of_names(req: &amp;Request) -&gt; <span class="dt">String</span> <span class="op">{</span></span>
-<span id="cb23-23"><a href="#cb23-23"></a>    req.cache(page_names)</span>
-<span id="cb23-24"><a href="#cb23-24"></a>        .<span class="dv">0</span></span>
-<span id="cb23-25"><a href="#cb23-25"></a>        .iter()</span>
-<span id="cb23-26"><a href="#cb23-26"></a>        .map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name))</span>
-<span id="cb23-27"><a href="#cb23-27"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;()</span>
-<span id="cb23-28"><a href="#cb23-28"></a>        .join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb23-29"><a href="#cb23-29"></a><span class="op">}</span></span>
-<span id="cb23-30"><a href="#cb23-30"></a></span>
-<span id="cb23-31"><a href="#cb23-31"></a><span class="kw">fn</span> list(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb23-32"><a href="#cb23-32"></a>    <span class="pp">format!</span>(</span>
-<span id="cb23-33"><a href="#cb23-33"></a>        <span class="st">&quot;&lt;html&gt;</span></span>
-<span id="cb23-34"><a href="#cb23-34"></a><span class="st">            &lt;head&gt;&lt;title&gt;{title}&lt;/title&gt;&lt;/head&gt;</span></span>
-<span id="cb23-35"><a href="#cb23-35"></a><span class="st">            &lt;body&gt;</span></span>
-<span id="cb23-36"><a href="#cb23-36"></a><span class="st">                &lt;h1&gt;{title}&lt;/h1&gt;</span></span>
-<span id="cb23-37"><a href="#cb23-37"></a><span class="st">                &lt;h3&gt;There are {page_count} pages:&lt;/h3&gt;</span></span>
-<span id="cb23-38"><a href="#cb23-38"></a><span class="st">                &lt;ul&gt;</span></span>
-<span id="cb23-39"><a href="#cb23-39"></a><span class="st">                    {pages}</span></span>
-<span id="cb23-40"><a href="#cb23-40"></a><span class="st">                &lt;/ul&gt;</span></span>
-<span id="cb23-41"><a href="#cb23-41"></a><span class="st">            &lt;/body&gt;</span></span>
-<span id="cb23-42"><a href="#cb23-42"></a><span class="st">        &lt;/html&gt;&quot;</span>,</span>
-<span id="cb23-43"><a href="#cb23-43"></a>        title = <span class="st">&quot;List Pages&quot;</span>,</span>
-<span id="cb23-44"><a href="#cb23-44"></a>        page_count = req.cache(all_pages).len(),</span>
-<span id="cb23-45"><a href="#cb23-45"></a>        pages = req.cache(list_of_names),</span>
-<span id="cb23-46"><a href="#cb23-46"></a>    )</span>
-<span id="cb23-47"><a href="#cb23-47"></a><span class="op">}</span></span>
-<span id="cb23-48"><a href="#cb23-48"></a></span>
-<span id="cb23-49"><a href="#cb23-49"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb23-50"><a href="#cb23-50"></a>    <span class="pp">run!</span>().unwrap();</span>
-<span id="cb23-51"><a href="#cb23-51"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="kw">use</span> <span class="pp">page::</span>Page;</span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="kw">use</span> db;</span>
+<span id="cb26-4"><a href="#cb26-4"></a></span>
+<span id="cb26-5"><a href="#cb26-5"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb26-6"><a href="#cb26-6"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; list;</span>
+<span id="cb26-7"><a href="#cb26-7"></a><span class="op">}</span></span>
+<span id="cb26-8"><a href="#cb26-8"></a></span>
+<span id="cb26-9"><a href="#cb26-9"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
+<span id="cb26-10"><a href="#cb26-10"></a></span>
+<span id="cb26-11"><a href="#cb26-11"></a><span class="kw">fn</span> all_pages(_: &amp;Request) -&gt; <span class="dt">Vec</span>&lt;Page&gt; <span class="op">{</span></span>
+<span id="cb26-12"><a href="#cb26-12"></a>    <span class="pp">db::</span>lookup(<span class="st">&quot;select * from pages&quot;</span>)</span>
+<span id="cb26-13"><a href="#cb26-13"></a><span class="op">}</span></span>
+<span id="cb26-14"><a href="#cb26-14"></a></span>
+<span id="cb26-15"><a href="#cb26-15"></a><span class="kw">fn</span> page_names(req: &amp;Request) -&gt; PageNames <span class="op">{</span></span>
+<span id="cb26-16"><a href="#cb26-16"></a>    PageNames(req.cache(all_pages)</span>
+<span id="cb26-17"><a href="#cb26-17"></a>        .iter()</span>
+<span id="cb26-18"><a href="#cb26-18"></a>        .map(|page| page.name.clone())</span>
+<span id="cb26-19"><a href="#cb26-19"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
+<span id="cb26-20"><a href="#cb26-20"></a><span class="op">}</span></span>
+<span id="cb26-21"><a href="#cb26-21"></a></span>
+<span id="cb26-22"><a href="#cb26-22"></a><span class="kw">fn</span> list_of_names(req: &amp;Request) -&gt; <span class="dt">String</span> <span class="op">{</span></span>
+<span id="cb26-23"><a href="#cb26-23"></a>    req.cache(page_names)</span>
+<span id="cb26-24"><a href="#cb26-24"></a>        .<span class="dv">0</span></span>
+<span id="cb26-25"><a href="#cb26-25"></a>        .iter()</span>
+<span id="cb26-26"><a href="#cb26-26"></a>        .map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name))</span>
+<span id="cb26-27"><a href="#cb26-27"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;()</span>
+<span id="cb26-28"><a href="#cb26-28"></a>        .join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb26-29"><a href="#cb26-29"></a><span class="op">}</span></span>
+<span id="cb26-30"><a href="#cb26-30"></a></span>
+<span id="cb26-31"><a href="#cb26-31"></a><span class="kw">fn</span> list(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb26-32"><a href="#cb26-32"></a>    <span class="pp">format!</span>(</span>
+<span id="cb26-33"><a href="#cb26-33"></a>        <span class="st">&quot;&lt;html&gt;</span></span>
+<span id="cb26-34"><a href="#cb26-34"></a><span class="st">            &lt;head&gt;&lt;title&gt;{title}&lt;/title&gt;&lt;/head&gt;</span></span>
+<span id="cb26-35"><a href="#cb26-35"></a><span class="st">            &lt;body&gt;</span></span>
+<span id="cb26-36"><a href="#cb26-36"></a><span class="st">                &lt;h1&gt;{title}&lt;/h1&gt;</span></span>
+<span id="cb26-37"><a href="#cb26-37"></a><span class="st">                &lt;h3&gt;There are {page_count} pages:&lt;/h3&gt;</span></span>
+<span id="cb26-38"><a href="#cb26-38"></a><span class="st">                &lt;ul&gt;</span></span>
+<span id="cb26-39"><a href="#cb26-39"></a><span class="st">                    {pages}</span></span>
+<span id="cb26-40"><a href="#cb26-40"></a><span class="st">                &lt;/ul&gt;</span></span>
+<span id="cb26-41"><a href="#cb26-41"></a><span class="st">            &lt;/body&gt;</span></span>
+<span id="cb26-42"><a href="#cb26-42"></a><span class="st">        &lt;/html&gt;&quot;</span>,</span>
+<span id="cb26-43"><a href="#cb26-43"></a>        title = <span class="st">&quot;List Pages&quot;</span>,</span>
+<span id="cb26-44"><a href="#cb26-44"></a>        page_count = req.cache(all_pages).len(),</span>
+<span id="cb26-45"><a href="#cb26-45"></a>        pages = req.cache(list_of_names),</span>
+<span id="cb26-46"><a href="#cb26-46"></a>    )</span>
+<span id="cb26-47"><a href="#cb26-47"></a><span class="op">}</span></span>
+<span id="cb26-48"><a href="#cb26-48"></a></span>
+<span id="cb26-49"><a href="#cb26-49"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb26-50"><a href="#cb26-50"></a>    <span class="pp">run!</span>().unwrap();</span>
+<span id="cb26-51"><a href="#cb26-51"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="global-state">Global State</h3>
 <p>There are four steps involved in setting up shared, global state in <strong>Vial</strong>:</p>
 <ol type="1">
@@ -851,49 +878,49 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <ol start="2" type="1">
 <li>Create a struct that is <code>Send + Sync</code> to hold your application’s shared state:</li>
 </ol>
-<div class="sourceCode" id="cb25"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">use</span> vial;</span>
-<span id="cb25-2"><a href="#cb25-2"></a><span class="kw">use</span> <span class="pp">std::sync::</span><span class="op">{</span>Arc, Mutx, <span class="pp">atomic::</span><span class="op">{</span>AtomicUsize, Ordering<span class="op">}}</span>;</span>
-<span id="cb25-3"><a href="#cb25-3"></a><span class="kw">use</span> <span class="pp">some_db_crate::</span>DB;</span>
-<span id="cb25-4"><a href="#cb25-4"></a></span>
-<span id="cb25-5"><a href="#cb25-5"></a><span class="kw">struct</span> MyConfig <span class="op">{</span></span>
-<span id="cb25-6"><a href="#cb25-6"></a>    db: Arc&lt;Mutex&lt;DB&gt;&gt;,</span>
-<span id="cb25-7"><a href="#cb25-7"></a>    counter: AtomicUsize,</span>
-<span id="cb25-8"><a href="#cb25-8"></a><span class="op">}</span></span>
-<span id="cb25-9"><a href="#cb25-9"></a></span>
-<span id="cb25-10"><a href="#cb25-10"></a><span class="kw">impl</span> MyConfig <span class="op">{</span></span>
-<span id="cb25-11"><a href="#cb25-11"></a>    <span class="kw">pub</span> <span class="kw">fn</span> new(db: DB) <span class="op">{</span></span>
-<span id="cb25-12"><a href="#cb25-12"></a>        MyConfig <span class="op">{</span></span>
-<span id="cb25-13"><a href="#cb25-13"></a>            db: <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(db)),</span>
-<span id="cb25-14"><a href="#cb25-14"></a>            counter: <span class="pp">AtomicUsize::</span>new(<span class="dv">0</span>),</span>
-<span id="cb25-15"><a href="#cb25-15"></a>        <span class="op">}</span></span>
-<span id="cb25-16"><a href="#cb25-16"></a>    <span class="op">}</span></span>
-<span id="cb25-17"><a href="#cb25-17"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">use</span> vial;</span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="kw">use</span> <span class="pp">std::sync::</span><span class="op">{</span>Arc, Mutx, <span class="pp">atomic::</span><span class="op">{</span>AtomicUsize, Ordering<span class="op">}}</span>;</span>
+<span id="cb28-3"><a href="#cb28-3"></a><span class="kw">use</span> <span class="pp">some_db_crate::</span>DB;</span>
+<span id="cb28-4"><a href="#cb28-4"></a></span>
+<span id="cb28-5"><a href="#cb28-5"></a><span class="kw">struct</span> MyConfig <span class="op">{</span></span>
+<span id="cb28-6"><a href="#cb28-6"></a>    db: Arc&lt;Mutex&lt;DB&gt;&gt;,</span>
+<span id="cb28-7"><a href="#cb28-7"></a>    counter: AtomicUsize,</span>
+<span id="cb28-8"><a href="#cb28-8"></a><span class="op">}</span></span>
+<span id="cb28-9"><a href="#cb28-9"></a></span>
+<span id="cb28-10"><a href="#cb28-10"></a><span class="kw">impl</span> MyConfig <span class="op">{</span></span>
+<span id="cb28-11"><a href="#cb28-11"></a>    <span class="kw">pub</span> <span class="kw">fn</span> new(db: DB) <span class="op">{</span></span>
+<span id="cb28-12"><a href="#cb28-12"></a>        MyConfig <span class="op">{</span></span>
+<span id="cb28-13"><a href="#cb28-13"></a>            db: <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(db)),</span>
+<span id="cb28-14"><a href="#cb28-14"></a>            counter: <span class="pp">AtomicUsize::</span>new(<span class="dv">0</span>),</span>
+<span id="cb28-15"><a href="#cb28-15"></a>        <span class="op">}</span></span>
+<span id="cb28-16"><a href="#cb28-16"></a>    <span class="op">}</span></span>
+<span id="cb28-17"><a href="#cb28-17"></a><span class="op">}</span></span></code></pre></div>
 <ol start="3" type="1">
 <li>Write your actions to take <code>State&lt;MyConfig&gt;</code> instead of <code>Request</code>:</li>
 </ol>
-<div class="sourceCode" id="cb26"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
-<span id="cb26-2"><a href="#cb26-2"></a></span>
-<span id="cb26-3"><a href="#cb26-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb26-4"><a href="#cb26-4"></a>    GET <span class="st">&quot;/list&quot;</span> =&gt; list;</span>
-<span id="cb26-5"><a href="#cb26-5"></a><span class="op">}</span></span>
-<span id="cb26-6"><a href="#cb26-6"></a></span>
-<span id="cb26-7"><a href="#cb26-7"></a><span class="kw">fn</span> find_names(db: Arc&lt;Mutex&lt;DB&gt;&gt;) -&gt; <span class="dt">Result</span>&lt;<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;, <span class="pp">db::</span>Error&gt; <span class="op">{</span></span>
-<span id="cb26-8"><a href="#cb26-8"></a>    <span class="cn">Ok</span>(db.lock()?.query(<span class="st">&quot;SELECT name FROM names&quot;</span>)?</span>
-<span id="cb26-9"><a href="#cb26-9"></a>        .map(|row| row.get(<span class="st">&quot;name&quot;</span>)?)</span>
-<span id="cb26-10"><a href="#cb26-10"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
-<span id="cb26-11"><a href="#cb26-11"></a><span class="op">}</span></span>
-<span id="cb26-12"><a href="#cb26-12"></a></span>
-<span id="cb26-13"><a href="#cb26-13"></a><span class="kw">fn</span> list(state: State&lt;MyConfig&gt;) -&gt; VialResult <span class="op">{</span></span>
-<span id="cb26-14"><a href="#cb26-14"></a>    <span class="cn">Ok</span>(find_names(state.db.clone())?.map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name)))</span>
-<span id="cb26-15"><a href="#cb26-15"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<span id="cb29-2"><a href="#cb29-2"></a></span>
+<span id="cb29-3"><a href="#cb29-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a>    GET <span class="st">&quot;/list&quot;</span> =&gt; list;</span>
+<span id="cb29-5"><a href="#cb29-5"></a><span class="op">}</span></span>
+<span id="cb29-6"><a href="#cb29-6"></a></span>
+<span id="cb29-7"><a href="#cb29-7"></a><span class="kw">fn</span> find_names(db: Arc&lt;Mutex&lt;DB&gt;&gt;) -&gt; <span class="dt">Result</span>&lt;<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;, <span class="pp">db::</span>Error&gt; <span class="op">{</span></span>
+<span id="cb29-8"><a href="#cb29-8"></a>    <span class="cn">Ok</span>(db.lock()?.query(<span class="st">&quot;SELECT name FROM names&quot;</span>)?</span>
+<span id="cb29-9"><a href="#cb29-9"></a>        .map(|row| row.get(<span class="st">&quot;name&quot;</span>)?)</span>
+<span id="cb29-10"><a href="#cb29-10"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
+<span id="cb29-11"><a href="#cb29-11"></a><span class="op">}</span></span>
+<span id="cb29-12"><a href="#cb29-12"></a></span>
+<span id="cb29-13"><a href="#cb29-13"></a><span class="kw">fn</span> list(state: State&lt;MyConfig&gt;) -&gt; VialResult <span class="op">{</span></span>
+<span id="cb29-14"><a href="#cb29-14"></a>    <span class="cn">Ok</span>(find_names(state.db.clone())?.map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name)))</span>
+<span id="cb29-15"><a href="#cb29-15"></a><span class="op">}</span></span></code></pre></div>
 <ol start="4" type="1">
 <li>Tell <strong>Vial</strong> about your state object before calling <code>run!</code>:</li>
 </ol>
-<div class="sourceCode" id="cb27"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb27-2"><a href="#cb27-2"></a>    <span class="kw">let</span> db = <span class="pp">DB::</span>new();</span>
-<span id="cb27-3"><a href="#cb27-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db));</span>
-<span id="cb27-4"><a href="#cb27-4"></a>    <span class="pp">vial::run!</span>();</span>
-<span id="cb27-5"><a href="#cb27-5"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a>    <span class="kw">let</span> db = <span class="pp">DB::</span>new();</span>
+<span id="cb30-3"><a href="#cb30-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db));</span>
+<span id="cb30-4"><a href="#cb30-4"></a>    <span class="pp">vial::run!</span>();</span>
+<span id="cb30-5"><a href="#cb30-5"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="templates">Templates</h2>
 <h3 id="hatter">Hatter</h3>
 <h3 id="horrorshow">Horrorshow</h3>

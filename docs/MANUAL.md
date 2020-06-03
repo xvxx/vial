@@ -476,9 +476,49 @@ your actions:
 
 ### Redirect
 
+To issue a 302 redirect, use the `redirect_to` static method:
+
+```rust
+fn search(req: Request) -> Option<impl Responder> {
+    let url = format!(
+        "https://en.wikipedia.org/wiki/Special:Search?search={}",
+        req.arg("search")?
+    )
+    Some(Response::redirect_to(url))
+}
+```
+
 ### Status Codes
 
+Empty responses with status codes can be created from `usize`:
+
+```rust
+fn fourohfour(_req: Request) -> impl Responder {
+    Response::from(404)
+}
+
+fn pay_me(_req: Request) -> impl Responder {
+    402
+}
+```
+
 ### Headers
+
+Headers can be set Builder-style using `with_header` or
+imperative-style using `set_header`:
+
+```rust
+fn not_found(_req: Request) -> Response {
+    Response::from(404)
+        .with_header("Content-Type", "text/plain")
+        .with_body("404 Not Found")
+}
+
+fn download(req: Request) -> Option<impl Responder> {
+    Response::from_file(req.arg("file")?)
+        .with_header("Content-Type", "application/octet-stream")
+}
+```
 
 ## Assets
 
