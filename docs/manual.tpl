@@ -120,6 +120,7 @@
       }
       p {
         text-align: justify;
+        font-size: 110%;
       }
 
       /* nav  */
