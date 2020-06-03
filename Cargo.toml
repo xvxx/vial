@@ -5,7 +5,7 @@ version = "0.0.9-dev"
 authors = ["chris west <c@xvxx.io>"]
 documentation = "https://docs.rs/vial/"
 edition = "2018"
-license = "MIT"
+license = "MIT/Apache-2.0"
 repository = "https://github.com/xvxx/vial"
 readme = "README.md"
 
