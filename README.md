@@ -2,7 +2,7 @@
 
 # ~ vial: a micro micro-framework ~
 
-`vial` is a small web "framework" for making small web sites.
+**Vial** is a small web "framework" for making small web sites.
 
 It only includes a few basics:
 
@@ -19,6 +19,14 @@ _À la carte_ dependencies? Now you're talkin'!
 
 It's sort of like a picnic where the playlist is all 90s music and you
 have to bring your own beverages. And food.
+
+----
+
+**Status:** Vial is currently in early development. It is being
+developed alongside [deadwiki], but that is _strictly_ for personal
+use. Proceed with caution.
+
+---
 
 To get started, just add `vial` to your `Cargo.toml`:
 
@@ -156,7 +164,6 @@ you can activate for enhanced productivity:
 - [ ] **multipart**: Multipart form data (file uploads)
 - [ ] **log**: Access logging
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
-- [ ] **tera**: Templating, via Tera.
 
 _**Please note:** The list above is a work-in-progress._
 
@@ -165,19 +172,19 @@ _**Please note:** The list above is a work-in-progress._
 - [ ] tests
 - [ ] `before_filter`
 
-### warp's features:
+## ~ testing ~
 
-- [x] Path routing and parameter extraction
-- [x] Header requirements and extraction
-- [x] Query string deserialization
-- [ ] JSON and [x] Form bodies
-- [ ] Multipart form data
-- [x] Static Files and Directories
-- [ ] Websockets
-- [ ] Access logging
-- [ ] Gzip, Deflate, and Brotli compression
+Tests can be found in `tests/main.rs`. You can run them on a recent
+version of stable Rust with `make test`.
+
+## ~ license ~
+
+**Vial** is licensed under either of the following, at your option:
+
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+  http://www.apache.org/licenses/LICENSE-2.0)
+- MIT License ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
-[hatter]: https://github.com/xvxx/hatter
-
+[deadwiki]: https://github.com/xvxx/deadwiki
