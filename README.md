@@ -74,7 +74,7 @@ fn echo(_: Request) -> &'static str {
 
 fn post(req: Request) -> String {
     format!(
-        "<h1>{}</h1>",
+        "<h1>You said: {}</h1>",
         req.form("echo").unwrap_or("You didn't say anything!")
     )
 }
