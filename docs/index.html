@@ -437,7 +437,7 @@
 <li><a href="#status-codes">Status Codes</a></li>
 <li><a href="#headers">Headers</a></li>
 </ul></li>
-<li><a href="#sering-static-files">Sering Static Files</a>
+<li><a href="#serving-static-files">Serving Static Files</a>
 <ul>
 <li><a href="#%60vial::asset_dir!%60"><code>vial::asset_dir!</code></a></li>
 <li><a href="#%60asset::methods()%60"><code>asset::methods()</code></a></li>
@@ -803,7 +803,7 @@
 <span id="cb24-12"><a href="#cb24-12"></a><span class="kw">fn</span> perm_redirect(url<span class="op">:</span> <span class="op">&amp;</span><span class="dt">str</span>) <span class="op">-&gt;</span> Response <span class="op">{</span></span>
 <span id="cb24-13"><a href="#cb24-13"></a>    <span class="pp">Response::</span>from(<span class="dv">301</span>)<span class="op">.</span>with_header(<span class="st">&quot;Location&quot;</span><span class="op">,</span> url)</span>
 <span id="cb24-14"><a href="#cb24-14"></a><span class="op">}</span></span></code></pre></div>
-<h2 id="sering-static-files">Sering Static Files</h2>
+<h2 id="serving-static-files">Serving Static Files</h2>
 <p><strong>Vial</strong> can automatically serve static files out of an asset directory, complete with proper ETag handling, if you tell it which directory to use with the <code>vial::asset_dir!</code> macro. It can also optionally bundle those assets them into your application in <code>--release</code> mode, producing a single binary that was developed as if it used separate CSS and JS files.</p>
 <h3 id="vialasset_dir"><code>vial::asset_dir!</code></h3>
 <p>To get started, put all your <code>.js</code> and <code>.css</code> and other static assets into a directory in the root of your project, such as <code>assets/</code>. In your HTML, include those files as if the “assets” directory were the root of your application. So if you have “assets/app.js”, in your <code>&lt;script&gt;</code> tag you would include just “/app.js”.</p>

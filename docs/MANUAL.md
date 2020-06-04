@@ -523,7 +523,7 @@ fn perm_redirect(url: &str) -> Response {
 }
 ```
 
-## Sering Static Files
+## Serving Static Files
 
 **Vial** can automatically serve static files out of an asset
 directory, complete with proper ETag handling, if you tell it which
