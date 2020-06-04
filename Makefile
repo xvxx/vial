@@ -26,6 +26,7 @@ target/docs/toc.html: check docs/MANUAL.md docs/manual.tpl
 	@md-toc --header '### Sections' --min-depth 1 --max-depth 2 --bullet - docs/MANUAL.md  > target/docs/toc.md
 	@ruby -e 'toc = File.read("target/docs/toc.md"); idx = toc.index("- [Templates]"); toc.insert(idx, "\n### Bonus Features\n"); File.write("target/docs/toc.md", toc)'
 	@pandoc target/docs/toc.md -o target/docs/toc.html
+	@pandoc docs/links.md >> target/docs/toc.html
 	@echo "DONE"
 
 clean:

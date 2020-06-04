@@ -19,12 +19,6 @@ the few _optional_ features you can enable. It also includes
 suggestions for some "common tasks", like using a database to store
 information.
 
-You might also be interested in:
-
-- [API Reference](https://docs.rs/vial)
-- [Source Code](https://github.com/xvxx/vial)
-- [Bug Tracker](https://github.com/xvxx/vial/issues)
-
 ## Hello World
 
 Here's the bare minimum:
@@ -644,7 +638,7 @@ fn main() {
 
 **⚠️ Note:** Bundling assets and setting an asset path using
 `vial::asset_dir!()` are mutually exclusive - you can't do both, as
-enabling bundling will  set the asset path for you. Therefor if you
+enabling bundling will set the asset path for you. Therefor if you
 are making the transition from using-assets-but-not-bundling to
 using-assets-and-bundling-them, make sure to remove your call to `vial::asset_dir!`.
 
@@ -828,3 +822,12 @@ _"Pro Tip": Coming soon._
 [responder]: #Responses
 [routing]: #Routing
 [response api]: https://docs.rs/vial/latest/vial/struct.Response.html
+[routes api]: https://docs.rs/vial/latest/vial/macro.routes.html
+[asset_dir api]: https://docs.rs/vial/latest/vial/macro.asset_dir.html
+[run api]: https://docs.rs/vial/latest/vial/macro.run.html
+[assets api]: https://docs.rs/vial/latest/vial/assets/
+[etag api]: https://docs.rs/vial/latest/vial/assets/#method.etag
+[exists api]: https://docs.rs/vial/latest/vial/assets/#method.exists
+[is_bundled api]: https://docs.rs/vial/latest/vial/assets/#method.is_bundled
+[to_string api]: https://docs.rs/vial/latest/vial/assets/#method.to_string
+[as_reader api]: https://docs.rs/vial/latest/vial/assets/#method.as_reader
