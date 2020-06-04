@@ -2,11 +2,11 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vial::prelude::*;
 
 routes! {
-    GET "/" => Hello;
+    GET "/" => hello;
     GET "/count" => count;
 }
 
-fn Hello(hit_count: State<HitCount>) -> impl Responder {
+fn hello(hit_count: State<HitCount>) -> impl Responder {
     hit_count.0.fetch_add(1, Ordering::Relaxed);
     format!("Hits: {}", count(hit_count))
 }
