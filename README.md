@@ -22,7 +22,7 @@ have to bring your own beverages. And food.
 
 To learn more, keep reading or visit one of these links:
 
-- [Documentation](https://xvxx.io/vial/)
+- [Documentation](https://vial.sh/)
 - [API Reference](https://docs.rs/vial)
 - [Source Code](https://github.com/xvxx/vial)
 
