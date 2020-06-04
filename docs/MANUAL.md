@@ -4,7 +4,7 @@
 
 #### ~ a micro micro-framework ~
 
-**Vial** is a small web "framework" for making small web "sites" in
+**Vial** is a small web framework for making small web "sites" in
 Rust. It includes just a handful of basic features for delivering old
 school, server-side rendered HTML: request routing, form data parsing,
 response building, and serving static file assets.
@@ -18,6 +18,11 @@ This manual is an overview of **Vial**’s built-in features, as well as
 the few _optional_ features you can enable. It also includes
 suggestions for some "common tasks", like using a database to store
 information.
+
+You might also be interested in:
+
+- [API Reference](https://docs.rs/vial)
+- [Source Code](https://github.com/xvxx/vial)
 
 ## Hello World
 
@@ -81,36 +86,8 @@ You can run the above example from the root of this repository:
     $ cargo run --example manual
 
 **Vial** comes with a handful of examples in the `examples/`
-directory, so be sure to peruse them skeptically either alongside or
-after digesting this manual.
-
-## Getting Started
-
-**Vial** should work on any recent, stable version of **Rust** on
-**Linux** or **macOS**.
-
-To begin, add **Vial** to your project's `Cargo.toml`:
-
-```rust
-[dependencies]
-vial = "*"
-```
-
-Now all you have to do is call `vial::routes!` to define your routes
-and `vial::run!` to start the server in `src/main.rs`:
-
-```rust
-vial::routes! {
-    GET "/" => |_| "It works!";
-}
-
-fn main() {
-    vial::run!();
-}
-```
-
-This should start a server at <http://0.0.0.0:7667> and tell you that
-it did. Congratulations! You're on your way.
+directory, so be sure to peruse them skeptically - either alongside
+or after digesting this manual.
 
 ## Overview
 
@@ -128,6 +105,34 @@ rendering, there are three main parts to a **Vial** application:
   [Response] object, which can be easily built, or they return a type
   that implements the [Responder] trait which is then converted into a
   [Response] and delivered to the waiting client.
+
+## Getting Started
+
+**Vial** should work on any recent, stable version of **Rust** on
+**Linux** or **macOS**.
+
+To begin, add **Vial** to your project's `Cargo.toml`:
+
+```rust
+[dependencies]
+vial = "0.1"
+```
+
+Now all you have to do is call `vial::routes!` to define your routes
+and `vial::run!` to start the server in `src/main.rs`:
+
+```rust
+vial::routes! {
+    GET "/" => |_| "It works!";
+}
+
+fn main() {
+    vial::run!();
+}
+```
+
+This should start a server at <http://0.0.0.0:7667> and tell you that
+it did. Congratulations! You're on your way.
 
 ## Routing
 
@@ -612,7 +617,7 @@ must:
 
 ```toml
 [build-dependencies]
-vial = "*"
+vial = "0.1"
 ```
 
 (_Yes, you should now have `vial` in there twice. Once for

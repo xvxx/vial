@@ -4,10 +4,10 @@
 
 **Vial** is a small web "framework" for making small web sites.
 
-It only includes a few basics:
+It includes just a few basics:
 
 - Parsing and routing HTTP requests
-- Handling POST requests
+- Parsing POST form data
 - Serving static files (css, js)
 
 Everything else... well, that's up to you.
@@ -20,11 +20,17 @@ _À la carte_ dependencies? Now you're talkin'!
 It's sort of like a picnic where the playlist is all 90s music and you
 have to bring your own beverages. And food.
 
-----
+To learn more, keep reading or visit one of these links:
 
-**Status:** Vial is currently in early development. It is being
+- [Documentation](https://xvxx.io/vial/)
+- [API Reference](https://docs.rs/vial)
+- [Source Code](https://github.com/xvxx/vial)
+
+---
+
+**⚠️ Status:** Vial is currently in early development. It is being
 developed alongside [deadwiki], but that is _strictly_ for personal
-use. Proceed with caution.
+use. Please proceed with caution and wear a hart hat at all times.
 
 ---
 
@@ -32,7 +38,7 @@ To get started, just add `vial` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vial = "*"
+vial = "0.1"
 ```
 
 ## ~ hello world ~
@@ -183,7 +189,8 @@ version of stable Rust with `make test`.
 
 - Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
   http://www.apache.org/licenses/LICENSE-2.0)
-- MIT License ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- MIT License ([LICENSE-MIT](LICENSE-MIT) or
+  http://opensource.org/licenses/MIT)
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
