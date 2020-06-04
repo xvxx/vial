@@ -180,8 +180,8 @@ _**Please note:** The list above is a work-in-progress._
 
 ## ~ testing ~
 
-Tests can be found in `tests/main.rs`. You can run them on a recent
-version of stable Rust with `make test`.
+Tests are currently in-progress, specifically the doctests. But you
+can run them on a recent version of stable **Rust** with `make test`.
 
 ## ~ license ~
 

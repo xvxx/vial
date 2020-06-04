@@ -25,6 +25,13 @@
 //! It's sort of like a picnic where the playlist is all 90s music and you
 //! have to bring your own beverages. And food.
 //!
+//! To learn more, keep reading or visit one of these links:
+//!
+//! - [Manual](https://xvxx.io/vial/)
+//! - [Source Code](https://github.com/xvxx/vial)
+//! - [Bug Tracker](https://github.com/xvxx/vial/issues)
+//! - [Crate](https://crates.io/crates/vial)
+//!
 //! ----
 //!
 //! **Status:** Vial is currently in early development. It is being
