@@ -23,6 +23,7 @@ You might also be interested in:
 
 - [API Reference](https://docs.rs/vial)
 - [Source Code](https://github.com/xvxx/vial)
+- [Bug Tracker](https://github.com/xvxx/vial/issues)
 
 ## Hello World
 
@@ -55,7 +56,7 @@ routes! {
           req.arg("path").unwrap_or("")));
 }
 
-fn hello_world(_req: Request) -> impl Responder {
+fn hello_world(_req: Request) -> &'static str {
     "<h1>Hello, world!</h1>
     <p><strong>What's your name?</strong></p>
     <form method='POST' action='/'>
@@ -69,7 +70,7 @@ fn redirect_to_greeting(req: Request) -> Option<impl Responder> {
     Some(Response::redirect_to(format!("/{}", name)))
 }
 
-fn hello_name(req: Request) -> impl Responder {
+fn hello_name(req: Request) -> String {
     format!(
         "<h1>Why hello there, {}!</h1>",
         req.arg("name").unwrap()
@@ -96,7 +97,7 @@ rendering, there are three main parts to a **Vial** application:
 
 - **[Routing]**: You write actions that take a [Request] and return
   either a [Response] or a [Responder], then map them to URLs and
-  URL patterns using the `vial::routes!` macro.
+  URL patterns using the [vial::routes!][routes api] macro.
 
 - **[Request]**: The [Request] object provides information about the
   client's humble request.
@@ -456,10 +457,9 @@ fn readme(_req: Request) -> Response {
 
 ### Building Responses
 
-The [Response](https://docs.rs/vial/latest/vial/struct.Response.html)
-documentation contains more information on all the methods available,
-but here are some of the properties you can set on a [Response] in
-your actions:
+The [Response][response api] documentation contains more information
+on all the methods available, but here are some of the properties you
+can set on a [Response] in your actions:
 
 - `fn from_text<S: AsRef<str>>(text: S) -> Response;`
 
@@ -523,61 +523,43 @@ fn download(req: Request) -> Option<impl Responder> {
     Response::from_file(req.arg("file")?)
         .with_header("Content-Type", "application/octet-stream")
 }
+
+fn perm_redirect(url: &str) -> Response {
+    Response::from(301).with_header("Location", url)
+}
 ```
 
-## Assets
+## Sering Static Files
 
-**Vial** can serve static files out of an asset directory, complete
-with proper ETag handling, and optionally bundle them into your
-application in `--release` mode.
+**Vial** can automatically serve static files out of an asset
+directory, complete with proper ETag handling, if you tell it which
+directory to use with the `vial::asset_dir!` macro. It can also
+optionally bundle those assets them into your application in
+`--release` mode, producing a single binary that was developed as if
+it used separate CSS and JS files.
 
-### `asset::methods()`
-
-By setting an asset directory, either through the
-[`vial::asset_dir!()`][macro.asset_dir.html] or
-[`vial::bundle_assets!()`][macro.bundle_assets.html] macro,
-you can then use the methods in the `asset::` module to work with
-them:
-
-- **[asset::etag()](#method.etag)**: Get the ETag for an asset.
-  Used automatically by the Router if a web request matches an
-  asset's path.
-
-- **[asset::exists()](#method.exists)**: Does an asset exist?
-  Works regardless of whether the asset is bundled or not.
-
-- **[asset::is_bundled()](#method.is_bundled)**: Are assets
-  bundled? Only true in `--release` mode and when used with the
-  `vial::bundle_assets!()` macro.
-
-- **[asset::to_string()](#method.to_string)**: Like
-  `fs::read_to_string()`, delivers the content of an asset as a
-  `String`.
-
-- **[asset::as_reader()](#method.as_reader)**: Like
-  `asset::to_string()` but provides an `io::Read` of an asset,
-  whether or not it's bundled.
-
-### Setting asset dir
+### `vial::asset_dir!`
 
 To get started, put all your `.js` and `.css` and other static
-assets into a directory in the root of your project, then
-reference them in HTML as if the root of your Vial web
-application was that asset directory.
+assets into a directory in the root of your project, such as `assets/`.
+In your HTML, include those files as if the "assets" directory were
+the root of your application. So if you have "assets/app.js", in your
+`<script>` tag you would include just "/app.js".
 
-Next call [`vial::asset_dir!()`][macro.asset_dir.html] with the
+Next call [vial::asset_dir!()][asset_dir api] with the
 path to your asset directory (maybe `assets/`?) before starting
-your application with [`vial::run!`](macro.run.html):
+your application with [vial::run!](run api):
 
 If we had a directory structure like this:
-.
-├── README.md
-├── assets
-│   └── img
-│   ├── banker.png
-│   └── doctor.png
-└── src
-└── main.rs
+
+    .
+    ├── README.md
+    ├── assets
+    │   └── img
+    │       ├── banker.png
+    │       └── doctor.png
+    └── src
+        └── main.rs
 
 We could serve our images like so:
 
@@ -593,6 +575,32 @@ fn main() {
     vial::run!().unwrap();
 }
 ```
+
+### `asset::methods()`
+
+By setting an asset directory, either through the
+[vial::asset_dir!()][asset_dir api] or
+[vial::bundle_assets!()][bundle_assets api] macro, you can then use
+the methods in the `asset::` module to work with them:
+
+- **[asset::etag()][etag api]**: Get the ETag for an asset.
+  Used automatically by the Router if a web request matches an
+  asset's path.
+
+- **[asset::exists()][exists api]**: Does an asset exist?
+  Works regardless of whether the asset is bundled or not.
+
+- **[asset::is_bundled()][is_bundled api]**: Are assets
+  bundled? Only true in `--release` mode and when used with the
+  `vial::bundle_assets!()` macro.
+
+- **[asset::to_string()][to_string api]**: Like
+  `fs::read_to_string()`, delivers the content of an asset as a
+  `String`.
+
+- **[asset::as_reader()][as_reader api]**: Like
+  `asset::to_string()` but provides an `io::Read` of an asset,
+  whether or not it's bundled.
 
 ### Bundling Assets
 
@@ -634,17 +642,16 @@ fn main() {
 }
 ```
 
-Bundling assets and setting an asset path using
-[`vial::asset_dir!()`](macro.asset_dir.html) are mutually
-exclusive - you can't do both, as enabling bundling will set the
-asset path for you. Therefor if you are making the transition from
-using-assets-but-not-bundling to using-assets-and-bundling-them,
-make sure to remove your call to `vial::asset_dir!`.
+**⚠️ Note:** Bundling assets and setting an asset path using
+`vial::asset_dir!()` are mutually exclusive - you can't do both, as
+enabling bundling will  set the asset path for you. Therefor if you
+are making the transition from using-assets-but-not-bundling to
+using-assets-and-bundling-them, make sure to remove your call to `vial::asset_dir!`.
 
 Other than that, you're all set! Your application will now bundle your
 assets in `--release` mode and use the disk in debug and test mode.
 
-All calls to functions in the [`assets`](assets/index.html) module
+All calls to functions in the [assets][assets api] module
 should work with the files in your asset directory. Add more and get
 to it!
 
@@ -820,7 +827,4 @@ _"Pro Tip": Coming soon._
 [response]: #Responses
 [responder]: #Responses
 [routing]: #Routing
-
-```
-
-```
+[response api]: https://docs.rs/vial/latest/vial/struct.Response.html

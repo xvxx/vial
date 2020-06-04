@@ -413,8 +413,8 @@
     <nav><h3 id="sections">Sections</h3>
 <ul>
 <li><a href="#hello-world">Hello World</a></li>
-<li><a href="#getting-started">Getting Started</a></li>
 <li><a href="#overview">Overview</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
 <li><a href="#routing">Routing</a>
 <ul>
 <li><a href="#http-methods">HTTP Methods</a></li>
@@ -437,10 +437,10 @@
 <li><a href="#status-codes">Status Codes</a></li>
 <li><a href="#headers">Headers</a></li>
 </ul></li>
-<li><a href="#assets">Assets</a>
+<li><a href="#sering-static-files">Sering Static Files</a>
 <ul>
+<li><a href="#%60vial::asset_dir!%60"><code>vial::asset_dir!</code></a></li>
 <li><a href="#%60asset::methods()%60"><code>asset::methods()</code></a></li>
-<li><a href="#setting-asset-dir">Setting asset dir</a></li>
 <li><a href="#bundling-assets">Bundling Assets</a></li>
 </ul></li>
 <li><a href="#state">State</a>
@@ -462,9 +462,15 @@
     <main><p><img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" /></p>
 <h1 id="vial">Vial</h1>
 <h4 id="a-micro-micro-framework">~ a micro micro-framework ~</h4>
-<p><strong>Vial</strong> is a small web “framework” for making small web “sites” in Rust. It includes just a handful of basic features for delivering old school, server-side rendered HTML: request routing, form data parsing, response building, and serving static file assets.</p>
+<p><strong>Vial</strong> is a small web framework for making small web “sites” in Rust. It includes just a handful of basic features for delivering old school, server-side rendered HTML: request routing, form data parsing, response building, and serving static file assets.</p>
 <p>The goal is a small, lean core that compiles quickly and has as few dependencies as possible. Use it for HTML stuff: prototyping ideas, testing out concepts, or, perhaps, even writing tiny personal apps. Nothing serious though, got it?</p>
 <p>This manual is an overview of <strong>Vial</strong>’s built-in features, as well as the few <em>optional</em> features you can enable. It also includes suggestions for some “common tasks”, like using a database to store information.</p>
+<p>You might also be interested in:</p>
+<ul>
+<li><a href="https://docs.rs/vial">API Reference</a></li>
+<li><a href="https://github.com/xvxx/vial">Source Code</a></li>
+<li><a href="https://github.com/xvxx/vial/issues">Bug Tracker</a></li>
+</ul>
 <h2 id="hello-world">Hello World</h2>
 <p>Here’s the bare minimum:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
@@ -488,7 +494,7 @@
 <span id="cb2-10"><a href="#cb2-10"></a>          req.arg(<span class="st">&quot;path&quot;</span>).unwrap_or(<span class="st">&quot;&quot;</span>)));</span>
 <span id="cb2-11"><a href="#cb2-11"></a><span class="op">}</span></span>
 <span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">fn</span> hello_world(_req: Request) -&gt; &amp;<span class="ot">&#39;static</span> <span class="dt">str</span> <span class="op">{</span></span>
 <span id="cb2-14"><a href="#cb2-14"></a>    <span class="st">&quot;&lt;h1&gt;Hello, world!&lt;/h1&gt;</span></span>
 <span id="cb2-15"><a href="#cb2-15"></a><span class="st">    &lt;p&gt;&lt;strong&gt;What&#39;s your name?&lt;/strong&gt;&lt;/p&gt;</span></span>
 <span id="cb2-16"><a href="#cb2-16"></a><span class="st">    &lt;form method=&#39;POST&#39; action=&#39;/&#39;&gt;</span></span>
@@ -502,7 +508,7 @@
 <span id="cb2-24"><a href="#cb2-24"></a>    <span class="cn">Some</span>(<span class="pp">Response::</span>redirect_to(<span class="pp">format!</span>(<span class="st">&quot;/{}&quot;</span>, name)))</span>
 <span id="cb2-25"><a href="#cb2-25"></a><span class="op">}</span></span>
 <span id="cb2-26"><a href="#cb2-26"></a></span>
-<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a><span class="kw">fn</span> hello_name(req: Request) -&gt; <span class="dt">String</span> <span class="op">{</span></span>
 <span id="cb2-28"><a href="#cb2-28"></a>    <span class="pp">format!</span>(</span>
 <span id="cb2-29"><a href="#cb2-29"></a>        <span class="st">&quot;&lt;h1&gt;Why hello there, {}!&lt;/h1&gt;&quot;</span>,</span>
 <span id="cb2-30"><a href="#cb2-30"></a>        req.arg(<span class="st">&quot;name&quot;</span>).unwrap()</span>
@@ -514,12 +520,19 @@
 <span id="cb2-36"><a href="#cb2-36"></a><span class="op">}</span></span></code></pre></div>
 <p>You can run the above example from the root of this repository:</p>
 <pre><code>$ cargo run --example manual</code></pre>
-<p><strong>Vial</strong> comes with a handful of examples in the <code>examples/</code> directory, so be sure to peruse them skeptically either alongside or after digesting this manual.</p>
+<p><strong>Vial</strong> comes with a handful of examples in the <code>examples/</code> directory, so be sure to peruse them skeptically - either alongside or after digesting this manual.</p>
+<h2 id="overview">Overview</h2>
+<p>Like most web library thingy-jingies that only focus on server-side rendering, there are three main parts to a <strong>Vial</strong> application:</p>
+<ul>
+<li><p><strong><a href="#Routing">Routing</a></strong>: You write actions that take a <a href="#Requests">Request</a> and return either a <a href="#Responses">Response</a> or a <a href="#Responses">Responder</a>, then map them to URLs and URL patterns using the [vial::routes!][routes api] macro.</p></li>
+<li><p><strong><a href="#Requests">Request</a></strong>: The <a href="#Requests">Request</a> object provides information about the client’s humble request.</p></li>
+<li><p><strong><a href="#Responses">Response</a></strong> and <strong><a href="#Responses">Responder</a></strong>: Your actions return either a <a href="#Responses">Response</a> object, which can be easily built, or they return a type that implements the <a href="#Responses">Responder</a> trait which is then converted into a <a href="#Responses">Response</a> and delivered to the waiting client.</p></li>
+</ul>
 <h2 id="getting-started">Getting Started</h2>
 <p><strong>Vial</strong> should work on any recent, stable version of <strong>Rust</strong> on <strong>Linux</strong> or <strong>macOS</strong>.</p>
 <p>To begin, add <strong>Vial</strong> to your project’s <code>Cargo.toml</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">[</span>dependencies<span class="op">]</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>vial = <span class="st">&quot;*&quot;</span></span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2"></a>vial = <span class="st">&quot;0.1&quot;</span></span></code></pre></div>
 <p>Now all you have to do is call <code>vial::routes!</code> to define your routes and <code>vial::run!</code> to start the server in <code>src/main.rs</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; |_| <span class="st">&quot;It works!&quot;</span>;</span>
@@ -529,13 +542,6 @@
 <span id="cb5-6"><a href="#cb5-6"></a>    <span class="pp">vial::run!</span>();</span>
 <span id="cb5-7"><a href="#cb5-7"></a><span class="op">}</span></span></code></pre></div>
 <p>This should start a server at <a href="http://0.0.0.0:7667" class="uri">http://0.0.0.0:7667</a> and tell you that it did. Congratulations! You’re on your way.</p>
-<h2 id="overview">Overview</h2>
-<p>Like most web library thingy-jingies that only focus on server-side rendering, there are three main parts to a <strong>Vial</strong> application:</p>
-<ul>
-<li><p><strong><a href="#Routing">Routing</a></strong>: You write actions that take a <a href="#Requests">Request</a> and return either a <a href="#Responses">Response</a> or a <a href="#Responses">Responder</a>, then map them to URLs and URL patterns using the <code>vial::routes!</code> macro.</p></li>
-<li><p><strong><a href="#Requests">Request</a></strong>: The <a href="#Requests">Request</a> object provides information about the client’s humble request.</p></li>
-<li><p><strong><a href="#Responses">Response</a></strong> and <strong><a href="#Responses">Responder</a></strong>: Your actions return either a <a href="#Responses">Response</a> object, which can be easily built, or they return a type that implements the <a href="#Responses">Responder</a> trait which is then converted into a <a href="#Responses">Response</a> and delivered to the waiting client.</p></li>
-</ul>
 <h2 id="routing">Routing</h2>
 <p>Routing is the real gravy and potatoes of any web framework, if you think about it. In <strong>Vial</strong>, routes are defined with the <code>routes!</code> macro in this format:</p>
 <pre><code>HTTP_METHOD ROUTE_PATTERN =&gt; ACTION;</code></pre>
@@ -791,33 +797,45 @@
 <span id="cb24-7"><a href="#cb24-7"></a><span class="kw">fn</span> download(req: Request) -&gt; <span class="dt">Option</span>&lt;<span class="kw">impl</span> Responder&gt; <span class="op">{</span></span>
 <span id="cb24-8"><a href="#cb24-8"></a>    <span class="pp">Response::</span>from_file(req.arg(<span class="st">&quot;file&quot;</span>)?)</span>
 <span id="cb24-9"><a href="#cb24-9"></a>        .with_header(<span class="st">&quot;Content-Type&quot;</span>, <span class="st">&quot;application/octet-stream&quot;</span>)</span>
-<span id="cb24-10"><a href="#cb24-10"></a><span class="op">}</span></span></code></pre></div>
-<h2 id="assets">Assets</h2>
-<p><strong>Vial</strong> can serve static files out of an asset directory, complete with proper ETag handling, and optionally bundle them into your application in <code>--release</code> mode.</p>
-<h3 id="assetmethods"><code>asset::methods()</code></h3>
-<p>By setting an asset directory, either through the [<code>vial::asset_dir!()</code>][macro.asset_dir.html] or [<code>vial::bundle_assets!()</code>][macro.bundle_assets.html] macro, you can then use the methods in the <code>asset::</code> module to work with them:</p>
-<ul>
-<li><p><strong><a href="#method.etag">asset::etag()</a></strong>: Get the ETag for an asset. Used automatically by the Router if a web request matches an asset’s path.</p></li>
-<li><p><strong><a href="#method.exists">asset::exists()</a></strong>: Does an asset exist? Works regardless of whether the asset is bundled or not.</p></li>
-<li><p><strong><a href="#method.is_bundled">asset::is_bundled()</a></strong>: Are assets bundled? Only true in <code>--release</code> mode and when used with the <code>vial::bundle_assets!()</code> macro.</p></li>
-<li><p><strong><a href="#method.to_string">asset::to_string()</a></strong>: Like <code>fs::read_to_string()</code>, delivers the content of an asset as a <code>String</code>.</p></li>
-<li><p><strong><a href="#method.as_reader">asset::as_reader()</a></strong>: Like <code>asset::to_string()</code> but provides an <code>io::Read</code> of an asset, whether or not it’s bundled.</p></li>
-</ul>
-<h3 id="setting-asset-dir">Setting asset dir</h3>
-<p>To get started, put all your <code>.js</code> and <code>.css</code> and other static assets into a directory in the root of your project, then reference them in HTML as if the root of your Vial web application was that asset directory.</p>
-<p>Next call [<code>vial::asset_dir!()</code>][macro.asset_dir.html] with the path to your asset directory (maybe <code>assets/</code>?) before starting your application with <a href="macro.run.html"><code>vial::run!</code></a>:</p>
-<p>If we had a directory structure like this: . ├── README.md ├── assets │   └── img │   ├── banker.png │   └── doctor.png └── src └── main.rs</p>
+<span id="cb24-10"><a href="#cb24-10"></a><span class="op">}</span></span>
+<span id="cb24-11"><a href="#cb24-11"></a></span>
+<span id="cb24-12"><a href="#cb24-12"></a><span class="kw">fn</span> perm_redirect(url: &amp;<span class="dt">str</span>) -&gt; Response <span class="op">{</span></span>
+<span id="cb24-13"><a href="#cb24-13"></a>    <span class="pp">Response::</span>from(<span class="dv">301</span>).with_header(<span class="st">&quot;Location&quot;</span>, url)</span>
+<span id="cb24-14"><a href="#cb24-14"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="sering-static-files">Sering Static Files</h2>
+<p><strong>Vial</strong> can automatically serve static files out of an asset directory, complete with proper ETag handling, if you tell it which directory to use with the <code>vial::asset_dir!</code> macro. It can also optionally bundle those assets them into your application in <code>--release</code> mode, producing a single binary that was developed as if it used separate CSS and JS files.</p>
+<h3 id="vialasset_dir"><code>vial::asset_dir!</code></h3>
+<p>To get started, put all your <code>.js</code> and <code>.css</code> and other static assets into a directory in the root of your project, such as <code>assets/</code>. In your HTML, include those files as if the “assets” directory were the root of your application. So if you have “assets/app.js”, in your <code>&lt;script&gt;</code> tag you would include just “/app.js”.</p>
+<p>Next call [vial::asset_dir!()][asset_dir api] with the path to your asset directory (maybe <code>assets/</code>?) before starting your application with <a href="run%20api">vial::run!</a>:</p>
+<p>If we had a directory structure like this:</p>
+<pre><code>.
+├── README.md
+├── assets
+│   └── img
+│       ├── banker.png
+│       └── doctor.png
+└── src
+    └── main.rs</code></pre>
 <p>We could serve our images like so:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb25-1"><a href="#cb25-1"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
-<span id="cb25-2"><a href="#cb25-2"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; |_| <span class="st">&quot;</span></span>
-<span id="cb25-3"><a href="#cb25-3"></a><span class="st">        &lt;p&gt;&lt;img src=&#39;/img/doctor.png&#39;/&gt;&lt;/p&gt;</span></span>
-<span id="cb25-4"><a href="#cb25-4"></a><span class="st">        &lt;p&gt;&lt;img src=&#39;/img/banker.png&#39;/&gt;&lt;/p&gt;</span></span>
-<span id="cb25-5"><a href="#cb25-5"></a><span class="st">    &quot;</span>;</span>
-<span id="cb25-6"><a href="#cb25-6"></a><span class="op">}</span></span>
-<span id="cb25-7"><a href="#cb25-7"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb25-8"><a href="#cb25-8"></a>    <span class="pp">vial::asset_dir!</span>(<span class="st">&quot;assets/&quot;</span>);</span>
-<span id="cb25-9"><a href="#cb25-9"></a>    <span class="pp">vial::run!</span>().unwrap();</span>
-<span id="cb25-10"><a href="#cb25-10"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb26-1"><a href="#cb26-1"></a><span class="pp">vial::routes!</span> <span class="op">{</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; |_| <span class="st">&quot;</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="st">        &lt;p&gt;&lt;img src=&#39;/img/doctor.png&#39;/&gt;&lt;/p&gt;</span></span>
+<span id="cb26-4"><a href="#cb26-4"></a><span class="st">        &lt;p&gt;&lt;img src=&#39;/img/banker.png&#39;/&gt;&lt;/p&gt;</span></span>
+<span id="cb26-5"><a href="#cb26-5"></a><span class="st">    &quot;</span>;</span>
+<span id="cb26-6"><a href="#cb26-6"></a><span class="op">}</span></span>
+<span id="cb26-7"><a href="#cb26-7"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb26-8"><a href="#cb26-8"></a>    <span class="pp">vial::asset_dir!</span>(<span class="st">&quot;assets/&quot;</span>);</span>
+<span id="cb26-9"><a href="#cb26-9"></a>    <span class="pp">vial::run!</span>().unwrap();</span>
+<span id="cb26-10"><a href="#cb26-10"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="assetmethods"><code>asset::methods()</code></h3>
+<p>By setting an asset directory, either through the [vial::asset_dir!()][asset_dir api] or [vial::bundle_assets!()][bundle_assets api] macro, you can then use the methods in the <code>asset::</code> module to work with them:</p>
+<ul>
+<li><p><strong>[asset::etag()][etag api]</strong>: Get the ETag for an asset. Used automatically by the Router if a web request matches an asset’s path.</p></li>
+<li><p><strong>[asset::exists()][exists api]</strong>: Does an asset exist? Works regardless of whether the asset is bundled or not.</p></li>
+<li><p><strong>[asset::is_bundled()][is_bundled api]</strong>: Are assets bundled? Only true in <code>--release</code> mode and when used with the <code>vial::bundle_assets!()</code> macro.</p></li>
+<li><p><strong>[asset::to_string()][to_string api]</strong>: Like <code>fs::read_to_string()</code>, delivers the content of an asset as a <code>String</code>.</p></li>
+<li><p><strong>[asset::as_reader()][as_reader api]</strong>: Like <code>asset::to_string()</code> but provides an <code>io::Read</code> of an asset, whether or not it’s bundled.</p></li>
+</ul>
 <h3 id="bundling-assets">Bundling Assets</h3>
 <p><strong>Vial</strong> is meant to be small and swift, like a ninja star. Part of that means <strong>Vial</strong> apps should be able to compile into <em>standalone binaries</em> that don’t rely on the filesystem. In order to accomplish this, <strong>Vial</strong> can bundle your assets into your final <code>--release</code> binary for you. As long as you the <code>asset::()</code> API described above to access them, all your code will work the same whether your assets are bundled or not.</p>
 <p>Combined with the ETag support, this means all assets will be reloaded by your browser whenever they’re modified in dev mode for a smoother developmental experience.</p>
@@ -827,17 +845,17 @@
 <li><p>Add <code>vial</code> as to <code>[build-dependencies]</code> in your <code>Cargo.toml</code>:</p></li>
 </ol>
 <pre class="toml"><code>[build-dependencies]
-vial = &quot;*&quot;</code></pre>
+vial = &quot;0.1&quot;</code></pre>
 <p>(<em>Yes, you should now have <code>vial</code> in there twice. Once for <code>build-dependencies</code> and once for <code>dependencies</code>. Only the one under <code>dependencies</code> needs to list any optional features you want to use, however.</em>)</p>
 <ol start="3" type="1">
 <li>Create a <code>bundle.rs</code> and call <code>vial::bundle_assets!()</code> in it, passing your asset directory as the sole argument:</li>
 </ol>
-<div class="sourceCode" id="cb27"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb27-2"><a href="#cb27-2"></a>    <span class="pp">vial::bundle_assets!</span>(<span class="st">&quot;assets/&quot;</span>).unwrap();</span>
-<span id="cb27-3"><a href="#cb27-3"></a><span class="op">}</span></span></code></pre></div>
-<p>Bundling assets and setting an asset path using <a href="macro.asset_dir.html"><code>vial::asset_dir!()</code></a> are mutually exclusive - you can’t do both, as enabling bundling will set the asset path for you. Therefor if you are making the transition from using-assets-but-not-bundling to using-assets-and-bundling-them, make sure to remove your call to <code>vial::asset_dir!</code>.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a>    <span class="pp">vial::bundle_assets!</span>(<span class="st">&quot;assets/&quot;</span>).unwrap();</span>
+<span id="cb28-3"><a href="#cb28-3"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>⚠️ Note:</strong> Bundling assets and setting an asset path using <code>vial::asset_dir!()</code> are mutually exclusive - you can’t do both, as enabling bundling will set the asset path for you. Therefor if you are making the transition from using-assets-but-not-bundling to using-assets-and-bundling-them, make sure to remove your call to <code>vial::asset_dir!</code>.</p>
 <p>Other than that, you’re all set! Your application will now bundle your assets in <code>--release</code> mode and use the disk in debug and test mode.</p>
-<p>All calls to functions in the <a href="assets/index.html"><code>assets</code></a> module should work with the files in your asset directory. Add more and get to it!</p>
+<p>All calls to functions in the [assets][assets api] module should work with the files in your asset directory. Add more and get to it!</p>
 <h2 id="state">State</h2>
 <p>There are two types of state available in <strong>Vial</strong>:</p>
 <ol type="1">
@@ -846,60 +864,60 @@ vial = &quot;*&quot;</code></pre>
 </ol>
 <h3 id="local-state">Local State</h3>
 <p>Local state lives for only a single <a href="#Requests">Request</a>, but can be useful to prevent looking up the same data over and over. The cache is based on the return type of the function or closure you pass to <code>cache()</code>, so make sure to create little wrapper structs if you want different functions to return the same type, like <code>Vec&lt;String&gt;</code>:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
-<span id="cb28-2"><a href="#cb28-2"></a><span class="kw">struct</span> UserNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
+<span id="cb29-2"><a href="#cb29-2"></a><span class="kw">struct</span> UserNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span></code></pre></div>
 <p>Here’s an example:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
-<span id="cb29-2"><a href="#cb29-2"></a><span class="kw">use</span> <span class="pp">page::</span>Page;</span>
-<span id="cb29-3"><a href="#cb29-3"></a><span class="kw">use</span> db;</span>
-<span id="cb29-4"><a href="#cb29-4"></a></span>
-<span id="cb29-5"><a href="#cb29-5"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb29-6"><a href="#cb29-6"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; list;</span>
-<span id="cb29-7"><a href="#cb29-7"></a><span class="op">}</span></span>
-<span id="cb29-8"><a href="#cb29-8"></a></span>
-<span id="cb29-9"><a href="#cb29-9"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
-<span id="cb29-10"><a href="#cb29-10"></a></span>
-<span id="cb29-11"><a href="#cb29-11"></a><span class="kw">fn</span> all_pages(_: &amp;Request) -&gt; <span class="dt">Vec</span>&lt;Page&gt; <span class="op">{</span></span>
-<span id="cb29-12"><a href="#cb29-12"></a>    <span class="pp">db::</span>lookup(<span class="st">&quot;select * from pages&quot;</span>)</span>
-<span id="cb29-13"><a href="#cb29-13"></a><span class="op">}</span></span>
-<span id="cb29-14"><a href="#cb29-14"></a></span>
-<span id="cb29-15"><a href="#cb29-15"></a><span class="kw">fn</span> page_names(req: &amp;Request) -&gt; PageNames <span class="op">{</span></span>
-<span id="cb29-16"><a href="#cb29-16"></a>    PageNames(req.cache(all_pages)</span>
-<span id="cb29-17"><a href="#cb29-17"></a>        .iter()</span>
-<span id="cb29-18"><a href="#cb29-18"></a>        .map(|page| page.name.clone())</span>
-<span id="cb29-19"><a href="#cb29-19"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
-<span id="cb29-20"><a href="#cb29-20"></a><span class="op">}</span></span>
-<span id="cb29-21"><a href="#cb29-21"></a></span>
-<span id="cb29-22"><a href="#cb29-22"></a><span class="kw">fn</span> list_of_names(req: &amp;Request) -&gt; <span class="dt">String</span> <span class="op">{</span></span>
-<span id="cb29-23"><a href="#cb29-23"></a>    req.cache(page_names)</span>
-<span id="cb29-24"><a href="#cb29-24"></a>        .<span class="dv">0</span></span>
-<span id="cb29-25"><a href="#cb29-25"></a>        .iter()</span>
-<span id="cb29-26"><a href="#cb29-26"></a>        .map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name))</span>
-<span id="cb29-27"><a href="#cb29-27"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;()</span>
-<span id="cb29-28"><a href="#cb29-28"></a>        .join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb29-29"><a href="#cb29-29"></a><span class="op">}</span></span>
-<span id="cb29-30"><a href="#cb29-30"></a></span>
-<span id="cb29-31"><a href="#cb29-31"></a><span class="kw">fn</span> list(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb29-32"><a href="#cb29-32"></a>    <span class="pp">format!</span>(</span>
-<span id="cb29-33"><a href="#cb29-33"></a>        <span class="st">&quot;&lt;html&gt;</span></span>
-<span id="cb29-34"><a href="#cb29-34"></a><span class="st">            &lt;head&gt;&lt;title&gt;{title}&lt;/title&gt;&lt;/head&gt;</span></span>
-<span id="cb29-35"><a href="#cb29-35"></a><span class="st">            &lt;body&gt;</span></span>
-<span id="cb29-36"><a href="#cb29-36"></a><span class="st">                &lt;h1&gt;{title}&lt;/h1&gt;</span></span>
-<span id="cb29-37"><a href="#cb29-37"></a><span class="st">                &lt;h3&gt;There are {page_count} pages:&lt;/h3&gt;</span></span>
-<span id="cb29-38"><a href="#cb29-38"></a><span class="st">                &lt;ul&gt;</span></span>
-<span id="cb29-39"><a href="#cb29-39"></a><span class="st">                    {pages}</span></span>
-<span id="cb29-40"><a href="#cb29-40"></a><span class="st">                &lt;/ul&gt;</span></span>
-<span id="cb29-41"><a href="#cb29-41"></a><span class="st">            &lt;/body&gt;</span></span>
-<span id="cb29-42"><a href="#cb29-42"></a><span class="st">        &lt;/html&gt;&quot;</span>,</span>
-<span id="cb29-43"><a href="#cb29-43"></a>        title = <span class="st">&quot;List Pages&quot;</span>,</span>
-<span id="cb29-44"><a href="#cb29-44"></a>        page_count = req.cache(all_pages).len(),</span>
-<span id="cb29-45"><a href="#cb29-45"></a>        pages = req.cache(list_of_names),</span>
-<span id="cb29-46"><a href="#cb29-46"></a>    )</span>
-<span id="cb29-47"><a href="#cb29-47"></a><span class="op">}</span></span>
-<span id="cb29-48"><a href="#cb29-48"></a></span>
-<span id="cb29-49"><a href="#cb29-49"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb29-50"><a href="#cb29-50"></a>    <span class="pp">run!</span>().unwrap();</span>
-<span id="cb29-51"><a href="#cb29-51"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<span id="cb30-2"><a href="#cb30-2"></a><span class="kw">use</span> <span class="pp">page::</span>Page;</span>
+<span id="cb30-3"><a href="#cb30-3"></a><span class="kw">use</span> db;</span>
+<span id="cb30-4"><a href="#cb30-4"></a></span>
+<span id="cb30-5"><a href="#cb30-5"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb30-6"><a href="#cb30-6"></a>    GET <span class="st">&quot;/&quot;</span> =&gt; list;</span>
+<span id="cb30-7"><a href="#cb30-7"></a><span class="op">}</span></span>
+<span id="cb30-8"><a href="#cb30-8"></a></span>
+<span id="cb30-9"><a href="#cb30-9"></a><span class="kw">struct</span> PageNames(<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;);</span>
+<span id="cb30-10"><a href="#cb30-10"></a></span>
+<span id="cb30-11"><a href="#cb30-11"></a><span class="kw">fn</span> all_pages(_: &amp;Request) -&gt; <span class="dt">Vec</span>&lt;Page&gt; <span class="op">{</span></span>
+<span id="cb30-12"><a href="#cb30-12"></a>    <span class="pp">db::</span>lookup(<span class="st">&quot;select * from pages&quot;</span>)</span>
+<span id="cb30-13"><a href="#cb30-13"></a><span class="op">}</span></span>
+<span id="cb30-14"><a href="#cb30-14"></a></span>
+<span id="cb30-15"><a href="#cb30-15"></a><span class="kw">fn</span> page_names(req: &amp;Request) -&gt; PageNames <span class="op">{</span></span>
+<span id="cb30-16"><a href="#cb30-16"></a>    PageNames(req.cache(all_pages)</span>
+<span id="cb30-17"><a href="#cb30-17"></a>        .iter()</span>
+<span id="cb30-18"><a href="#cb30-18"></a>        .map(|page| page.name.clone())</span>
+<span id="cb30-19"><a href="#cb30-19"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
+<span id="cb30-20"><a href="#cb30-20"></a><span class="op">}</span></span>
+<span id="cb30-21"><a href="#cb30-21"></a></span>
+<span id="cb30-22"><a href="#cb30-22"></a><span class="kw">fn</span> list_of_names(req: &amp;Request) -&gt; <span class="dt">String</span> <span class="op">{</span></span>
+<span id="cb30-23"><a href="#cb30-23"></a>    req.cache(page_names)</span>
+<span id="cb30-24"><a href="#cb30-24"></a>        .<span class="dv">0</span></span>
+<span id="cb30-25"><a href="#cb30-25"></a>        .iter()</span>
+<span id="cb30-26"><a href="#cb30-26"></a>        .map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name))</span>
+<span id="cb30-27"><a href="#cb30-27"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;()</span>
+<span id="cb30-28"><a href="#cb30-28"></a>        .join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb30-29"><a href="#cb30-29"></a><span class="op">}</span></span>
+<span id="cb30-30"><a href="#cb30-30"></a></span>
+<span id="cb30-31"><a href="#cb30-31"></a><span class="kw">fn</span> list(req: Request) -&gt; <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb30-32"><a href="#cb30-32"></a>    <span class="pp">format!</span>(</span>
+<span id="cb30-33"><a href="#cb30-33"></a>        <span class="st">&quot;&lt;html&gt;</span></span>
+<span id="cb30-34"><a href="#cb30-34"></a><span class="st">            &lt;head&gt;&lt;title&gt;{title}&lt;/title&gt;&lt;/head&gt;</span></span>
+<span id="cb30-35"><a href="#cb30-35"></a><span class="st">            &lt;body&gt;</span></span>
+<span id="cb30-36"><a href="#cb30-36"></a><span class="st">                &lt;h1&gt;{title}&lt;/h1&gt;</span></span>
+<span id="cb30-37"><a href="#cb30-37"></a><span class="st">                &lt;h3&gt;There are {page_count} pages:&lt;/h3&gt;</span></span>
+<span id="cb30-38"><a href="#cb30-38"></a><span class="st">                &lt;ul&gt;</span></span>
+<span id="cb30-39"><a href="#cb30-39"></a><span class="st">                    {pages}</span></span>
+<span id="cb30-40"><a href="#cb30-40"></a><span class="st">                &lt;/ul&gt;</span></span>
+<span id="cb30-41"><a href="#cb30-41"></a><span class="st">            &lt;/body&gt;</span></span>
+<span id="cb30-42"><a href="#cb30-42"></a><span class="st">        &lt;/html&gt;&quot;</span>,</span>
+<span id="cb30-43"><a href="#cb30-43"></a>        title = <span class="st">&quot;List Pages&quot;</span>,</span>
+<span id="cb30-44"><a href="#cb30-44"></a>        page_count = req.cache(all_pages).len(),</span>
+<span id="cb30-45"><a href="#cb30-45"></a>        pages = req.cache(list_of_names),</span>
+<span id="cb30-46"><a href="#cb30-46"></a>    )</span>
+<span id="cb30-47"><a href="#cb30-47"></a><span class="op">}</span></span>
+<span id="cb30-48"><a href="#cb30-48"></a></span>
+<span id="cb30-49"><a href="#cb30-49"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb30-50"><a href="#cb30-50"></a>    <span class="pp">run!</span>().unwrap();</span>
+<span id="cb30-51"><a href="#cb30-51"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="global-state">Global State</h3>
 <p>There are four steps involved in setting up shared, global state in <strong>Vial</strong>:</p>
 <ol type="1">
@@ -910,49 +928,49 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <ol start="2" type="1">
 <li>Create a struct that is <code>Send + Sync</code> to hold your application’s shared state:</li>
 </ol>
-<div class="sourceCode" id="cb31"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">use</span> vial;</span>
-<span id="cb31-2"><a href="#cb31-2"></a><span class="kw">use</span> <span class="pp">std::sync::</span><span class="op">{</span>Arc, Mutx, <span class="pp">atomic::</span><span class="op">{</span>AtomicUsize, Ordering<span class="op">}}</span>;</span>
-<span id="cb31-3"><a href="#cb31-3"></a><span class="kw">use</span> <span class="pp">some_db_crate::</span>DB;</span>
-<span id="cb31-4"><a href="#cb31-4"></a></span>
-<span id="cb31-5"><a href="#cb31-5"></a><span class="kw">struct</span> MyConfig <span class="op">{</span></span>
-<span id="cb31-6"><a href="#cb31-6"></a>    db: Arc&lt;Mutex&lt;DB&gt;&gt;,</span>
-<span id="cb31-7"><a href="#cb31-7"></a>    counter: AtomicUsize,</span>
-<span id="cb31-8"><a href="#cb31-8"></a><span class="op">}</span></span>
-<span id="cb31-9"><a href="#cb31-9"></a></span>
-<span id="cb31-10"><a href="#cb31-10"></a><span class="kw">impl</span> MyConfig <span class="op">{</span></span>
-<span id="cb31-11"><a href="#cb31-11"></a>    <span class="kw">pub</span> <span class="kw">fn</span> new(db: DB) <span class="op">{</span></span>
-<span id="cb31-12"><a href="#cb31-12"></a>        MyConfig <span class="op">{</span></span>
-<span id="cb31-13"><a href="#cb31-13"></a>            db: <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(db)),</span>
-<span id="cb31-14"><a href="#cb31-14"></a>            counter: <span class="pp">AtomicUsize::</span>new(<span class="dv">0</span>),</span>
-<span id="cb31-15"><a href="#cb31-15"></a>        <span class="op">}</span></span>
-<span id="cb31-16"><a href="#cb31-16"></a>    <span class="op">}</span></span>
-<span id="cb31-17"><a href="#cb31-17"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">use</span> vial;</span>
+<span id="cb32-2"><a href="#cb32-2"></a><span class="kw">use</span> <span class="pp">std::sync::</span><span class="op">{</span>Arc, Mutx, <span class="pp">atomic::</span><span class="op">{</span>AtomicUsize, Ordering<span class="op">}}</span>;</span>
+<span id="cb32-3"><a href="#cb32-3"></a><span class="kw">use</span> <span class="pp">some_db_crate::</span>DB;</span>
+<span id="cb32-4"><a href="#cb32-4"></a></span>
+<span id="cb32-5"><a href="#cb32-5"></a><span class="kw">struct</span> MyConfig <span class="op">{</span></span>
+<span id="cb32-6"><a href="#cb32-6"></a>    db: Arc&lt;Mutex&lt;DB&gt;&gt;,</span>
+<span id="cb32-7"><a href="#cb32-7"></a>    counter: AtomicUsize,</span>
+<span id="cb32-8"><a href="#cb32-8"></a><span class="op">}</span></span>
+<span id="cb32-9"><a href="#cb32-9"></a></span>
+<span id="cb32-10"><a href="#cb32-10"></a><span class="kw">impl</span> MyConfig <span class="op">{</span></span>
+<span id="cb32-11"><a href="#cb32-11"></a>    <span class="kw">pub</span> <span class="kw">fn</span> new(db: DB) <span class="op">{</span></span>
+<span id="cb32-12"><a href="#cb32-12"></a>        MyConfig <span class="op">{</span></span>
+<span id="cb32-13"><a href="#cb32-13"></a>            db: <span class="pp">Arc::</span>new(<span class="pp">Mutex::</span>new(db)),</span>
+<span id="cb32-14"><a href="#cb32-14"></a>            counter: <span class="pp">AtomicUsize::</span>new(<span class="dv">0</span>),</span>
+<span id="cb32-15"><a href="#cb32-15"></a>        <span class="op">}</span></span>
+<span id="cb32-16"><a href="#cb32-16"></a>    <span class="op">}</span></span>
+<span id="cb32-17"><a href="#cb32-17"></a><span class="op">}</span></span></code></pre></div>
 <ol start="3" type="1">
 <li>Write your actions to take <code>State&lt;MyConfig&gt;</code> instead of <code>Request</code>:</li>
 </ol>
-<div class="sourceCode" id="cb32"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
-<span id="cb32-2"><a href="#cb32-2"></a></span>
-<span id="cb32-3"><a href="#cb32-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb32-4"><a href="#cb32-4"></a>    GET <span class="st">&quot;/list&quot;</span> =&gt; list;</span>
-<span id="cb32-5"><a href="#cb32-5"></a><span class="op">}</span></span>
-<span id="cb32-6"><a href="#cb32-6"></a></span>
-<span id="cb32-7"><a href="#cb32-7"></a><span class="kw">fn</span> find_names(db: Arc&lt;Mutex&lt;DB&gt;&gt;) -&gt; <span class="dt">Result</span>&lt;<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;, <span class="pp">db::</span>Error&gt; <span class="op">{</span></span>
-<span id="cb32-8"><a href="#cb32-8"></a>    <span class="cn">Ok</span>(db.lock()?.query(<span class="st">&quot;SELECT name FROM names&quot;</span>)?</span>
-<span id="cb32-9"><a href="#cb32-9"></a>        .map(|row| row.get(<span class="st">&quot;name&quot;</span>)?)</span>
-<span id="cb32-10"><a href="#cb32-10"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
-<span id="cb32-11"><a href="#cb32-11"></a><span class="op">}</span></span>
-<span id="cb32-12"><a href="#cb32-12"></a></span>
-<span id="cb32-13"><a href="#cb32-13"></a><span class="kw">fn</span> list(state: State&lt;MyConfig&gt;) -&gt; VialResult <span class="op">{</span></span>
-<span id="cb32-14"><a href="#cb32-14"></a>    <span class="cn">Ok</span>(find_names(state.db.clone())?.map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name)))</span>
-<span id="cb32-15"><a href="#cb32-15"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span>*;</span>
+<span id="cb33-2"><a href="#cb33-2"></a></span>
+<span id="cb33-3"><a href="#cb33-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a>    GET <span class="st">&quot;/list&quot;</span> =&gt; list;</span>
+<span id="cb33-5"><a href="#cb33-5"></a><span class="op">}</span></span>
+<span id="cb33-6"><a href="#cb33-6"></a></span>
+<span id="cb33-7"><a href="#cb33-7"></a><span class="kw">fn</span> find_names(db: Arc&lt;Mutex&lt;DB&gt;&gt;) -&gt; <span class="dt">Result</span>&lt;<span class="dt">Vec</span>&lt;<span class="dt">String</span>&gt;, <span class="pp">db::</span>Error&gt; <span class="op">{</span></span>
+<span id="cb33-8"><a href="#cb33-8"></a>    <span class="cn">Ok</span>(db.lock()?.query(<span class="st">&quot;SELECT name FROM names&quot;</span>)?</span>
+<span id="cb33-9"><a href="#cb33-9"></a>        .map(|row| row.get(<span class="st">&quot;name&quot;</span>)?)</span>
+<span id="cb33-10"><a href="#cb33-10"></a>        .<span class="pp">collect::</span>&lt;<span class="dt">Vec</span>&lt;_&gt;&gt;())</span>
+<span id="cb33-11"><a href="#cb33-11"></a><span class="op">}</span></span>
+<span id="cb33-12"><a href="#cb33-12"></a></span>
+<span id="cb33-13"><a href="#cb33-13"></a><span class="kw">fn</span> list(state: State&lt;MyConfig&gt;) -&gt; VialResult <span class="op">{</span></span>
+<span id="cb33-14"><a href="#cb33-14"></a>    <span class="cn">Ok</span>(find_names(state.db.clone())?.map(|name| <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span>, name)))</span>
+<span id="cb33-15"><a href="#cb33-15"></a><span class="op">}</span></span></code></pre></div>
 <ol start="4" type="1">
 <li>Tell <strong>Vial</strong> about your state object before calling <code>run!</code>:</li>
 </ol>
-<div class="sourceCode" id="cb33"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb33-2"><a href="#cb33-2"></a>    <span class="kw">let</span> db = <span class="pp">DB::</span>new();</span>
-<span id="cb33-3"><a href="#cb33-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db));</span>
-<span id="cb33-4"><a href="#cb33-4"></a>    <span class="pp">vial::run!</span>();</span>
-<span id="cb33-5"><a href="#cb33-5"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb34-2"><a href="#cb34-2"></a>    <span class="kw">let</span> db = <span class="pp">DB::</span>new();</span>
+<span id="cb34-3"><a href="#cb34-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db));</span>
+<span id="cb34-4"><a href="#cb34-4"></a>    <span class="pp">vial::run!</span>();</span>
+<span id="cb34-5"><a href="#cb34-5"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="templates">Templates</h2>
 <p><em>Optional Feature: Coming soon.</em></p>
 <h2 id="cookies">Cookies</h2>
@@ -965,7 +983,6 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <p><em>“Pro Tip”: Coming soon.</em></p>
 <h2 id="markdown">Markdown</h2>
 <p><em>“Pro Tip”: Coming soon.</em></p>
-<pre><code></code></pre>
 </main>
     <script>
       function clickHamburger() {
