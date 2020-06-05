@@ -1,6 +1,13 @@
+#[allow(unused_imports)]
 use {
     crate::Result,
-    std::{fs, path::PathBuf},
+    std::{
+        env,
+        fs::{self, File},
+        io::Write,
+        os::unix,
+        path::{Path, PathBuf},
+    },
 };
 
 /// You should use the
@@ -23,12 +30,12 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
         // symlink assets dir into out dir
         let link = Path::new(&out_dir).join(dir);
         if link.exists() {
-            fs::remove_file(&link);
+            fs::remove_file(&link)?;
         }
         unix::fs::symlink(env::current_dir()?.join(dir), link)?;
         let bundle_rs = Path::new(&out_dir).join("bundle.rs");
         if bundle_rs.exists() {
-            fs::remove_file(&bundle_rs);
+            fs::remove_file(&bundle_rs)?;
         }
         let mut dest = File::create(bundle_rs)?;
 
@@ -45,7 +52,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
                     path.as_path().to_string_lossy().trim_start_matches("./")
                 )
                 .as_bytes(),
-            );
+            )?;
         }
         dest.write_all(
             b"    map
