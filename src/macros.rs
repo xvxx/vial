@@ -62,12 +62,16 @@ macro_rules! run {
     }};
 }
 
-/// The `vial::use_state!()` macro should be called immediately before
-/// calling [`vial::run!()`](macro.run.html) in your Vial application
-/// with the `state` feature enabled.
+/// Gives Vial a state object to manage globally. You can access it
+/// by enabling the `state` feature and calling
+/// [`request.state::<YourStruct>()`](struct.Request.html#method.state)
+/// in an action.
 ///
-/// It expects on argument: a `Send + Sync + 'static` object you want
-/// to share between all requests:
+/// The `vial::use_state!()` macro should be called immediately before
+/// calling [`vial::run!()`](macro.run.html) in your application.
+///
+/// It expects one argument: a `Send + Sync + 'static` object you want
+/// to share between all requests.
 ///
 /// ```no_run
 /// use std::sync::atomic::{AtomicUsize, Ordering};
@@ -78,19 +82,23 @@ macro_rules! run {
 ///     GET "/count" => count;
 /// }
 ///
-/// fn hello(hit_count: State<HitCount>) -> String {
-///     hit_count.0.fetch_add(1, Ordering::Relaxed);
-///     format!("Hits: {}", count(hit_count))
+/// fn hello(req: Request) -> impl Responder {
+///     req.state::<HitCount>().0.fetch_add(1, Ordering::Relaxed);
+///     format!("Hits: {}", count(req))
 /// }
 ///
-/// fn count(hit_count: State<HitCount>) -> String {
-///     hit_count.0.load(Ordering::Relaxed).to_string()
+/// fn count(req: Request) -> String {
+///     req.state::<HitCount>()
+///         .0
+///         .load(Ordering::Relaxed)
+///         .to_string()
 /// }
 ///
+/// #[derive(Default)]
 /// struct HitCount(AtomicUsize);
 ///
 /// fn main() {
-///     use_state!(HitCount(AtomicUsize::new(0)));
+///     use_state!(HitCount::default());
 ///     run!().unwrap();
 /// }
 /// ```
@@ -366,12 +374,7 @@ macro_rules! routes {
                 let action_filters: Vec<fn(&mut Request) -> Option<Response>> =
                     vec![$($($action_filter),+)*];
 
-                #[cfg(not(feature = "state"))]
                 let b: fn(Request) -> _ = $body;
-                #[cfg(feature = "state")]
-                let b: fn(::vial::State<_>) -> _ = $body;
-                // #[cfg(feature = "state")]
-                // let mut req: ::vial::State<_> = req.into();
 
                 if let Some(res) = vial_filter(&mut req) {
                     res

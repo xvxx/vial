@@ -6,18 +6,22 @@ routes! {
     GET "/count" => count;
 }
 
-fn hello(hit_count: State<HitCount>) -> impl Responder {
-    hit_count.0.fetch_add(1, Ordering::Relaxed);
-    format!("Hits: {}", count(hit_count))
+fn hello(req: Request) -> impl Responder {
+    req.state::<HitCount>().0.fetch_add(1, Ordering::Relaxed);
+    format!("Hits: {}", count(req))
 }
 
-fn count(hit_count: State<HitCount>) -> String {
-    hit_count.0.load(Ordering::Relaxed).to_string()
+fn count(req: Request) -> String {
+    req.state::<HitCount>()
+        .0
+        .load(Ordering::Relaxed)
+        .to_string()
 }
 
+#[derive(Default)]
 struct HitCount(AtomicUsize);
 
 fn main() {
-    use_state!(HitCount(AtomicUsize::new(0)));
+    use_state!(HitCount::default());
     run!().unwrap();
 }

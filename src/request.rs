@@ -369,4 +369,9 @@ impl Request {
             self.cache.get().unwrap()
         })
     }
+
+    #[cfg(feature = "state")]
+    pub fn state<T: Send + Sync + 'static>(&self) -> &T {
+        crate::storage::get::<T>()
+    }
 }

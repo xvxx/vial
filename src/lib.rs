@@ -57,7 +57,7 @@
 //!
 //! This list is a work in progress:
 //!
-//! - [x] **state**: Global state: handlers take `State<T>`
+//! - [x] **state**: Global state: `request.state::<YourStruct>()`
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 //! - [ ] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
@@ -214,8 +214,6 @@ mod util;
 
 #[cfg(feature = "state")]
 pub mod storage;
-#[cfg(feature = "state")]
-pub use storage::State;
 
 #[cfg(features = "horror")]
 #[macro_use]

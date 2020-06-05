@@ -861,7 +861,7 @@ vial = &quot;0.1&quot;</code></pre>
 <p>There are two types of state available in <strong>Vial</strong>:</p>
 <ol type="1">
 <li><p>Local State - Built-in to <a href="#Requests">Request</a>. Allows caching of expensive algorithms (like DB lookups) on a per-request basis.</p></li>
-<li><p>Global State - Requires the <code>state</code> feature. Allows you to share database connections and whatnot across all requests.</p></li>
+<li><p>Global State - Requires the <code>state</code> feature. Allows you to share any <code>Send + Sync + 'static</code> types (like database connections) across all requests.</p></li>
 </ol>
 <h3 id="local-state">Local State</h3>
 <p>Local state lives for only a single <a href="#Requests">Request</a>, but can be useful to prevent looking up the same data over and over. The cache is based on the return type of the function or closure you pass to <code>cache()</code>, so make sure to create little wrapper structs if you want different functions to return the same type, like <code>Vec&lt;String&gt;</code>:</p>
@@ -920,7 +920,7 @@ vial = &quot;0.1&quot;</code></pre>
 <span id="cb30-50"><a href="#cb30-50"></a>    <span class="pp">run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
 <span id="cb30-51"><a href="#cb30-51"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="global-state">Global State</h3>
-<p>There are four steps involved in setting up shared, global state in <strong>Vial</strong>:</p>
+<p>There are three steps involved in setting up shared, global state in <strong>Vial</strong>:</p>
 <ol type="1">
 <li>Enable the <code>state</code> feature in your <code>Cargo.toml</code>:</li>
 </ol>
@@ -947,31 +947,59 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <span id="cb32-16"><a href="#cb32-16"></a>    <span class="op">}</span></span>
 <span id="cb32-17"><a href="#cb32-17"></a><span class="op">}</span></span></code></pre></div>
 <ol start="3" type="1">
-<li>Write your actions to take <code>State&lt;MyConfig&gt;</code> instead of <code>Request</code>:</li>
-</ol>
-<div class="sourceCode" id="cb33"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
-<span id="cb33-2"><a href="#cb33-2"></a></span>
-<span id="cb33-3"><a href="#cb33-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb33-4"><a href="#cb33-4"></a>    GET <span class="st">&quot;/list&quot;</span> <span class="op">=&gt;</span> list<span class="op">;</span></span>
-<span id="cb33-5"><a href="#cb33-5"></a><span class="op">}</span></span>
-<span id="cb33-6"><a href="#cb33-6"></a></span>
-<span id="cb33-7"><a href="#cb33-7"></a><span class="kw">fn</span> find_names(db<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span>DB<span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;,</span> <span class="pp">db::</span><span class="bu">Error</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb33-8"><a href="#cb33-8"></a>    <span class="cn">Ok</span>(db<span class="op">.</span>lock()<span class="op">?.</span>query(<span class="st">&quot;SELECT name FROM names&quot;</span>)<span class="op">?</span></span>
-<span id="cb33-9"><a href="#cb33-9"></a>        <span class="op">.</span>map(<span class="op">|</span>row<span class="op">|</span> row<span class="op">.</span>get(<span class="st">&quot;name&quot;</span>)<span class="op">?</span>)</span>
-<span id="cb33-10"><a href="#cb33-10"></a>        <span class="op">.</span><span class="pp">collect::</span><span class="op">&lt;</span><span class="dt">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>())</span>
-<span id="cb33-11"><a href="#cb33-11"></a><span class="op">}</span></span>
-<span id="cb33-12"><a href="#cb33-12"></a></span>
-<span id="cb33-13"><a href="#cb33-13"></a><span class="kw">fn</span> list(state<span class="op">:</span> State<span class="op">&lt;</span>MyConfig<span class="op">&gt;</span>) <span class="op">-&gt;</span> VialResult <span class="op">{</span></span>
-<span id="cb33-14"><a href="#cb33-14"></a>    <span class="cn">Ok</span>(find_names(state<span class="op">.</span>db<span class="op">.</span>clone())<span class="op">?.</span>map(<span class="op">|</span>name<span class="op">|</span> <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span><span class="op">,</span> name)))</span>
-<span id="cb33-15"><a href="#cb33-15"></a><span class="op">}</span></span></code></pre></div>
-<ol start="4" type="1">
 <li>Tell <strong>Vial</strong> about your state object before calling <code>run!</code>:</li>
 </ol>
-<div class="sourceCode" id="cb34"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb34-2"><a href="#cb34-2"></a>    <span class="kw">let</span> db <span class="op">=</span> <span class="pp">DB::</span>new()<span class="op">;</span></span>
-<span id="cb34-3"><a href="#cb34-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db))<span class="op">;</span></span>
-<span id="cb34-4"><a href="#cb34-4"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
-<span id="cb34-5"><a href="#cb34-5"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb33-1"><a href="#cb33-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a>    <span class="kw">let</span> db <span class="op">=</span> <span class="pp">DB::</span>new()<span class="op">;</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db))<span class="op">;</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
+<span id="cb33-5"><a href="#cb33-5"></a><span class="op">}</span></span></code></pre></div>
+<p>Now your actions and filters can access <code>MyConfig</code> by calling the <a href="struct.Request.html#method.state">state()</a> method on <a href="#Requests">Request</a>: take <code>State&lt;MyConfig&gt;</code> instead of <code>Request</code>:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<span id="cb34-2"><a href="#cb34-2"></a></span>
+<span id="cb34-3"><a href="#cb34-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb34-4"><a href="#cb34-4"></a>    GET <span class="st">&quot;/list&quot;</span> <span class="op">=&gt;</span> list<span class="op">;</span></span>
+<span id="cb34-5"><a href="#cb34-5"></a><span class="op">}</span></span>
+<span id="cb34-6"><a href="#cb34-6"></a></span>
+<span id="cb34-7"><a href="#cb34-7"></a><span class="kw">fn</span> find_names(db<span class="op">:</span> Arc<span class="op">&lt;</span>Mutex<span class="op">&lt;</span>DB<span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">Vec</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;,</span> <span class="pp">db::</span><span class="bu">Error</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb34-8"><a href="#cb34-8"></a>    <span class="cn">Ok</span>(db<span class="op">.</span>lock()<span class="op">?.</span>query(<span class="st">&quot;SELECT name FROM names&quot;</span>)<span class="op">?</span></span>
+<span id="cb34-9"><a href="#cb34-9"></a>        <span class="op">.</span>map(<span class="op">|</span>row<span class="op">|</span> row<span class="op">.</span>get(<span class="st">&quot;name&quot;</span>)<span class="op">?</span>)</span>
+<span id="cb34-10"><a href="#cb34-10"></a>        <span class="op">.</span><span class="pp">collect::</span><span class="op">&lt;</span><span class="dt">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>())</span>
+<span id="cb34-11"><a href="#cb34-11"></a><span class="op">}</span></span>
+<span id="cb34-12"><a href="#cb34-12"></a></span>
+<span id="cb34-13"><a href="#cb34-13"></a><span class="kw">fn</span> list(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb34-14"><a href="#cb34-14"></a>    <span class="cn">Ok</span>(</span>
+<span id="cb34-15"><a href="#cb34-15"></a>        find_names(req<span class="op">.</span><span class="pp">state::</span><span class="op">&lt;</span>MyConfig<span class="op">&gt;</span>()<span class="op">.</span>db<span class="op">.</span>clone())<span class="op">?</span></span>
+<span id="cb34-16"><a href="#cb34-16"></a>            <span class="op">.</span>map(<span class="op">|</span>name<span class="op">|</span> <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span><span class="op">,</span> name))</span>
+<span id="cb34-17"><a href="#cb34-17"></a>            <span class="op">.</span>join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb34-18"><a href="#cb34-18"></a>    )</span>
+<span id="cb34-19"><a href="#cb34-19"></a><span class="op">}</span></span></code></pre></div>
+<p>You might find it more convenient to define and implement a local trait on the <a href="#Requests">Request</a> struct instead of calling <code>request.state()</code> directly:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<span id="cb35-2"><a href="#cb35-2"></a></span>
+<span id="cb35-3"><a href="#cb35-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb35-4"><a href="#cb35-4"></a>    GET <span class="st">&quot;/list&quot;</span> <span class="op">=&gt;</span> list<span class="op">;</span></span>
+<span id="cb35-5"><a href="#cb35-5"></a><span class="op">}</span></span>
+<span id="cb35-6"><a href="#cb35-6"></a></span>
+<span id="cb35-7"><a href="#cb35-7"></a><span class="co">// ...</span></span>
+<span id="cb35-8"><a href="#cb35-8"></a></span>
+<span id="cb35-9"><a href="#cb35-9"></a><span class="kw">trait</span> WithConfig <span class="op">{</span></span>
+<span id="cb35-10"><a href="#cb35-10"></a>    <span class="kw">fn</span> config(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="op">&amp;</span>MyConfig<span class="op">;</span></span>
+<span id="cb35-11"><a href="#cb35-11"></a><span class="op">}</span></span>
+<span id="cb35-12"><a href="#cb35-12"></a></span>
+<span id="cb35-13"><a href="#cb35-13"></a><span class="kw">impl</span> WithConfig <span class="kw">for</span> <span class="pp">vial::</span>Request <span class="op">{</span></span>
+<span id="cb35-14"><a href="#cb35-14"></a>    <span class="kw">fn</span> config(<span class="op">&amp;</span><span class="kw">self</span>) <span class="op">-&gt;</span> <span class="op">&amp;</span>MyConfig <span class="op">{</span></span>
+<span id="cb35-15"><a href="#cb35-15"></a>        <span class="kw">self</span><span class="op">.</span><span class="pp">state::</span><span class="op">&lt;</span>MyConfig<span class="op">&gt;</span>()</span>
+<span id="cb35-16"><a href="#cb35-16"></a>    <span class="op">}</span></span>
+<span id="cb35-17"><a href="#cb35-17"></a><span class="op">}</span></span>
+<span id="cb35-18"><a href="#cb35-18"></a></span>
+<span id="cb35-19"><a href="#cb35-19"></a><span class="kw">fn</span> list(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="dt">Result</span><span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb35-20"><a href="#cb35-20"></a>    <span class="cn">Ok</span>(</span>
+<span id="cb35-21"><a href="#cb35-21"></a>        find_names(req<span class="op">.</span>config()<span class="op">.</span>db<span class="op">.</span>clone())<span class="op">?</span></span>
+<span id="cb35-22"><a href="#cb35-22"></a>            <span class="op">.</span>map(<span class="op">|</span>name<span class="op">|</span> <span class="pp">format!</span>(<span class="st">&quot;&lt;li&gt;{}&lt;/li&gt;&quot;</span><span class="op">,</span> name))</span>
+<span id="cb35-23"><a href="#cb35-23"></a>            <span class="op">.</span>join(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb35-24"><a href="#cb35-24"></a>    )</span>
+<span id="cb35-25"><a href="#cb35-25"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="templates">Templates</h2>
 <p><em>Optional Feature: Coming soon.</em></p>
 <h2 id="cookies">Cookies</h2>

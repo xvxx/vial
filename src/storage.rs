@@ -21,23 +21,3 @@ pub fn set<T: Send + Sync + 'static>(o: T) {
     }
 }
 
-pub struct State<T: Send + Sync + 'static> {
-    request: Request,
-    phantom: PhantomData<T>,
-}
-
-impl<T: Send + Sync + 'static> std::ops::Deref for State<T> {
-    type Target = T;
-    fn deref(&self) -> &Self::Target {
-        get::<T>()
-    }
-}
-
-impl<T: Send + Sync + 'static> From<Request> for State<T> {
-    fn from(request: Request) -> State<T> {
-        State {
-            request,
-            phantom: PhantomData,
-        }
-    }
-}

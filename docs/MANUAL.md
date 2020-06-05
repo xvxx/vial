@@ -657,7 +657,8 @@ There are two types of state available in **Vial**:
    algorithms (like DB lookups) on a per-request basis.
 
 2. Global State - Requires the `state` feature. Allows you to share
-   database connections and whatnot across all requests.
+   any `Send + Sync + 'static` types (like database connections)
+   across all requests.
 
 ### Local State
 
@@ -730,7 +731,7 @@ fn main() {
 
 ### Global State
 
-There are four steps involved in setting up shared, global state in
+There are three steps involved in setting up shared, global state in
 **Vial**:
 
 1. Enable the `state` feature in your `Cargo.toml`:
@@ -763,7 +764,19 @@ impl MyConfig {
 }
 ```
 
-3. Write your actions to take `State<MyConfig>` instead of `Request`:
+3. Tell **Vial** about your state object before calling `run!`:
+
+```rust
+fn main() {
+    let db = DB::new();
+    vial::use_state!(MyConfig::new(db));
+    vial::run!();
+}
+```
+
+Now your actions and filters can access `MyConfig` by calling the
+[state()](struct.Request.html#method.state) method on [Request]:
+take `State<MyConfig>` instead of `Request`:
 
 ```rust
 use vial::prelude::*;
@@ -778,18 +791,44 @@ fn find_names(db: Arc<Mutex<DB>>) -> Result<Vec<String>, db::Error> {
         .collect::<Vec<_>>())
 }
 
-fn list(state: State<MyConfig>) -> VialResult {
-    Ok(find_names(state.db.clone())?.map(|name| format!("<li>{}</li>", name)))
+fn list(req: Request) -> Result<String> {
+    Ok(
+        find_names(req.state::<MyConfig>().db.clone())?
+            .map(|name| format!("<li>{}</li>", name))
+            .join("\n")
+    )
 }
 ```
 
-4. Tell **Vial** about your state object before calling `run!`:
+You might find it more convenient to define and implement a local
+trait on the [Request] struct instead of calling `request.state()`
+directly:
 
 ```rust
-fn main() {
-    let db = DB::new();
-    vial::use_state!(MyConfig::new(db));
-    vial::run!();
+use vial::prelude::*;
+
+routes! {
+    GET "/list" => list;
+}
+
+// ...
+
+trait WithConfig {
+    fn config(&self) -> &MyConfig;
+}
+
+impl WithConfig for vial::Request {
+    fn config(&self) -> &MyConfig {
+        self.state::<MyConfig>()
+    }
+}
+
+fn list(req: Request) -> Result<String> {
+    Ok(
+        find_names(req.config().db.clone())?
+            .map(|name| format!("<li>{}</li>", name))
+            .join("\n")
+    )
 }
 ```
 
