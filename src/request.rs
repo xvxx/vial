@@ -122,7 +122,7 @@ impl Request {
             match http_parser::parse(mem::replace(&mut buffer, vec![]))? {
                 http_parser::Status::Complete(req) => break req,
                 http_parser::Status::Partial(b) => {
-                    mem::replace(&mut buffer, b);
+                    let _ = mem::replace(&mut buffer, b);
                 }
             }
         };
