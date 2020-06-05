@@ -42,7 +42,7 @@
 //!
 //! We could serve our images like so:
 //!
-//! ```rust
+//! ```no_run
 //! vial::routes! {
 //!     GET "/" => |_| "
 //!         <p><img src='/img/doctor.png'/></p>

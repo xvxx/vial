@@ -17,7 +17,7 @@ use {
 /// designed libraries, Vial's `Response` lets you set properties
 /// either directly or using Builder-style methods:
 ///
-/// ```rust
+/// ```no_run
 /// vial::routes! {
 ///     GET "/404" => |_| Response::from(404)
 ///         .with_header("Content-Type", "text/plain")

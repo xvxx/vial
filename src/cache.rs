@@ -16,7 +16,6 @@ use std::{
 ///
 /// ```rust
 /// # use vial::cache::TypeCache;
-/// # fn main() {
 /// let cache = TypeCache::new();
 ///
 /// cache.set::<String>("Hi friends".to_string());
@@ -24,7 +23,6 @@ use std::{
 ///
 /// cache.set::<usize>(12345);
 /// assert_eq!(Some(&12345), cache.get::<usize>());
-/// # }
 /// ```
 ///
 /// We use this in Vial for global state (available when compiling

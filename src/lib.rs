@@ -69,7 +69,7 @@
 //!
 //! As is tradition:
 //!
-//! ```rust
+//! ```no_run
 //! vial::routes! {
 //!     GET "/" => |_| "Hello, world!";
 //! }
@@ -81,7 +81,7 @@
 //!
 //! For a bit more sanity, you can route to functions directly:
 //!
-//! ```rust
+//! ```no_run
 //! use vial::prelude::*;
 //!
 //! routes! {
@@ -111,7 +111,7 @@
 //! To _really_ break the mold, you can split your site into different
 //! modules:
 //!
-//! ```rust
+//! ```no_run
 //! use vial;
 //!
 //! mod wiki;
@@ -134,7 +134,7 @@
 //! But hey, who wants to putz around with HTML when you can be writing
 //! **Rust**? Enable the `horror` feature and you're on your way:
 //!
-//! ```rust
+//! ```no_run
 //! use vial::prelude::*;
 //!
 //! routes! {

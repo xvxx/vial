@@ -1,6 +1,6 @@
 /// The `vial::run!` macro is the preferred way of starting your Vial
 /// application after you've defined one or more routes using
-/// [vial::routes!](macro.routes.html). `run!` performs a bit of
+/// [`vial::routes!`](macro.routes.html). `run!` performs a bit of
 /// necessary setup, then starts listening for client requests at
 /// http://0.0.0.0:7667 by default.
 ///
@@ -17,7 +17,7 @@
 ///
 ///    For example:
 ///
-/// ```rust
+/// ```no_run
 /// mod wiki;
 /// mod blog {
 ///     vial::routes! {
@@ -35,7 +35,7 @@
 ///
 /// 4. Using a combination of the above:
 ///
-/// ```rust
+/// ```no_run
 /// mod blog;
 /// mod wiki;
 ///
@@ -69,7 +69,7 @@ macro_rules! run {
 /// It expects on argument: a `Send + Sync + 'static` object you want
 /// to share between all requests:
 ///
-/// ```rust
+/// ```no_run
 /// use std::sync::atomic::{AtomicUsize, Ordering};
 /// use vial::prelude::*;
 ///
@@ -152,7 +152,7 @@ macro_rules! include_assets {
 ///
 /// We could serve our images like so:
 ///
-/// ```rust
+/// ```no_run
 /// vial::routes! {
 ///     GET "/" => |_| "
 ///         <p><img src='/img/doctor.png'/></p>
@@ -202,7 +202,7 @@ macro_rules! asset_dir {
 /// root of your project and call `vial::bundle_assets!` with the path
 /// to your asset directory:
 ///
-/// ```rust
+/// ```no_run
 /// fn main() {
 ///     vial::bundle_assets!("assets/").unwrap();
 /// }
@@ -263,7 +263,7 @@ macro_rules! bundle_assets {
 /// Note that you can have multiple parameters in the same route, as
 /// long as the wildcard pattern occurs last:
 ///
-/// ```rust
+/// ```no_run
 /// vial::routes! {
 ///     GET "/:category/:id/*name" => |req| format!(
 ///         "<p>Category: {}</p>
@@ -288,7 +288,7 @@ macro_rules! bundle_assets {
 /// [Request](struct.Request.html) and return a
 /// [Responder](trait.Responder.html) of some kind.
 ///
-/// ```rust
+/// ```no_run
 /// use vial::prelude::*;
 ///
 /// routes! {

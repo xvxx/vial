@@ -306,7 +306,7 @@ impl Request {
     ///
     /// Here's an example:
     ///
-    /// ```rust
+    /// ```no_run
     /// use vial::prelude::*;
     /// use page::Page;
     /// use db;
