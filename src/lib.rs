@@ -170,15 +170,6 @@
 //! }
 //! ```
 //!
-//! ## ~ hot reloading ~
-//!
-//! Install [cargo-watch]:
-//!
-//! ```ignore
-//! $ cargo install cargo-watch
-//! $ cargo watch -x 'run --example hello_world'
-//! ```
-//!
 //! ## ~ performance ~
 //!
 //! We want to keep **Vial** snappy, but this is not a production web

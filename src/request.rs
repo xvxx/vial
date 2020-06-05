@@ -385,10 +385,10 @@ impl Request {
     }
 
     /// Access to global shared state defined with the
-    /// [`vial::use_state!`](macro.use_state.html) macro.
+    /// [`vial::use_state!`](macro.use_state.html) macro before
+    /// starting your application with [`vial::run!`](macro.run.html).
     ///
-    /// This is mostly used in filters, which can only ever accept
-    /// `&mut Request` so they can be shared between Vial apps.
+    /// The `state` feature must also be enabled in `Cargo.toml`.
     ///
     /// ```ignore
     /// use std::sync::atomic::{AtomicUsize, Ordering};
@@ -396,8 +396,8 @@ impl Request {
     ///
     /// routes! {
     ///     #[filter(count)]
-    ///     GET "/" => |counter: State<Counter>|
-    ///         format!("Hits: {}", counter.count());
+    ///     GET "/" => |req|
+    ///         format!("Hits: {}", req.state::<Counter>.hits());
     /// }
     ///
     /// fn count(req: &mut Request) -> Option<Response> {
@@ -409,7 +409,7 @@ impl Request {
     /// struct Counter(AtomicUsize);
     ///
     /// impl Counter {
-    ///     fn count(&self) -> usize {
+    ///     fn hits(&self) -> usize {
     ///         self.0.load(Ordering::Relaxed)
     ///     }
     ///     fn incr(&self) {

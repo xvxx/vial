@@ -954,7 +954,7 @@ vial = { version = &quot;*&quot;, features=[&quot;state&quot;] }</code></pre>
 <span id="cb33-3"><a href="#cb33-3"></a>    <span class="pp">vial::use_state!</span>(<span class="pp">MyConfig::</span>new(db))<span class="op">;</span></span>
 <span id="cb33-4"><a href="#cb33-4"></a>    <span class="pp">vial::run!</span>()<span class="op">;</span></span>
 <span id="cb33-5"><a href="#cb33-5"></a><span class="op">}</span></span></code></pre></div>
-<p>Now your actions and filters can access <code>MyConfig</code> by calling the <a href="struct.Request.html#method.state">state()</a> method on <a href="#Requests">Request</a>: take <code>State&lt;MyConfig&gt;</code> instead of <code>Request</code>:</p>
+<p>Now your actions and filters can access <code>MyConfig</code> by calling the <a href="struct.Request.html#method.state">state()</a> method on <a href="#Requests">Request</a>:</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
 <span id="cb34-2"><a href="#cb34-2"></a></span>
 <span id="cb34-3"><a href="#cb34-3"></a><span class="pp">routes!</span> <span class="op">{</span></span>

@@ -776,7 +776,6 @@ fn main() {
 
 Now your actions and filters can access `MyConfig` by calling the
 [state()](struct.Request.html#method.state) method on [Request]:
-take `State<MyConfig>` instead of `Request`:
 
 ```rust
 use vial::prelude::*;
