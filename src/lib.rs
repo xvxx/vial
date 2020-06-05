@@ -192,7 +192,7 @@
 //! insisted.
 //!
 
-#![warn(missing_docs)]
+// #![warn(missing_docs)]
 #![allow(clippy::needless_doctest_main)]
 #![allow(clippy::large_enum_variant)]
 

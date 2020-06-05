@@ -1,5 +1,5 @@
 use crate::{http_parser, util, Result, TypeCache};
-use std::{collections::HashMap, io::Read, mem, net::TcpStream, rc::Rc, str};
+use std::{collections::HashMap, fmt, io::Read, mem, net::TcpStream, rc::Rc, str};
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
@@ -49,7 +49,6 @@ impl Span {
 /// - **[set_method(&str, &str)](#method.set_method)**
 /// - **[set_body(&str, &str)](#method.set_body)**
 ///
-#[derive(Debug)]
 pub struct Request {
     /// The raw request.
     buffer: Vec<u8>,
@@ -69,6 +68,21 @@ pub struct Request {
 
     /// Local request cache.
     cache: Rc<TypeCache>,
+}
+
+impl fmt::Debug for Request {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut headers = HashMap::new();
+        for (k, v) in &self.headers {
+            headers.insert(k.from_buf(&self.buffer), v.from_buf(&self.buffer));
+        }
+        f.debug_struct("Request")
+            .field("method", &self.method.from_buf(&self.buffer))
+            .field("path", &self.path.from_buf(&self.buffer))
+            .field("full_path", &self.full_path.from_buf(&self.buffer))
+            .field("headers", &headers)
+            .finish()
+    }
 }
 
 impl Request {
@@ -370,6 +384,44 @@ impl Request {
         })
     }
 
+    /// Access to global shared state defined with the
+    /// [`vial::use_state!`](macro.use_state.html) macro.
+    ///
+    /// This is mostly used in filters, which can only ever accept
+    /// `&mut Request` so they can be shared between Vial apps.
+    ///
+    /// ```ignore
+    /// use std::sync::atomic::{AtomicUsize, Ordering};
+    /// use vial::prelude::*;
+    ///
+    /// routes! {
+    ///     #[filter(count)]
+    ///     GET "/" => |counter: State<Counter>|
+    ///         format!("Hits: {}", counter.count());
+    /// }
+    ///
+    /// fn count(req: &mut Request) -> Option<Response> {
+    ///     req.state::<Counter>().incr();
+    ///     None
+    /// }
+    ///
+    /// #[derive(Debug, Default)]
+    /// struct Counter(AtomicUsize);
+    ///
+    /// impl Counter {
+    ///     fn count(&self) -> usize {
+    ///         self.0.load(Ordering::Relaxed)
+    ///     }
+    ///     fn incr(&self) {
+    ///         self.0.fetch_add(1, Ordering::Relaxed);
+    ///     }
+    /// }
+    ///
+    /// fn main() {
+    ///     use_state!(Counter::default());
+    ///     run!();
+    /// }
+    /// ```
     #[cfg(feature = "state")]
     pub fn state<T: Send + Sync + 'static>(&self) -> &T {
         crate::storage::get::<T>()

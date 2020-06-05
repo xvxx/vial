@@ -359,11 +359,12 @@ macro_rules! routes {
         }
 
         fn vial_filter(req: &mut ::vial::Request) -> Option<::vial::Response> {
-            $($(
-                if let Some(res) = $all_filter(req.into()) {
+            $($({
+                if let Some(res) = $all_filter(req) {
                     return Some(res);
                 }
-            )+)*
+            })+)*
+
             None
         }
 
@@ -371,19 +372,16 @@ macro_rules! routes {
             $( router.insert(::vial::Method::$method, $path, |mut req| {
                 use ::vial::{Request, Response, Responder};
 
-                let action_filters: Vec<fn(&mut Request) -> Option<Response>> =
-                    vec![$($($action_filter),+)*];
+                let b: fn(::vial::Request) -> _ = $body;
+                let mut res = vial_filter(&mut req);
 
-                let b: fn(Request) -> _ = $body;
+                $($({
+                    if res.is_none() {
+                        res = $action_filter(&mut req);
+                    }
+                })+)*
 
-                if let Some(res) = vial_filter(&mut req) {
-                    res
-                } else {
-                    action_filters
-                        .iter()
-                        .find_map(|filter| filter(&mut req))
-                        .unwrap_or_else(|| b(req.into()).to_response())
-                }
+                res.unwrap_or_else(|| b(req.into()).to_response())
             }); )*
         }
     };

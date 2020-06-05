@@ -21,6 +21,10 @@ required-features = ["horror"]
 name = "state"
 required-features = ["state"]
 
+[[example]]
+name = "filter"
+required-features = ["state"]
+
 [features]
 horror = ['horrorshow']
 state = []
