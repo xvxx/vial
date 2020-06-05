@@ -28,7 +28,7 @@ use std::{
 /// We use this in Vial for global state (available when compiling
 /// with `--features state`) as well as local request state, which is
 /// always available.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TypeCache {
     map: RefCell<HashMap<TypeId, *mut dyn Any>>,
     mutex: AtomicUsize,
@@ -37,10 +37,7 @@ pub struct TypeCache {
 impl TypeCache {
     /// Create a new, empty TypeCache.
     pub fn new() -> TypeCache {
-        TypeCache {
-            map: RefCell::new(HashMap::new()),
-            mutex: AtomicUsize::new(0),
-        }
+        TypeCache::default()
     }
 
     /// TypeCache works like a regular hash map, but with types as

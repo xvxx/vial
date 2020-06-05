@@ -193,12 +193,15 @@
 //!
 
 #![warn(missing_docs)]
+#![allow(clippy::needless_doctest_main)]
+#![allow(clippy::large_enum_variant)]
 
 #[macro_use]
 mod macros;
 pub mod asset;
 mod bundler;
 mod cache;
+mod error;
 mod http_parser;
 mod method;
 pub mod prelude;
@@ -222,7 +225,7 @@ extern crate horrorshow;
 pub use features::horrorshow::{box_html, html, owned_html};
 
 pub use {
-    bundler::bundle_assets, cache::TypeCache, method::Method, request::Request,
+    bundler::bundle_assets, cache::TypeCache, error::Error, method::Method, request::Request,
     responder::Responder, response::Response, router::Router, server::run,
 };
 

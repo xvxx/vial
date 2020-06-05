@@ -4,6 +4,16 @@ use {
     std::collections::HashMap,
 };
 
+/// A Route Pattern is just a list of segements:
+///   /my/cool/route => vec!["my", "cool", "route"]
+pub type Pattern = Vec<String>;
+
+/// An `Action` is the code we route to. This is slightly different than
+/// what's defined using the `routes!` macro - that is more liberal
+/// and accepts any `fn(Request) -> impl Responder`, which it then
+/// transforms into an `Action` when adding to the `Router`.
+pub type Action = fn(Request) -> Response;
+
 /// `Router` keeps track of all the routes defined by
 /// [`vial::routes!`](macro.routes.html) and can produce an action for
 /// a given HTTP Method and URL path combination using [`action_for`](#method.action_for).
@@ -11,7 +21,7 @@ use {
 /// You never have to create a `Router`, except maybe in testing.
 #[derive(Default)]
 pub struct Router {
-    routes: HashMap<Method, Vec<(Vec<String>, fn(Request) -> Response)>>,
+    routes: HashMap<Method, Vec<(Pattern, Action)>>,
 }
 
 impl Router {
@@ -28,7 +38,7 @@ impl Router {
     ///
     /// It will also modify the passed `Request` object with any
     /// arguments that may have matched in the URL.
-    pub fn action_for(&self, req: &mut Request) -> Option<&fn(Request) -> Response> {
+    pub fn action_for(&self, req: &mut Request) -> Option<&Action> {
         if let Some(routes) = self.routes.get(&req.method().into()) {
             let req_parts = Self::pattern_to_vec(req.path());
 
@@ -63,7 +73,7 @@ impl Router {
     }
 
     /// Path pattern ("/dogs", "/dogs/:breed") to Vec<String>
-    fn pattern_to_vec(pattern: &str) -> Vec<String> {
+    fn pattern_to_vec(pattern: &str) -> Pattern {
         pattern
             .trim_matches('/')
             .split('/')
@@ -73,12 +83,7 @@ impl Router {
 
     /// Insert a route into the router. Routes are checked in FIFO
     /// manner when we are trying to match a URL and HTTP Method.
-    pub fn insert<T: Into<Method>>(
-        &mut self,
-        method: T,
-        pattern: &'static str,
-        action: fn(Request) -> Response,
-    ) {
+    pub fn insert<T: Into<Method>>(&mut self, method: T, pattern: &'static str, action: Action) {
         let method = method.into();
         let pattern_parts = Self::pattern_to_vec(pattern);
 

@@ -222,6 +222,11 @@ impl Response {
         }
     }
 
+    /// Is ths response empty?
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Returns a 302 redirect to the given URL.
     pub fn redirect_to<U: AsRef<str>>(url: U) -> Response {
         Response::from(302).with_header("location", url.as_ref())
@@ -230,7 +235,7 @@ impl Response {
     /// Writes this response to a stream.
     pub fn write<W: io::Write>(mut self, mut w: W) -> Result<()> {
         // we don't set Content-Length on static files we stream
-        let content_length = if self.len() > 0 {
+        let content_length = if !self.is_empty() {
             format!("Content-Length: {}\r\n", self.len())
         } else {
             "".to_string()
@@ -258,14 +263,14 @@ impl Response {
         }
         header.push_str("\r\n");
 
-        w.write(header.as_bytes())?;
+        w.write_all(header.as_bytes())?;
 
         if self.is_reader {
             io::copy(&mut self.reader, &mut w)?;
         } else if self.buf.is_empty() {
-            w.write(self.body.as_bytes())?;
+            w.write_all(self.body.as_bytes())?;
         } else {
-            w.write(&self.buf)?;
+            w.write_all(&self.buf)?;
         }
 
         w.flush()?;
@@ -314,7 +319,7 @@ impl From<String> for Response {
 impl From<usize> for Response {
     fn from(i: usize) -> Response {
         Response {
-            code: i.into(),
+            code: i,
             body: match i {
                 404 => "404 Not Found".into(),
                 500 => "500 Internal Server Error".into(),

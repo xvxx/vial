@@ -135,11 +135,9 @@ pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
         if is_bundled() {
             return bundled_assets().unwrap().contains_key(&path);
-        } else {
-            if let Ok(file) = fs::File::open(path) {
-                if let Ok(meta) = file.metadata() {
-                    return !meta.is_dir();
-                }
+        } else if let Ok(file) = fs::File::open(path) {
+            if let Ok(meta) = file.metadata() {
+                return !meta.is_dir();
             }
         }
     }
@@ -167,12 +165,10 @@ pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
         if let Some(v) = bundled_assets().unwrap().get(&path) {
             return Some(Box::new(*v));
         }
-    } else {
-        if let Ok(file) = fs::File::open(path) {
-            if let Ok(meta) = file.metadata() {
-                if !meta.is_dir() {
-                    return Some(Box::new(BufReader::new(file)));
-                }
+    } else if let Ok(file) = fs::File::open(path) {
+        if let Ok(meta) = file.metadata() {
+            if !meta.is_dir() {
+                return Some(Box::new(BufReader::new(file)));
             }
         }
     }

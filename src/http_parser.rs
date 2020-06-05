@@ -13,34 +13,39 @@ pub enum Status {
 
 /// Parse a raw HTTP request into a Request struct.
 pub fn parse(buffer: Vec<u8>) -> Result<Status> {
-    let method_len = loop {
-        if buffer.len() < 10 {
-            return Ok(Status::Partial(buffer));
-        }
+    if buffer.len() < 10 {
+        return Ok(Status::Partial(buffer));
+    }
+
+    let method_len = {
         match &buffer[0..3] {
-            b"GET" | b"PUT" => break 3,
+            b"GET" | b"PUT" => 3,
             b"HEA" | b"POS" => match &buffer[0..4] {
-                b"HEAD" | b"POST" => break 4,
-                _ => {}
+                b"HEAD" | b"POST" => 4,
+                _ => 0,
             },
             b"PAT" | b"TRA" => match &buffer[0..5] {
-                b"PATCH" | b"TRACE" => break 5,
-                _ => {}
+                b"PATCH" | b"TRACE" => 5,
+                _ => 0,
             },
             b"DEL" => {
                 if &buffer[0..6] == b"DELETE" {
-                    break 6;
+                    6
+                } else {
+                    0
                 }
             }
             b"CON" | b"OPT" => match &buffer[0..7] {
-                b"CONNECT" | b"OPTIONS" => break 7,
-                _ => {}
+                b"CONNECT" | b"OPTIONS" => 7,
+                _ => 0,
             },
-
-            _ => {}
+            _ => 0,
         }
-        return Err(error!("Unknown HTTP method"));
     };
+
+    if method_len == 0 {
+        return Err(error!("Unknown HTTP method"));
+    }
 
     let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
     if path_len.is_none() {
@@ -81,33 +86,24 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status> {
                 b'\r' | b'\n' | b' ' => return Err(error!("Error parsing HTTP: header key")),
                 _ => {}
             }
-        } else {
-            match *c {
-                b'\r' => {
-                    if buffer.get(pos + 1) == Some(&b'\n') {
-                        if name == Span(0, 0) {
-                            return Err(error!("Error parsing HTTP"));
-                        }
-
-                        headers.push((name, Span(start, pos)));
-                        name = Span(0, 0);
-                        iter.next();
-                        parsing_key = true;
-
-                        if buffer.get(pos + 2) == Some(&b'\r')
-                            && buffer.get(pos + 3) == Some(&b'\n')
-                        {
-                            pos += 4;
-                            saw_end = true;
-                            break;
-                        }
-
-                        start = pos + 2;
-                        pos += 1;
-                    }
-                }
-                _ => {}
+        } else if *c == b'\r' && buffer.get(pos + 1) == Some(&b'\n') {
+            if name == Span(0, 0) {
+                return Err(error!("Error parsing HTTP"));
             }
+
+            headers.push((name, Span(start, pos)));
+            name = Span(0, 0);
+            iter.next();
+            parsing_key = true;
+
+            if buffer.get(pos + 2) == Some(&b'\r') && buffer.get(pos + 3) == Some(&b'\n') {
+                pos += 4;
+                saw_end = true;
+                break;
+            }
+
+            start = pos + 2;
+            pos += 1;
         }
         pos += 1;
     }

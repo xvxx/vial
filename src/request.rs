@@ -220,7 +220,7 @@ impl Request {
     /// calling `request.arg("name")` will return `Some("peter")` when
     /// the request is `/names/peter`.
     pub fn arg(&self, name: &str) -> Option<&str> {
-        self.args.get(name).and_then(|v| Some(v.as_ref()))
+        self.args.get(name).map(|v| v.as_ref())
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -235,7 +235,7 @@ impl Request {
         self.headers
             .iter()
             .find(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
-            .and_then(|(_, v)| Some(v.from_buf(&self.buffer).trim()))
+            .map(|(_, v)| v.from_buf(&self.buffer).trim())
     }
 
     /// Was the given form value sent?
@@ -245,7 +245,7 @@ impl Request {
 
     /// Return a value from the POSTed form data.
     pub fn form(&self, name: &str) -> Option<&str> {
-        self.form.get(name).and_then(|s| Some(s.as_ref()))
+        self.form.get(name).map(|s| s.as_ref())
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -280,9 +280,9 @@ impl Request {
     pub fn query(&self, name: &str) -> Option<&str> {
         let idx = self.full_path().find('?')?;
         self.full_path()[idx + 1..]
-            .split("&")
+            .split('&')
             .filter_map(|s| {
-                if s.starts_with(name) && *&s[name.len()..].chars().next() == Some('=') {
+                if s.starts_with(name) && s[name.len()..].starts_with('=') {
                     Some(&s[name.len() + 1..])
                 } else {
                     None
