@@ -15,7 +15,7 @@ use std::{
 /// to do anything with it:
 ///
 /// ```rust
-/// # use vial::cache::TypeCache;
+/// # use vial::TypeCache;
 /// let cache = TypeCache::new();
 ///
 /// cache.set::<String>("Hi friends".to_string());

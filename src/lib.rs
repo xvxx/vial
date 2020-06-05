@@ -111,9 +111,7 @@
 //! To _really_ break the mold, you can split your site into different
 //! modules:
 //!
-//! ```no_run
-//! use vial;
-//!
+//! ```ignore
 //! mod wiki;
 //! mod blog;
 //!
@@ -134,7 +132,7 @@
 //! But hey, who wants to putz around with HTML when you can be writing
 //! **Rust**? Enable the `horror` feature and you're on your way:
 //!
-//! ```no_run
+//! ```ignore
 //! use vial::prelude::*;
 //!
 //! routes! {
@@ -176,8 +174,10 @@
 //!
 //! Install [cargo-watch]:
 //!
-//!     $ cargo install cargo-watch
-//!     $ cargo watch -x 'run --example hello_world'
+//! ```ignore
+//! $ cargo install cargo-watch
+//! $ cargo watch -x 'run --example hello_world'
+//! ```
 //!
 //! ## ~ performance ~
 //!

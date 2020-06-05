@@ -17,7 +17,7 @@
 ///
 ///    For example:
 ///
-/// ```no_run
+/// ```ignore
 /// mod wiki;
 /// mod blog {
 ///     vial::routes! {
@@ -35,7 +35,7 @@
 ///
 /// 4. Using a combination of the above:
 ///
-/// ```no_run
+/// ```ignore
 /// mod blog;
 /// mod wiki;
 ///
@@ -225,7 +225,7 @@ macro_rules! bundle_assets {
 /// In Vial, routes are defined within the `routes!` macro in this
 /// format:
 ///
-///     HTTP_METHOD ROUTE_PATTERN => ACTION;
+/// > `HTTP_METHOD ROUTE_PATTERN => ACTION;`
 ///
 /// The order in which routes are written matters - routes written
 /// first will be checked for matches first, meaning you can declare
@@ -316,6 +316,7 @@ macro_rules! bundle_assets {
 /// [Response](struct.Response.html):
 ///
 /// ```rust
+/// # use vial::Response;
 /// pub trait Responder {
 ///     fn to_response(self) -> Response;
 /// }
@@ -331,7 +332,13 @@ macro_rules! bundle_assets {
 ///
 #[macro_export]
 macro_rules! routes {
-    ( $($method:ident $path:expr => $body:expr;)* ) => {
+    (
+        $(#![filter($($all_filter:ident),+)])*
+
+        $(
+            $(#[filter($($action_filter:ident),+)])*
+            $method:ident $path:expr => $body:expr;)*
+        ) => {
         fn vial_check_method() {
             #![allow(non_snake_case)]
             fn GET() {}
@@ -343,14 +350,37 @@ macro_rules! routes {
             $($method();)*
         }
 
+        fn vial_filter(req: &mut ::vial::Request) -> Option<::vial::Response> {
+            $($(
+                if let Some(res) = $all_filter(req.into()) {
+                    return Some(res);
+                }
+            )+)*
+            None
+        }
+
         pub fn vial_add_to_router(router: &mut ::vial::Router) {
-            $( router.insert(::vial::Method::$method, $path, |req| {
-                use ::vial::Responder;
+            $( router.insert(::vial::Method::$method, $path, |mut req| {
+                use ::vial::{Request, Response, Responder};
+
+                let action_filters: Vec<fn(&mut Request) -> Option<Response>> =
+                    vec![$($($action_filter),+)*];
+
                 #[cfg(not(feature = "state"))]
-                let b: fn(::vial::Request) -> _ = $body;
+                let b: fn(Request) -> _ = $body;
                 #[cfg(feature = "state")]
                 let b: fn(::vial::State<_>) -> _ = $body;
-                b(req.into()).to_response()
+                // #[cfg(feature = "state")]
+                // let mut req: ::vial::State<_> = req.into();
+
+                if let Some(res) = vial_filter(&mut req) {
+                    res
+                } else {
+                    action_filters
+                        .iter()
+                        .find_map(|filter| filter(&mut req))
+                        .unwrap_or_else(|| b(req.into()).to_response())
+                }
             }); )*
         }
     };
