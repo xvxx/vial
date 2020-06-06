@@ -101,7 +101,7 @@ pub fn normalize_path(path: &str) -> Option<String> {
     if let Some(root) = asset_dir() {
         Some(format!(
             "{}/{}",
-            root,
+            root.trim_end_matches('/'),
             path.trim_start_matches(root)
                 .trim_start_matches('.')
                 .trim_start_matches('/')
