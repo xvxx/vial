@@ -175,13 +175,14 @@ _**Please note:** The list above is a work-in-progress._
 
 ## ~ T0D0 ~
 
-- [ ] tests
-- [ ] `before_filter`
+- [ ] example for each major feature
+- [ ] tests for each major feature
+- [ ] fix iphone text-size
 
 ## ~ testing ~
 
-Tests are currently in-progress, specifically the doctests. But you
-can run them on a recent version of stable **Rust** with `make test`.
+Tests are a work-in-progress but can be run on a recent version of
+stable **Rust** with `make test`.
 
 ## ~ license ~
 
