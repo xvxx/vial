@@ -93,13 +93,12 @@ rendering, there are three main parts to a **Vial** application:
   either a [Response] or a [Responder], then map them to URLs and
   URL patterns using the [vial::routes!][routes api] macro.
 
-- **[Request]**: The [Request] object provides information about the
+- **[Requests]**: The [Request] object provides information about each
   client's humble request.
 
-- **[Response]** and **[Responder]**: Your actions return either a
-  [Response] object, which can be easily built, or they return a type
-  that implements the [Responder] trait which is then converted into a
-  [Response] and delivered to the waiting client.
+- **[Responses]**: Your actions return either a [Response] struct,
+  which can be easily built, or a type that implements the [Responder]
+  trait, like `String` or `Option<Response>`.
 
 ## Getting Started
 
@@ -132,8 +131,8 @@ it did. Congratulations! You're on your way.
 ## Routing
 
 Routing is the real gravy and potatoes of any web framework, if you
-think about it. In **Vial**, routes are defined with the `routes!`
-macro in this format:
+think about it. In **Vial**, routes are defined with the
+[vial::routes!][routes api] macro in this format:
 
     HTTP_METHOD ROUTE_PATTERN => ACTION;
 
@@ -163,7 +162,7 @@ that point to `"/"`, but only the first one defined will ever match.
 3. `"/*name"` — This will match everything, including `/` and `.`
 
 In the three examples above, calling `request.arg("name")` in an
-`ACTION` will return `Some(&str)`.
+Action will return `Some(&str)`.
 
 Note that you can have multiple parameters in the same route, as long
 as the "match all" pattern occurs last:
@@ -230,6 +229,87 @@ These types implement `Responder` by default:
 - `Option<impl Responder>` - 404 on `None`
 - `Result<impl Responder, Error>` - 500 on Error
 
+### Filters
+
+Filters are functions that are run before actions. They can either
+modify the existing request before it's sent to your action, or they
+can return a `Response` that will be delivered to the client without any
+actions being called:
+
+```rust
+fn(req: &mut Request) -> Option<Response>;
+```
+
+Like Rust's attributes, they can either apply to all routes defined in
+the same `vial::routes!` macro call or just a specific route:
+
+```rust
+use std::sync::atomic::{AtomicUsize, Ordering};
+use vial::prelude::*;
+
+routes! {
+    // `count` will run before all routes in this block
+    #![filter(count)]
+
+    GET "/" => |_| "Hey there!";
+    GET "/hits" => hits;
+
+    // `count` will run again when /double is visited
+    #[filter(count)]
+    GET "/double" => double;
+
+    // `echo` will be called when /echo is visited
+    #[filter(echo)]
+    GET "/echo" => |_| "Is there an echo in here?";
+}
+
+fn hits(req: Request) -> impl Responder {
+    format!("Hits: {}", req.counter().count())
+}
+
+fn double(req: Request) -> impl Responder {
+    "Double trouble."
+}
+
+fn echo(req: &mut Request) -> Option<Response> {
+    println!("{:#?}", req);
+    None
+}
+
+fn count(req: &mut Request) -> Option<Response> {
+    req.counter().incr();
+    None
+}
+
+#[derive(Debug, Default)]
+struct Counter(AtomicUsize);
+
+impl Counter {
+    fn count(&self) -> String {
+        self.0.load(Ordering::Relaxed).to_string()
+    }
+
+    fn incr(&self) {
+        self.0.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+trait WithCounter {
+    fn counter(&self) -> &Counter;
+}
+
+impl WithCounter for Request {
+    fn counter(&self) -> &Counter {
+        self.state::<Counter>()
+    }
+}
+
+fn main() {
+    use_state!(Counter::default());
+    run!().unwrap();
+}
+```
+
 ### Route Modules
 
 Routes can be defined in different modules and combined together with
@@ -255,7 +335,7 @@ fn main() {
 
 ## Requests
 
-When a route matches and an `ACTION` is called, it's passed a
+When a route matches and an Action is called, it's passed a
 [Request] object. `Request` contains information about
 the request itself, as well as a number of helper methods.
 
@@ -492,7 +572,7 @@ fn search(req: Request) -> Option<impl Responder> {
 Empty responses with status codes can be created from `usize`:
 
 ```rust
-fn fourohfour(_req: Request) -> impl Responder {
+fn fourohno(_req: Request) -> impl Responder {
     Response::from(404)
 }
 
@@ -855,10 +935,10 @@ _"Pro Tip": Coming soon._
 
 _"Pro Tip": Coming soon._
 
-[request]: #Requests
-[response]: #Responses
-[responder]: #Responses
-[routing]: #Routing
+[request]: #requests
+[response]: #responses
+[responder]: #responses
+[routing]: #routing
 [response api]: https://docs.rs/vial/latest/vial/struct.Response.html
 [routes api]: https://docs.rs/vial/latest/vial/macro.routes.html
 [asset_dir api]: https://docs.rs/vial/latest/vial/macro.asset_dir.html

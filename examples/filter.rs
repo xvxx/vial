@@ -2,12 +2,17 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use vial::prelude::*;
 
 routes! {
+    // `count` will run before all routes in this block
     #![filter(count)]
 
     GET "/" => |_| "Hey there!";
     GET "/hits" => hits;
+
+    // `count` will run again when /double is visited
     #[filter(count)]
     GET "/double" => double;
+
+    // `echo` will be called when /echo is visited
     #[filter(echo)]
     GET "/echo" => |_| "Is there an echo in here?";
 }
