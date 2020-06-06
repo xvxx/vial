@@ -17,7 +17,10 @@ macro_rules! test {
 
             let req = match parse($buf.to_vec()).unwrap() {
                 Status::Complete(request) => request,
-                _ => panic!("Expected Status::Complete"),
+                Status::Partial(buf) => panic!(
+                    "Expected Status::Complete, got Status::Partial({})",
+                    buf.len()
+                ),
             };
             closure(req);
 
@@ -31,7 +34,7 @@ macro_rules! test {
         fn $name() {
             use vial::http_parser::parse;
             match parse($buf.to_vec()) {
-                Ok(..) => panic!("Expected http_parser::Error"),
+                o @ Ok(..) => panic!("Expected http_parser::Error, got {:?}", o),
                 Err(e) => assert_eq!(e, $err),
             }
         }
@@ -2752,7 +2755,7 @@ test! {
         assert_eq!(req.method(), "GET");
         assert_eq!(req.full_path(), "/");
         assert_eq!(req.header("Host").unwrap(), "foo.com");
-        assert_eq!(req.header("User-Agent").unwrap(), "????/1.0");
+        assert_eq!(req.header("User-Agent").unwrap(), "?");
     }
 }
 

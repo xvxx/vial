@@ -12,11 +12,27 @@ pub enum Status {
 }
 
 /// Parse a raw HTTP request into a Request struct.
-pub fn parse(buffer: Vec<u8>) -> Result<Status, Error> {
-    if buffer.len() < 10 {
-        return Ok(Status::Partial(buffer));
+pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
+    let mut pos = 0;
+
+    // clear preceding \n or \r
+    while !buffer.is_empty() && buffer[0].is_ascii_whitespace() {
+        buffer.remove(0);
     }
 
+    macro_rules! need {
+        ($size:expr) => {
+            if buffer[pos..].len() < $size {
+                return Ok(Status::Partial(buffer));
+            } else {
+                true
+            }
+        };
+    }
+
+    need!(10);
+
+    // Parse method: GET / HTTP/1.1
     let method_len = {
         match &buffer[0..3] {
             b"GET" | b"PUT" => 3,
@@ -47,27 +63,63 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status, Error> {
         return Err(Error::UnknownHTTPMethod("?".into()));
     }
 
+    if buffer[method_len] != b' ' {
+        return Err(Error::ParseError);
+    }
+
+    // Parse path: GET / HTTP/1.1
     let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
     if path_len.is_none() {
         return Ok(Status::Partial(buffer));
     }
     let path_len = path_len.unwrap();
-    let pos = method_len + 1 + path_len + 1;
-    if buffer.len() <= pos + 10 {
-        return Ok(Status::Partial(buffer));
+    pos = method_len + 1 + path_len + 1;
+
+    // Parse version: GET / HTTP/1.1
+    for c in b"HTTP/1.1" {
+        if buffer.len() <= pos {
+            return Ok(Status::Partial(buffer));
+        } else if buffer[pos] == *c {
+            pos += 1;
+        } else {
+            return Err(Error::ParseVersion);
+        }
     }
-    if &buffer[pos..pos + 8] != b"HTTP/1.1" {
-        return Err(Error::ParseVersion);
-    }
-    let pos = pos + 8;
-    if &buffer[pos..pos + 2] != b"\r\n" {
+
+    // Parse first line break
+    if need!(1) && buffer[pos] == b'\n' {
+        pos += 1;
+    } else if need!(2) && &buffer[pos..pos + 2] == b"\r\n" {
+        pos += 2;
+    } else {
         return Err(Error::ExpectedCRLF);
     }
 
-    let mut pos = pos + 2;
+    // End here if there are no headers.
+    if (need!(1) && buffer[pos] == b'\n') || (need!(2) && &buffer[pos..pos + 2] == b"\r\n") {
+        let method = Span(0, method_len);
+        let full_path = Span(method_len + 1, method_len + 1 + path_len);
+        // path doesn't include ?query
+        let path = if let Some(idx) = full_path.from_buf(&buffer).find('?') {
+            Span(method_len + 1, method_len + 1 + idx)
+        } else {
+            full_path
+        };
+
+        return Ok(Status::Complete(Request::new(
+            method,
+            full_path,
+            path,
+            Vec::new(),
+            Span::new(),
+            buffer,
+        )));
+    }
+
+    // Parse headers
     let mut start = pos;
     let mut headers = Vec::with_capacity(16);
-    let mut name = Span(0, 0);
+    let mut name = Span::new();
     let mut saw_end = false;
     let mut parsing_key = true;
 
@@ -83,24 +135,33 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status, Error> {
                 b'\r' | b'\n' | b' ' => return Err(Error::ParseHeaderName),
                 _ => {}
             }
-        } else if *c == b'\r' && buffer.get(pos + 1) == Some(&b'\n') {
-            if name == Span(0, 0) {
+        } else if *c == b'\n' || (*c == b'\r' && buffer.get(pos + 1) == Some(&b'\n')) {
+            if name.is_empty() {
                 return Err(Error::ParseError);
             }
 
             headers.push((name, Span(start, pos)));
-            name = Span(0, 0);
+            name = Span::new();
             iter.next();
             parsing_key = true;
 
-            if buffer.get(pos + 2) == Some(&b'\r') && buffer.get(pos + 3) == Some(&b'\n') {
-                pos += 4;
+            // skip \r\n or \n
+            pos += if *c == b'\n' { 1 } else { 2 };
+
+            if buffer.get(pos) == Some(&b'\n')
+                || (buffer.get(pos) == Some(&b'\r') && buffer.get(pos + 1) == Some(&b'\n'))
+            {
+                pos += if buffer.get(pos) == Some(&b'\n') {
+                    1
+                } else {
+                    2
+                };
                 saw_end = true;
                 break;
             }
 
-            start = pos + 2;
-            pos += 1;
+            start = pos;
+            continue;
         }
         pos += 1;
     }
