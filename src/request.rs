@@ -7,6 +7,16 @@ use std::{collections::HashMap, fmt, io::Read, mem, net::TcpStream, rc::Rc, str}
 pub struct Span(pub usize, pub usize);
 
 impl Span {
+    /// Create a new, empty Span.
+    pub fn new() -> Span {
+        Span(0, 0)
+    }
+
+    /// Is this span empty?
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0 && self.1 == 0
+    }
+
     /// Find and return the str this span represents from the given
     /// buffer, which should be the raw HTTP request.
     pub fn from_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
@@ -108,10 +118,10 @@ impl Request {
     /// Produce an empty Request.
     pub fn default() -> Request {
         Request {
-            path: Span(0, 0),
-            full_path: Span(0, 0),
-            method: Span(0, 0),
-            body: Span(0, 0),
+            path: Span::new(),
+            full_path: Span::new(),
+            method: Span::new(),
+            body: Span::new(),
             headers: Vec::new(),
             args: HashMap::new(),
             form: HashMap::new(),
