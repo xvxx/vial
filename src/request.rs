@@ -48,7 +48,6 @@ impl Span {
 /// - **[set_path(&str, &str)](#method.set_path)**
 /// - **[set_method(&str, &str)](#method.set_method)**
 /// - **[set_body(&str, &str)](#method.set_body)**
-///
 pub struct Request {
     /// The raw request.
     buffer: Vec<u8>,
@@ -241,6 +240,13 @@ impl Request {
     /// a `filter` or in a test.
     pub fn set_arg(&mut self, name: &str, value: &str) {
         self.args.insert(name.to_string(), value.to_string());
+    }
+
+    #[doc(hidden)]
+    /// For testing. You should use [`header()`](#method.header) to
+    /// get a specific header from this Request.
+    pub fn headers(&self) -> &Vec<(Span, Span)> {
+        &self.headers
     }
 
     /// Get a header value. `name` is case insensitive.

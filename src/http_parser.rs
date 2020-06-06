@@ -1,18 +1,18 @@
-use {
-    crate::{request::Span, Request, Result},
-    std::str,
-};
+#![doc(hidden)]
+
+use crate::{request::Span, Error, Request};
 
 /// Status of parsing an HTTP request. The request may have been only
 /// partial, in which case the buffer is returned in `Partial` so we
 /// can continue reading from the socket.
+#[derive(Debug)]
 pub enum Status {
     Complete(Request),
     Partial(Vec<u8>),
 }
 
 /// Parse a raw HTTP request into a Request struct.
-pub fn parse(buffer: Vec<u8>) -> Result<Status> {
+pub fn parse(buffer: Vec<u8>) -> Result<Status, Error> {
     if buffer.len() < 10 {
         return Ok(Status::Partial(buffer));
     }
@@ -44,7 +44,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status> {
     };
 
     if method_len == 0 {
-        return Err(error!("Unknown HTTP method"));
+        return Err(Error::UnknownHTTPMethod("?".into()));
     }
 
     let path_len = buffer[method_len + 1..].iter().position(|c| *c == b' ');
@@ -57,14 +57,11 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status> {
         return Ok(Status::Partial(buffer));
     }
     if &buffer[pos..pos + 8] != b"HTTP/1.1" {
-        return Err(error!(
-            "Error parsing HTTP: {}",
-            str::from_utf8(&buffer).unwrap_or("???")
-        ));
+        return Err(Error::ParseVersion);
     }
     let pos = pos + 8;
     if &buffer[pos..pos + 2] != b"\r\n" {
-        return Err(error!("Error parsing HTTP: expected \\r\\n"));
+        return Err(Error::ExpectedCRLF);
     }
 
     let mut pos = pos + 2;
@@ -83,12 +80,12 @@ pub fn parse(buffer: Vec<u8>) -> Result<Status> {
                     start = pos + 1;
                     parsing_key = false;
                 }
-                b'\r' | b'\n' | b' ' => return Err(error!("Error parsing HTTP: header key")),
+                b'\r' | b'\n' | b' ' => return Err(Error::ParseHeaderName),
                 _ => {}
             }
         } else if *c == b'\r' && buffer.get(pos + 1) == Some(&b'\n') {
             if name == Span(0, 0) {
-                return Err(error!("Error parsing HTTP"));
+                return Err(Error::ParseError);
             }
 
             headers.push((name, Span(start, pos)));

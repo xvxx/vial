@@ -183,7 +183,7 @@
 //! insisted.
 //!
 
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 #![allow(clippy::needless_doctest_main)]
 #![allow(clippy::large_enum_variant)]
 
@@ -193,7 +193,7 @@ pub mod asset;
 mod bundler;
 mod cache;
 mod error;
-mod http_parser;
+pub mod http_parser;
 mod method;
 pub mod prelude;
 mod request;
