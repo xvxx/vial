@@ -59,8 +59,8 @@ impl Server {
         let path = req.path().to_string();
         let response = self.build_response(req);
 
-        println!("{} {} {}", method, response.code, path);
-        if response.code == 500 {
+        println!("{} {} {}", method, response.code(), path);
+        if response.code() == 500 {
             eprintln!("{}", response.body);
         }
 

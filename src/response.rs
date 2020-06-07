@@ -30,11 +30,11 @@ use {
 /// [`header()`](#method.header) to send plain text.
 pub struct Response {
     /// HTTP Status Code
-    pub code: usize,
+    code: usize,
     /// The headers we're sending back.
     pub headers: HashMap<String, String>,
     /// Unclear why we need this...
-    pub content_type: String,
+    content_type: String,
 
     /// TODO: remove this
     pub body: String,
@@ -46,6 +46,21 @@ pub struct Response {
     pub is_reader: bool,
 }
 
+impl PartialEq for Response {
+    fn eq(&self, other: &Self) -> bool {
+        self.code == other.code
+            && self.headers == other.headers
+            && self.content_type == other.content_type
+            && if self.is_reader {
+                other.is_reader
+            } else if self.body.is_empty() {
+                self.buf == other.buf
+            } else {
+                self.body == other.body
+            }
+    }
+}
+
 impl fmt::Debug for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Response")
@@ -53,6 +68,16 @@ impl fmt::Debug for Response {
             .field("content_type", &self.content_type)
             .field("body", &self.body)
             .finish()
+    }
+}
+
+impl fmt::Display for Response {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if !self.buf.is_empty() {
+            write!(f, "{}", String::from_utf8_lossy(&self.buf))
+        } else {
+            write!(f, "{}", self.body)
+        }
     }
 }
 
@@ -76,13 +101,28 @@ impl Response {
         Response::default()
     }
 
+    /// HTTP Status Code
+    pub fn code(&self) -> usize {
+        self.code
+    }
+
+    /// Either the inferred or user-set Content-Type for this Response.
+    pub fn content_type(&self) -> &str {
+        self.content_type.as_ref()
+    }
+
+    /// Response body.
+    pub fn body(&self) -> &str {
+        self.body.as_ref()
+    }
+
     /// Take a peek at all the headers for this response.
     pub fn headers(&self) -> &HashMap<String, String> {
         &self.headers
     }
 
     /// Get an individual header. `name` is case insensitive.
-    pub fn header(&mut self, name: &str) -> Option<&String> {
+    pub fn header(&self, name: &str) -> Option<&String> {
         self.headers.get(&name.to_lowercase())
     }
 
@@ -134,6 +174,11 @@ impl Response {
     /// Creates a new `text/plain` Response with the given body.
     pub fn from_text<S: AsRef<str>>(text: S) -> Response {
         Response::default().with_text(text)
+    }
+
+    /// Creates a new response with the given HTTP Status Code.
+    pub fn from_code(code: usize) -> Response {
+        Response::default().with_code(code)
     }
 
     /// Creates a new response with the given HTTP Status Code.
@@ -276,16 +321,6 @@ impl Response {
         w.flush()?;
 
         Ok(())
-    }
-}
-
-impl fmt::Display for Response {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if !self.buf.is_empty() {
-            write!(f, "{}", String::from_utf8_lossy(&self.buf))
-        } else {
-            write!(f, "{}", self.body)
-        }
     }
 }
 
