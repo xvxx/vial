@@ -96,17 +96,10 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     // End here if there are no headers.
     if (need!(1) && buffer[pos] == b'\n') || (need!(2) && &buffer[pos..pos + 2] == b"\r\n") {
         let method = Span(0, method_len);
-        let full_path = Span(method_len + 1, method_len + 1 + path_len);
-        // path doesn't include ?query
-        let path = if let Some(idx) = full_path.from_buf(&buffer).find('?') {
-            Span(method_len + 1, method_len + 1 + idx)
-        } else {
-            full_path
-        };
+        let path = Span(method_len + 1, method_len + 1 + path_len);
 
         return Ok(Status::Complete(Request::new(
             method,
-            full_path,
             path,
             Vec::new(),
             Span::new(),
@@ -183,13 +176,7 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     }
 
     let method = Span(0, method_len);
-    let full_path = Span(method_len + 1, method_len + 1 + path_len);
-    // path doesn't include ?query
-    let path = if let Some(idx) = full_path.from_buf(&buffer).find('?') {
-        Span(method_len + 1, method_len + 1 + idx)
-    } else {
-        full_path
-    };
+    let path = Span(method_len + 1, method_len + 1 + path_len);
     let body = if content_length > 0 {
         Span(pos, pos + buffer.len())
     } else {
@@ -197,6 +184,6 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     };
 
     Ok(Status::Complete(Request::new(
-        method, full_path, path, headers, body, buffer,
+        method, path, headers, body, buffer,
     )))
 }

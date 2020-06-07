@@ -66,14 +66,17 @@ pub struct Request {
     /// The raw request.
     buffer: Vec<u8>,
 
-    /// These all reference `buffer`.
-    /// Path starts with `/` and doesn't include `?query`.
+    /// Includes `?query` and starts with `/`.
     path: Span,
-    /// Same as `path` but includes `?query`.
-    full_path: Span,
+
+    /// HTTP Method
     method: Span,
-    body: Span,
+
+    /// Sent Headers
     headers: Vec<(Span, Span)>,
+
+    /// Request Body (POST)
+    body: Span,
 
     /// Maps of form and URL args, percent decoded.
     args: HashMap<String, String>,
@@ -92,7 +95,7 @@ impl fmt::Debug for Request {
         f.debug_struct("Request")
             .field("method", &self.method.from_buf(&self.buffer))
             .field("path", &self.path.from_buf(&self.buffer))
-            .field("full_path", &self.full_path.from_buf(&self.buffer))
+            .field("full_path", &self.path.from_buf(&self.buffer))
             .field("headers", &headers)
             .finish()
     }
@@ -103,7 +106,6 @@ impl Request {
     /// `default()` to get an empty `Request`.
     pub fn new(
         method: Span,
-        full_path: Span,
         path: Span,
         headers: Vec<(Span, Span)>,
         body: Span,
@@ -111,7 +113,6 @@ impl Request {
     ) -> Request {
         Request {
             method,
-            full_path,
             path,
             headers,
             body,
@@ -123,7 +124,6 @@ impl Request {
     pub fn default() -> Request {
         Request {
             path: Span::new(),
-            full_path: Span::new(),
             method: Span::new(),
             body: Span::new(),
             headers: Vec::new(),
@@ -174,12 +174,17 @@ impl Request {
 
     /// Path requested, starting with `/` and not including `?query`.
     pub fn path(&self) -> &str {
-        self.path.from_buf(&self.buffer)
+        let span = if let Some(idx) = self.full_path().find('?') {
+            Span(self.path.0, self.path.0 + idx)
+        } else {
+            self.path
+        };
+        span.from_buf(&self.buffer)
     }
 
     /// Full path requested, starting with `/` and including `?query`.
     pub fn full_path(&self) -> &str {
-        self.full_path.from_buf(&self.buffer)
+        self.path.from_buf(&self.buffer)
     }
 
     /// Create a request from an arbitrary path. Used in testing.
@@ -190,14 +195,8 @@ impl Request {
     /// Give a request an arbitrary `path`. Can be used in tests or
     /// with `filter`.
     pub fn set_path(&mut self, path: &str) {
-        self.full_path = Span(self.buffer.len(), self.buffer.len() + path.len());
+        self.path = Span(self.buffer.len(), self.buffer.len() + path.len());
         self.buffer.extend(path.as_bytes());
-        // path doesn't include ?query
-        if let Some(idx) = self.full_path().find('?') {
-            self.path = Span(self.full_path.0, self.full_path.0 + idx)
-        } else {
-            self.path = self.full_path;
-        }
     }
 
     /// Give a request an arbitrary `path`. Can be used in tests or
