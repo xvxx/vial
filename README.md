@@ -192,7 +192,6 @@ Right now the easiest way is to use [cargo-watch]:
   - [ ] response.rs
   - [ ] routes.rs TODO: *
   - [ ] filters.rs TODO: REMOVE STATE
-  - [ ] text.rs
 
 ## ~ testing ~
 
