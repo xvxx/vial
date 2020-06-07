@@ -253,8 +253,8 @@ impl Request {
 
     /// Replace or set a new value for an arbitrary URL argument from
     /// a `filter` or in a test.
-    pub fn set_arg(&mut self, name: &str, value: &str) {
-        self.args.insert(name.to_string(), value.to_string());
+    pub fn set_arg(&mut self, name: String, value: String) {
+        self.args.insert(name, value);
     }
 
     #[doc(hidden)]

@@ -7,9 +7,13 @@
 //! - [`Router`](struct.Router.html)
 //! - [`run!`](macro.run.html)
 //! - [`routes!`](macro.routes.html)
+//! - [`asset_dir!`](macro.asset_dir.html)
+//!
+//! With the `state` feature enabled, it also pulls in:
+//! - [`use_state!`](macro.use_state.html)
 
 pub use crate::{
-    asset, method::Method, request::Request, responder::Responder, response::Response,
+    asset, asset_dir, method::Method, request::Request, responder::Responder, response::Response,
     router::Router, routes, run,
 };
 

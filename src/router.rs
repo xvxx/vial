@@ -49,16 +49,21 @@ impl Router {
                     }
                     if pattern[i].starts_with(':') && !req_part.is_empty() {
                         req.set_arg(
-                            pattern[i].trim_start_matches(':'),
-                            &percent_decode(req_part.as_bytes()).decode_utf8_lossy(),
+                            pattern[i].trim_start_matches(':').to_string(),
+                            percent_decode(req_part.as_bytes())
+                                .decode_utf8_lossy()
+                                .to_string(),
                         );
                         continue;
                     } else if pattern[i].starts_with('*') && !req_part.is_empty() {
-                        req.set_arg(
-                            pattern[i].trim_start_matches('*'),
-                            &percent_decode(req_parts[i..].join("/").as_bytes())
-                                .decode_utf8_lossy(),
-                        );
+                        if let Some(idx) = req.path().find(&req_parts[i]) {
+                            req.set_arg(
+                                pattern[i].trim_start_matches('*').to_string(),
+                                percent_decode(req.path()[idx..].as_bytes())
+                                    .decode_utf8_lossy()
+                                    .to_string(),
+                            );
+                        }
                         return Some(action);
                     } else if *req_part == pattern[i] {
                         continue;
@@ -77,7 +82,13 @@ impl Router {
         pattern
             .trim_matches('/')
             .split('/')
-            .flat_map(|s| s.split('.').map(|s| s.to_string()))
+            .flat_map(|s| {
+                if let Some(idx) = s.find('.') {
+                    vec![s[..idx].to_string(), format!("{}", &s[idx..])]
+                } else {
+                    vec![s.to_string()]
+                }
+            })
             .collect::<Vec<_>>()
     }
 
