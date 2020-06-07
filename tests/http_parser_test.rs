@@ -15,10 +15,7 @@ fn fixture(name: &str) -> String {
 
 fn parse_fixture(name: &str) -> Request {
     match parse(fixture(name).as_bytes().to_vec()).unwrap() {
-        Status::Complete(mut request) => {
-            request.parse_form();
-            request
-        }
+        Status::Complete(request) => request,
         _ => panic!("Expected Status::Complete"),
     }
 }
@@ -56,7 +53,6 @@ fn parses_big_GET() {
     let request = parse_fixture("tests/http/big_GET.txt");
     assert_eq!("/big", request.path());
     assert_eq!("GET", request.method());
-    println!("REQ: {:?}", request);
     assert!(request.header("X-SOME-HEADER").is_some());
     assert!(request.header("X-SOMEOTHER-HEADER").is_some());
     assert_eq!(request.header("X-ONEMORE-HEADER").unwrap(),
@@ -66,7 +62,8 @@ fn parses_big_GET() {
 
 #[test]
 fn parses_simple_POST() {
-    let request = parse_fixture("tests/http/simple_POST.txt");
+    let fixture = fs::File::open("tests/http/simple_POST.txt").unwrap();
+    let request = Request::from_reader(fixture).unwrap();
     assert_eq!("/cgi-bin/process.cgi", request.path());
     assert_eq!("POST", request.method());
     assert_eq!(Some("hi there"), request.form("content"));
