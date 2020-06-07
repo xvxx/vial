@@ -1,0 +1,15 @@
+POST / HTTP/1.1
+Host: 0.0.0.0:7667
+Connection: keep-alive
+Content-Length: 21
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+Origin: http://0.0.0.0:7667
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Referer: http://0.0.0.0:7667/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9
+
+name=Bobert&age=50-99
