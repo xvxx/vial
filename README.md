@@ -188,8 +188,6 @@ Right now the easiest way is to use [cargo-watch]:
 
 - [ ] fix iphone text-size
 - [ ] example for each major feature
-  - [ ] redirect.rs
-  - [ ] query.rs
   - [ ] responder.rs
   - [ ] response.rs
   - [ ] routes.rs TODO: *
