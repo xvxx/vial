@@ -28,11 +28,13 @@ To learn more, keep reading or visit one of these links:
 
 ---
 
-**⚠️ Status:** Vial is currently in early development. It is being
+**⚠ Status:** Vial is currently in early development. It is being
 developed alongside [deadwiki], but that is _strictly_ for personal
 use. Please proceed with caution and wear a hart hat at all times.
 
 ---
+
+## ~ getting started ~
 
 To get started, just add `vial` to your `Cargo.toml`:
 
@@ -40,6 +42,9 @@ To get started, just add `vial` to your `Cargo.toml`:
 [dependencies]
 vial = "0.1"
 ```
+
+Now you can `use vial::prelude::*;` in your application to pull in the
+common types, or just use the crate like any other.
 
 ## ~ hello world ~
 
@@ -148,13 +153,6 @@ fn main() {
 }
 ```
 
-## ~ hot reloading ~
-
-Install [cargo-watch]:
-
-    $ cargo install cargo-watch
-    $ cargo watch -x 'run --example hello_world'
-
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
@@ -163,26 +161,44 @@ you can activate for enhanced productivity:
 
 <img src="./docs/img/alice.jpeg" alt="Alice" align="right" width="250" />
 
-- [x] **state**: Global State
-- [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
+- [x] **state**: Global state you set with `vial::use_state!(T)` and
+      reference with `request.state::<T>()`.
+- [x] **horror**: Enable [horrorshow]: A small & fast macro-based HTML
+      builder.
 - [ ] **cookies**: Cookie monster!
-- [ ] **sessions**: Session support
-- [ ] **multipart**: Multipart form data (file uploads)
+- [ ] **sessions**: Session support.
+- [ ] **uploads**: Multipart form data (file uploads)
 - [ ] **log**: Access logging
 - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 
 _**Please note:** The list above is a work-in-progress._
 
+## ~ hot reloading ~
+
+Your assets will automatically get reloaded in debug mode, complete
+with proper ETag support, but you probably want to refresh your Rust
+code, too.
+
+Right now the easiest way is to use [cargo-watch]:
+
+    $ cargo install cargo-watch
+    $ cargo watch -x 'run --example hello_world'
+
 ## ~ T0D0 ~
 
 - [ ] example for each major feature
-- [ ] tests for each major feature
 - [ ] fix iphone text-size
 
 ## ~ testing ~
 
-Tests are a work-in-progress but can be run on a recent version of
-stable **Rust** with `make test`.
+Tests can be run on a recent version of stable **Rust** with
+`make test`. We also run tests on commits with [GitHub
+Actions][gh-build-action].
+
+**Vial** prefers to put everything in `tests/` rather than include
+tests directly in `src/*.rs` files. To access private APIs in tests,
+we make them `pub` and use `#[doc(hidden)]`. Your cooperation is
+appreciated.
 
 ## ~ license ~
 
@@ -196,3 +212,4 @@ stable **Rust** with `make test`.
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrowshow]: https://github.com/Stebalien/horrorshow-rs
 [deadwiki]: https://github.com/xvxx/deadwiki
+[gh-build-action]: https://github.com/xvxx/vial/actions?query=workflow%3Abuild
