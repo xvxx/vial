@@ -4,7 +4,13 @@ const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
 
 /// Content type for a file based on its extension.
 pub fn content_type(path: &str) -> &'static str {
-    match path.split('.').last().unwrap_or("?") {
+    match path
+        .split('.')
+        .last()
+        .unwrap_or("?")
+        .to_lowercase()
+        .as_ref()
+    {
         "gif" => "image/gif",
         "jpg" => "image/jpeg",
         "jpeg" => "image/jpeg",

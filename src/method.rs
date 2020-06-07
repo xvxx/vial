@@ -2,7 +2,7 @@ use crate::Error;
 
 /// Method is just an enum representing the HTTP methods Vial
 /// supports. Which is not all of them.
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 pub enum Method {
     /// HTTP GET
     GET,

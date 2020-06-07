@@ -1,5 +1,3 @@
-#![doc(hidden)]
-
 use crate::{request::Span, Error, Request};
 
 /// Status of parsing an HTTP request. The request may have been only

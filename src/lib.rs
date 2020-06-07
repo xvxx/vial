@@ -193,7 +193,6 @@ pub mod asset;
 mod bundler;
 mod cache;
 mod error;
-pub mod http_parser;
 mod method;
 pub mod prelude;
 mod request;
@@ -201,7 +200,12 @@ mod responder;
 mod response;
 mod router;
 mod server;
-mod util;
+
+// used in tests
+#[doc(hidden)]
+pub mod http_parser;
+#[doc(hidden)]
+pub mod util;
 
 #[cfg(feature = "state")]
 pub mod storage;
