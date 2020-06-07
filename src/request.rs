@@ -163,7 +163,7 @@ impl Request {
                 }
                 req.buffer.extend_from_slice(&read_buf[..n]);
             }
-            req.body.1 = req.body.0 + size - 1;
+            req.body.1 = req.body.0 + size;
             req.parse_form();
         }
 
