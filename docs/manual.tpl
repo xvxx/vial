@@ -119,7 +119,6 @@
         line-height: 1.2;
       }
       p {
-        text-align: justify;
         font-size: 110%;
       }
 
