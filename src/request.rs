@@ -22,7 +22,9 @@ impl Span {
     /// Find and return the str this span represents from the given
     /// buffer, which should be the raw HTTP request.
     pub fn from_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
-        if self.1 >= self.0 && self.1 <= buf.len() {
+        if self.is_empty() {
+            ""
+        } else if self.1 >= self.0 && self.1 <= buf.len() {
             str::from_utf8(&buf[self.0..self.1]).unwrap_or("?")
         } else {
             "?"
@@ -268,7 +270,7 @@ impl Request {
         self.headers
             .iter()
             .find(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
-            .map(|(_, v)| v.from_buf(&self.buffer).trim())
+            .map(|(_, v)| v.from_buf(&self.buffer).trim_end())
     }
 
     /// Was the given form value sent?
@@ -306,7 +308,7 @@ impl Request {
     }
 
     /// Was the given query value sent?
-    pub fn has_query(&mut self, name: &str) -> bool {
+    pub fn has_query(&self, name: &str) -> bool {
         self.query(name).is_some()
     }
 

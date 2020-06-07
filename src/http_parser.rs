@@ -120,50 +120,60 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     let mut name = Span::new();
     let mut saw_end = false;
     let mut parsing_key = true;
+    let mut content_length = 0;
 
-    let mut iter = buffer[pos..].iter();
-    while let Some(c) = iter.next() {
+    while let Some(c) = buffer.get(pos) {
         if parsing_key {
             match *c {
                 b':' => {
                     name = Span(start, pos);
-                    start = pos + 1;
+                    // skip leading whitespace on value
+                    loop {
+                        match buffer.get(pos + 1) {
+                            Some(&b' ') | Some(&b'\t') => pos += 1,
+                            _ => break,
+                        }
+                    }
                     parsing_key = false;
+                    start = pos + 1;
                 }
-                b'\r' | b'\n' | b' ' => return Err(Error::ParseHeaderName),
+                b'\r' | b'\n' | b' ' | b'\t' => return Err(Error::ParseHeaderName),
                 _ => {}
             }
-        } else if *c == b'\n' || (*c == b'\r' && buffer.get(pos + 1) == Some(&b'\n')) {
-            if name.is_empty() {
-                return Err(Error::ParseError);
+        } else {
+            if *c == b'\n' || (*c == b'\r' && buffer.get(pos + 1) == Some(&b'\n')) {
+                if name.is_empty() {
+                    return Err(Error::ParseError);
+                }
+
+                let value = Span(start, pos);
+                headers.push((name, value));
+                if name.from_buf(&buffer).to_ascii_lowercase() == "content-length" {
+                    println!("content_length: {}", value.from_buf(&buffer));
+                    content_length = value.from_buf(&buffer).parse().unwrap_or(0);
+                }
+
+                name = Span::new();
+                parsing_key = true;
+
+                // skip \r\n or \n
+                pos += if *c == b'\n' { 1 } else { 2 };
+
+                if buffer.get(pos) == Some(&b'\n')
+                    || (buffer.get(pos) == Some(&b'\r') && buffer.get(pos + 1) == Some(&b'\n'))
+                {
+                    pos += if buffer.get(pos) == Some(&b'\n') {
+                        1
+                    } else {
+                        2
+                    };
+                    saw_end = true;
+                    break;
+                }
+
+                start = pos;
+                continue;
             }
-
-            headers.push((name, Span(start, pos)));
-            name = Span::new();
-            parsing_key = true;
-
-            // skip \r\n or \n
-            pos += if *c == b'\n' {
-                1
-            } else {
-                iter.next();
-                2
-            };
-
-            if buffer.get(pos) == Some(&b'\n')
-                || (buffer.get(pos) == Some(&b'\r') && buffer.get(pos + 1) == Some(&b'\n'))
-            {
-                pos += if buffer.get(pos) == Some(&b'\n') {
-                    1
-                } else {
-                    2
-                };
-                saw_end = true;
-                break;
-            }
-
-            start = pos;
-            continue;
         }
         pos += 1;
     }
@@ -181,7 +191,11 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     } else {
         full_path
     };
-    let body = Span(pos, pos + buffer.len());
+    let body = if content_length > 0 {
+        Span(pos, pos + buffer.len())
+    } else {
+        Span::new()
+    };
 
     Ok(Status::Complete(Request::new(
         method, full_path, path, headers, body, buffer,

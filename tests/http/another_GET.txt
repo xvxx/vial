@@ -1,4 +1,4 @@
-GET /docs/index.html HTTP/1.1
+GET /docs/index.html?v=22 HTTP/1.1
 Host: www.nowhere123.com
 Accept: image/gif, image/jpeg, */*
 Accept-Language: en-us
