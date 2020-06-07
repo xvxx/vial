@@ -1,5 +1,5 @@
 use crate::{http_parser, util, Result, TypeCache};
-use std::{collections::HashMap, fmt, io::Read, mem, net::TcpStream, rc::Rc, str};
+use std::{collections::HashMap, fmt, io, mem, rc::Rc, str};
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
@@ -23,7 +23,7 @@ impl Span {
         if self.1 >= self.0 && self.1 <= buf.len() {
             str::from_utf8(&buf[self.0..self.1]).unwrap_or("?")
         } else {
-            ""
+            "?"
         }
     }
 }
@@ -132,7 +132,7 @@ impl Request {
 
     /// Read a raw HTTP request from `reader` and create an
     /// appropriate `Request` to represent it.
-    pub fn from_reader(mut reader: TcpStream) -> Result<Request> {
+    pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Request> {
         let mut buffer = Vec::with_capacity(512);
         let mut read_buf = [0u8; 512];
 
@@ -153,14 +153,15 @@ impl Request {
         if let Some(size) = req.header("Content-Length") {
             let size = size.parse().unwrap_or(0);
             let start = req.body.0;
+
             while req.buffer[start..].len() < size {
                 let n = reader.read(&mut read_buf)?;
                 if n == 0 {
-                    return Err(error!("Connection Closed"));
+                    break;
                 }
                 req.buffer.extend_from_slice(&read_buf[..n]);
             }
-            req.body.1 = req.body.0 + size;
+            req.body.1 = req.body.0 + size - 1;
             req.parse_form();
         }
 
