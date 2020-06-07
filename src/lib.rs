@@ -218,9 +218,8 @@ pub use {
     responder::Responder, response::Response, router::Router, server::run,
 };
 
-/// Convenience Result that, for now, returns io::Error.
-/// TODO: replace with vial::Error.
-pub type Result<T> = std::result::Result<T, std::io::Error>;
+/// Convenience Result that returns `vial::Error`.
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// Directory where assets are stored, if any.
 pub static mut ASSET_DIR: Option<&'static str> = None;

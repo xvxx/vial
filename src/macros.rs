@@ -386,13 +386,3 @@ macro_rules! routes {
         }
     };
 }
-
-/// TODO: return a vial::Error type.
-macro_rules! error {
-    ($msg:expr) => {
-        std::io::Error::new(std::io::ErrorKind::Other, $msg)
-    };
-    ($fmt:expr, $($args:expr),*) => {
-        error!(format!($fmt, $($args),*))
-    };
-}

@@ -1,5 +1,7 @@
-use crate::{http_parser, util, Result, TypeCache};
-use std::{collections::HashMap, fmt, io, mem, rc::Rc, str};
+use {
+    crate::{http_parser, util, Error, Result, TypeCache},
+    std::{collections::HashMap, fmt, io, mem, rc::Rc, str},
+};
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
@@ -139,7 +141,7 @@ impl Request {
         let mut req = loop {
             let n = reader.read(&mut read_buf)?;
             if n == 0 {
-                return Err(error!("Connection Closed"));
+                return Err(Error::ConnectionClosed);
             }
             buffer.extend_from_slice(&read_buf[..n]);
             match http_parser::parse(mem::replace(&mut buffer, vec![]))? {

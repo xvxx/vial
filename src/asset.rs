@@ -57,16 +57,17 @@
 //! ```
 //!
 //!
-use std::{
-    borrow::Cow,
-    collections::{hash_map::DefaultHasher, HashMap},
-    fs,
-    hash::{Hash, Hasher},
-    io::{self, BufReader, Read},
-    str,
+use {
+    crate::{Error, Result},
+    std::{
+        borrow::Cow,
+        collections::{hash_map::DefaultHasher, HashMap},
+        fs,
+        hash::{Hash, Hasher},
+        io::{self, BufReader, Read},
+        str,
+    },
 };
-
-type Result<T> = std::result::Result<T, io::Error>;
 
 /// Produce an etag for an asset.
 pub fn etag(path: &str) -> Cow<str> {
@@ -152,10 +153,7 @@ pub fn to_string(path: &str) -> Result<String> {
         }
     }
 
-    Err(io::Error::new(
-        io::ErrorKind::NotFound,
-        format!("{} not found", path),
-    ))
+    Err(Error::AssetNotFound(path.into()))
 }
 
 /// Produces a boxed `io::Read` for an asset.
