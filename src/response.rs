@@ -7,6 +7,36 @@ use {
     },
 };
 
+/// Response Body. Will be either a `String` or `io::Read`, like from
+/// a File.
+enum Body {
+    None,
+    String(String),
+    Reader(Box<dyn io::Read>),
+}
+
+impl Body {
+    /// Body as a string. Always empty if this is a `Reader`,
+    /// otherwise we'd have to consume the stream.
+    fn as_str(&self) -> &str {
+        if let Body::String(s) = self {
+            s.as_ref()
+        } else {
+            ""
+        }
+    }
+}
+
+impl fmt::Display for Body {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Body::String(s) => write!(f, "{}", s),
+            Body::Reader(..) => write!(f, "{}", "(io::Read)"),
+            _ => write!(f, "{}", "None"),
+        }
+    }
+}
+
 /// Each request ultimately ends in a `Response` that is served to the
 /// client and then discarded, like fallen flower petals. Together
 /// with [`Request`](struct.request.html) and
@@ -31,15 +61,12 @@ use {
 pub struct Response {
     /// HTTP Status Code
     code: usize,
+
     /// The headers we're sending back.
     headers: HashMap<String, String>,
 
-    /// TODO: remove this
-    pub body: String,
-    /// TODO: only use this
-    pub reader: Box<dyn io::Read>,
-    /// TODO: hax
-    pub is_reader: bool,
+    /// Response body.
+    body: Body,
 }
 
 impl PartialEq for Response {
@@ -47,11 +74,7 @@ impl PartialEq for Response {
         self.code == other.code
             && self.headers == other.headers
             && self.content_type() == other.content_type()
-            && if self.is_reader {
-                other.is_reader
-            } else {
-                self.body == other.body
-            }
+            && self.body.as_str() == other.body.as_str()
     }
 }
 
@@ -60,7 +83,7 @@ impl fmt::Debug for Response {
         f.debug_struct("Response")
             .field("code", &self.code)
             .field("content_type", &self.content_type())
-            .field("body", &self.body)
+            .field("body", &self.body.as_str())
             .finish()
     }
 }
@@ -81,10 +104,8 @@ impl Default for Response {
 
         Response {
             code: 200,
-            body: String::new(),
+            body: Body::None,
             headers,
-            reader: Box::new(io::empty()),
-            is_reader: false,
         }
     }
 }
@@ -107,7 +128,7 @@ impl Response {
 
     /// Response body.
     pub fn body(&self) -> &str {
-        self.body.as_ref()
+        self.body.as_str()
     }
 
     /// Take a peek at all the headers for this response.
@@ -186,8 +207,7 @@ impl Response {
 
     /// Body builder. Returns a Response with the given body.
     pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Response {
-        self.body.clear();
-        self.body.push_str(body.as_ref());
+        self.body = Body::String(body.as_ref().to_string());
         self
     }
 
@@ -199,8 +219,7 @@ impl Response {
 
     /// Returns a Response using the given reader for the body.
     pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response {
-        self.reader = reader;
-        self.is_reader = true;
+        self.body = Body::Reader(reader);
         self
     }
 
@@ -236,6 +255,7 @@ impl Response {
             Ok(file) => {
                 self.set_header("ETag", &asset::etag(path).as_ref());
                 self.set_header("Content-Type", util::content_type(path));
+                self.set_header("Content-Length", &util::file_size(path).to_string());
                 self.with_reader(Box::new(BufReader::new(file)))
             }
 
@@ -257,10 +277,14 @@ impl Response {
 
     /// Length of the body.
     pub fn len(&self) -> usize {
-        if self.is_reader {
-            0
-        } else {
-            self.body.len()
+        match &self.body {
+            Body::String(s) => s.len(),
+            Body::Reader(..) => self
+                .header("content-length")
+                .unwrap_or("0")
+                .parse()
+                .unwrap_or(0),
+            _ => 0,
         }
     }
 
@@ -275,7 +299,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W) -> Result<()> {
+    pub fn write<W: io::Write>(self, mut w: W) -> Result<()> {
         // we don't set Content-Length on static files we stream
         let content_length = if !self.is_empty() {
             format!("Content-Length: {}\r\n", self.len())
@@ -309,10 +333,14 @@ impl Response {
 
         w.write_all(header.as_bytes())?;
 
-        if self.is_reader {
-            io::copy(&mut self.reader, &mut w)?;
-        } else {
-            w.write_all(self.body.as_bytes())?;
+        match self.body {
+            Body::Reader(mut reader) => {
+                io::copy(&mut reader, &mut w)?;
+            }
+            Body::String(s) => {
+                w.write_all(s.as_bytes())?;
+            }
+            _ => {}
         }
 
         w.flush()?;

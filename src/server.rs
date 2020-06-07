@@ -61,7 +61,7 @@ impl Server {
 
         println!("{} {} {}", method, response.code(), path);
         if response.code() == 500 {
-            eprintln!("{}", response.body);
+            eprintln!("{}", response.body());
         }
 
         response.write(stream)

@@ -135,11 +135,22 @@ fn from_code() {
 #[test]
 fn body_len() {
     let res = Response::from(200);
+    assert_eq!(200, res.code());
     assert!(res.is_empty());
 
     let res = Response::from(404);
+    assert_eq!(404, res.code());
     assert!(!res.is_empty());
     assert_eq!(13, res.len());
+
+    let res = Response::from_file("tests/assets/dinner.jpg");
+    assert_eq!(200, res.code());
+    assert_eq!(1062724, res.len());
+
+    vial::asset_dir!("tests/assets/");
+    let res = Response::from_asset("puff.gif");
+    assert_eq!(200, res.code());
+    assert_eq!(771638, res.len());
 }
 
 #[test]

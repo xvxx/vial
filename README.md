@@ -187,7 +187,6 @@ Right now the easiest way is to use [cargo-watch]:
 ## ~ T0D0 ~
 
 - [ ] fix iphone text-size
-- [ ] is_reader vs body
 - [ ] errors example
 
 ## ~ testing ~

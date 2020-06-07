@@ -50,3 +50,10 @@ fn decode_form_value() {
 fn http_current_date() {
     assert!(!util::http_current_date().is_empty());
 }
+
+#[test]
+fn file_size() {
+    assert_eq!(1052, util::file_size("LICENSE-MIT"));
+    assert_eq!(25161, util::file_size("tests/assets/rfcs/rfc1288.txt"));
+    assert_eq!(0, util::file_size("LICENSE-MADE-UP"));
+}

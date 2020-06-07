@@ -24,6 +24,13 @@ pub fn content_type(path: &str) -> &'static str {
     }
 }
 
+/// Size of a file on disk. 0 if it doesn't exist.
+pub fn file_size(path: &str) -> usize {
+    std::fs::File::open(path)
+        .map(|f| f.metadata().map(|m| m.len()).unwrap_or(0))
+        .unwrap_or(0) as usize
+}
+
 /// Does what it says.
 pub fn decode_form_value(post: &str) -> String {
     let cleaned = post.replace('+', " ").replace('\r', "");
