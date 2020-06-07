@@ -32,7 +32,7 @@ pub struct Response {
     /// HTTP Status Code
     code: usize,
     /// The headers we're sending back.
-    pub headers: HashMap<String, String>,
+    headers: HashMap<String, String>,
 
     /// TODO: remove this
     pub body: String,
