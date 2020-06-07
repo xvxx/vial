@@ -67,8 +67,8 @@ fn from_reader() {
         "HTTP/1.1 200 OK",
         "Server: ~ vial 0.0.11-dev ~",
         &date,
-        "Content-Type: text/html; charset=utf8",
         "Connection: close",
+        "content-type: text/html; charset=utf8",
     ];
 
     res1.write(&mut out).unwrap();
