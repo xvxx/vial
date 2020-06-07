@@ -33,8 +33,6 @@ pub struct Response {
     code: usize,
     /// The headers we're sending back.
     pub headers: HashMap<String, String>,
-    /// Unclear why we need this...
-    content_type: String,
 
     /// TODO: remove this
     pub body: String,
@@ -50,7 +48,7 @@ impl PartialEq for Response {
     fn eq(&self, other: &Self) -> bool {
         self.code == other.code
             && self.headers == other.headers
-            && self.content_type == other.content_type
+            && self.content_type() == other.content_type()
             && if self.is_reader {
                 other.is_reader
             } else if self.body.is_empty() {
@@ -65,7 +63,7 @@ impl fmt::Debug for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Response")
             .field("code", &self.code)
-            .field("content_type", &self.content_type)
+            .field("content_type", &self.content_type())
             .field("body", &self.body)
             .finish()
     }
@@ -83,14 +81,16 @@ impl fmt::Display for Response {
 
 impl Default for Response {
     fn default() -> Response {
+        let mut headers = HashMap::new();
+        headers.insert("Content-Type".into(), "text/html; charset=utf8".into());
+
         Response {
             code: 200,
             body: String::new(),
             buf: Vec::new(),
-            headers: HashMap::new(),
+            headers,
             reader: Box::new(io::empty()),
             is_reader: false,
-            content_type: "text/html; charset=utf8".to_string(),
         }
     }
 }
@@ -108,7 +108,7 @@ impl Response {
 
     /// Either the inferred or user-set Content-Type for this Response.
     pub fn content_type(&self) -> &str {
-        self.content_type.as_ref()
+        self.header("Content-Type").unwrap_or("")
     }
 
     /// Response body.
@@ -122,14 +122,13 @@ impl Response {
     }
 
     /// Get an individual header. `name` is case insensitive.
-    pub fn header(&self, name: &str) -> Option<&String> {
-        self.headers.get(&name.to_lowercase())
+    pub fn header(&self, name: &str) -> Option<&str> {
+        self.headers.get(&name.to_lowercase()).map(|h| h.as_ref())
     }
 
     /// Set an individual header.
     pub fn set_header(&mut self, name: &str, value: &str) {
-        self.headers
-            .insert(name.to_string().to_lowercase(), value.to_string());
+        self.headers.insert(name.to_lowercase(), value.to_string());
     }
 
     /// Convert into a Response.
@@ -197,7 +196,7 @@ impl Response {
     /// Returns a `text/plain` Response with the given body.
     pub fn with_text<S: AsRef<str>>(self, text: S) -> Response {
         self.with_body(text)
-            .with_header("Content-Type", "text/plain")
+            .with_header("Content-Type", "text/plain; charset=utf8")
     }
 
     /// Returns a Response using the given reader for the body.
@@ -218,7 +217,7 @@ impl Response {
                 if asset::is_bundled() {
                     if let Some(reader) = asset::as_reader(&path) {
                         self.set_header("ETag", asset::etag(&path).as_ref());
-                        self.content_type = util::content_type(&path).to_string();
+                        self.set_header("Content-Type", util::content_type(&path));
                         return self.with_reader(reader);
                     }
                 } else {
@@ -232,11 +231,13 @@ impl Response {
     /// Sets this Response's body to the body of the given file and
     /// sets the `Content-Type` header based on the file's extension.
     pub fn with_file(mut self, path: &str) -> Response {
+        if !std::path::Path::new(path).exists() {
+            return Response::from(404);
+        }
         match fs::File::open(path) {
             Ok(file) => {
                 self.set_header("ETag", &asset::etag(path).as_ref());
-                self.content_type.clear();
-                self.content_type.push_str(util::content_type(path));
+                self.set_header("Content-Type", util::content_type(path));
                 self.with_reader(Box::new(BufReader::new(file)))
             }
 
@@ -252,7 +253,7 @@ impl Response {
 
     /// Returns a Response with the given header set to the value.
     pub fn with_header(mut self, key: &str, value: &str) -> Response {
-        self.headers.insert(key.to_string(), value.to_string());
+        self.set_header(key, value);
         self
     }
 
@@ -288,9 +289,11 @@ impl Response {
 
         // gross - move into print_headers or something
         let mut header = format!(
-            "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nContent-Type: {}\r\n{}Connection: close\r\n",
-            self.code, env!("CARGO_PKG_VERSION"), util::http_current_date(),
-            self.content_type, content_length,
+            "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\n{}Connection: close\r\n",
+            self.code,
+            env!("CARGO_PKG_VERSION"),
+            util::http_current_date(),
+            content_length,
         );
 
         // TODO check for content-type, date, etc

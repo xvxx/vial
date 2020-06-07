@@ -15,17 +15,17 @@ fn set_header() {
 
 #[test]
 fn from_header() {
-    let v = "12345".to_string();
-    let res1 = Response::from_header("X-Time", &v);
-    let res2 = Response::new().with_header("X-Time", &v);
+    let v = "12345";
+    let res1 = Response::from_header("X-Time", v);
+    let res2 = Response::new().with_header("X-Time", v);
 
-    assert_eq!(Some(&v), res1.header("X-Time"));
+    assert_eq!(Some(v), res1.header("X-Time"));
     assert_eq!(res1.header("X-Time"), res2.header("X-Time"));
 }
 
 #[test]
 fn from_asset() {
-    vial::asset_dir!("assets/");
+    vial::asset_dir!("tests/assets/");
     let res1 = Response::from_asset("puff.gif");
     assert_eq!(200, res1.code());
     assert_eq!("image/gif", res1.content_type());
@@ -56,14 +56,28 @@ fn from_reader() {
 
     let res1 = Response::from_reader(Box::new(File::open("README.md").unwrap()));
     assert_eq!(200, res1.code());
-    assert_eq!("text/plain; charset=utf8", res1.content_type());
+    assert_eq!("text/html; charset=utf8", res1.content_type());
 
     let res2 = Response::new().with_reader(Box::new(File::open("README.md").unwrap()));
     assert_eq!(res1, res2);
 
     let mut out: Vec<u8> = vec![];
+    let date = format!("Date: {}", vial::util::http_current_date());
+    let mut expected = vec![
+        "HTTP/1.1 200 OK",
+        "Server: ~ vial 0.0.11-dev ~",
+        &date,
+        "Content-Type: text/html; charset=utf8",
+        "Connection: close",
+    ];
+
     res1.write(&mut out).unwrap();
-    assert_eq!("{}", String::from_utf8_lossy(&out));
+    for line in String::from_utf8_lossy(&out).split("\r\n") {
+        if !expected.is_empty() {
+            assert_eq!(line, expected.remove(0));
+        }
+    }
+    assert!(expected.is_empty());
 }
 
 #[test]
@@ -125,7 +139,7 @@ fn body_len() {
 
     let res = Response::from(404);
     assert!(!res.is_empty());
-    assert_eq!(20, res.len());
+    assert_eq!(13, res.len());
 }
 
 #[test]
@@ -160,12 +174,12 @@ fn from() {
     let res = Response::from(404);
     assert_eq!(404, res.code());
     assert_eq!("text/html; charset=utf8", res.content_type());
-    assert_eq!("<h1>VialWeb</h1>", res.body());
+    assert_eq!("404 Not Found", res.body());
 
     let res = Response::from(500);
     assert_eq!(500, res.code());
     assert_eq!("text/html; charset=utf8", res.content_type());
-    assert_eq!("<h1>VialWeb</h1>", res.body());
+    assert_eq!("500 Internal Server Error", res.body());
 
     let res = Response::from(200);
     assert_eq!(200, res.code());
