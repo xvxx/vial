@@ -190,7 +190,7 @@
 #[macro_use]
 mod macros;
 pub mod asset;
-mod bundler;
+
 mod cache;
 mod error;
 mod method;
@@ -202,6 +202,8 @@ mod router;
 mod server;
 
 // used in tests
+#[doc(hidden)]
+pub mod bundler;
 #[doc(hidden)]
 pub mod http_parser;
 #[doc(hidden)]

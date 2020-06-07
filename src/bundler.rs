@@ -64,9 +64,10 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     Ok(())
 }
 
+#[doc(hidden)]
 #[allow(dead_code)]
 /// Iterator over all the files in a directory.
-fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
+pub fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
     if let Ok(files) = files_in_dir(dir) {
         files.into_iter()
     } else {
@@ -74,7 +75,6 @@ fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
     }
 }
 
-#[allow(dead_code)]
 fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
     let mut files = vec![];
     for entry in fs::read_dir(path)? {
@@ -88,23 +88,4 @@ fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
         }
     }
     Ok(files)
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_walk() {
-        assert!(walk(".").count() > 0);
-
-        let mut expected = vec!["./Cargo.toml", "./LICENSE-APACHE"]
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<Vec<_>>();
-
-        for file in walk(".").take(2) {
-            assert_eq!(expected.remove(0), file.to_str().unwrap());
-        }
-    }
 }
