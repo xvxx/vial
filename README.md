@@ -1,4 +1,4 @@
-<img src="./img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
+<img src="./docs/img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
 
 # ~ vial: a micro micro-framework ~
 
@@ -161,7 +161,7 @@ Install [cargo-watch]:
 fancy stuff by default, but there are a few compile-time `--features`
 you can activate for enhanced productivity:
 
-<img src="./img/alice.jpeg" alt="Alice" align="right" width="250" />
+<img src="./docs/img/alice.jpeg" alt="Alice" align="right" width="250" />
 
 - [x] **state**: Global State
 - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
