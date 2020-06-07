@@ -36,8 +36,6 @@ pub struct Response {
 
     /// TODO: remove this
     pub body: String,
-    /// TODO: remove this
-    pub buf: Vec<u8>,
     /// TODO: only use this
     pub reader: Box<dyn io::Read>,
     /// TODO: hax
@@ -51,8 +49,6 @@ impl PartialEq for Response {
             && self.content_type() == other.content_type()
             && if self.is_reader {
                 other.is_reader
-            } else if self.body.is_empty() {
-                self.buf == other.buf
             } else {
                 self.body == other.body
             }
@@ -71,11 +67,7 @@ impl fmt::Debug for Response {
 
 impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if !self.buf.is_empty() {
-            write!(f, "{}", String::from_utf8_lossy(&self.buf))
-        } else {
-            write!(f, "{}", self.body)
-        }
+        write!(f, "{}", self.body)
     }
 }
 
@@ -90,7 +82,6 @@ impl Default for Response {
         Response {
             code: 200,
             body: String::new(),
-            buf: Vec::new(),
             headers,
             reader: Box::new(io::empty()),
             is_reader: false,
@@ -268,10 +259,8 @@ impl Response {
     pub fn len(&self) -> usize {
         if self.is_reader {
             0
-        } else if self.buf.is_empty() {
-            self.body.len()
         } else {
-            self.buf.len()
+            self.body.len()
         }
     }
 
@@ -322,10 +311,8 @@ impl Response {
 
         if self.is_reader {
             io::copy(&mut self.reader, &mut w)?;
-        } else if self.buf.is_empty() {
-            w.write_all(self.body.as_bytes())?;
         } else {
-            w.write_all(&self.buf)?;
+            w.write_all(self.body.as_bytes())?;
         }
 
         w.flush()?;
