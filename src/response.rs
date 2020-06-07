@@ -82,7 +82,10 @@ impl fmt::Display for Response {
 impl Default for Response {
     fn default() -> Response {
         let mut headers = HashMap::new();
-        headers.insert("Content-Type".into(), "text/html; charset=utf8".into());
+        headers.insert(
+            "Content-Type".to_lowercase(),
+            "text/html; charset=utf8".into(),
+        );
 
         Response {
             code: 200,
@@ -156,7 +159,7 @@ impl Response {
 
     /// Creates a 500 response from an error, displaying it.
     pub fn from_error<E: error::Error>(err: E) -> Response {
-        Response::from(500).with_error(err)
+        Response::default().with_error(err)
     }
 
     /// Creates a new Response and sets the given header, in
@@ -183,7 +186,11 @@ impl Response {
     /// Creates a new response with the given HTTP Status Code.
     pub fn with_code(mut self, code: usize) -> Response {
         self.code = code;
-        self
+        match code {
+            404 => self.with_body("404 Not Found"),
+            500 => self.with_body("500 Internal Server Error"),
+            _ => self,
+        }
     }
 
     /// Body builder. Returns a Response with the given body.
@@ -248,7 +255,7 @@ impl Response {
     /// Sets the response code to 500 and the body to the error's text.
     pub fn with_error<E: error::Error>(self, err: E) -> Response {
         self.with_code(500)
-            .with_body(&format!("<h1>500 Internal Error</h1><pre>{}", err))
+            .with_body(&format!("<h1>500 Internal Error</h1><pre>{:?}", err))
     }
 
     /// Returns a Response with the given header set to the value.
@@ -329,50 +336,30 @@ impl Response {
 
 impl From<&str> for Response {
     fn from(s: &str) -> Response {
-        Response {
-            body: s.to_string(),
-            ..Response::default()
-        }
+        Response::from_body(s.to_string())
     }
 }
 
 impl From<&String> for Response {
     fn from(s: &String) -> Response {
-        Response {
-            body: s.clone(),
-            ..Response::default()
-        }
+        Response::from_body(s.clone())
     }
 }
 
 impl From<String> for Response {
     fn from(body: String) -> Response {
-        Response {
-            body,
-            ..Response::default()
-        }
+        Response::from_body(body)
     }
 }
 
 impl From<usize> for Response {
     fn from(i: usize) -> Response {
-        Response {
-            code: i,
-            body: match i {
-                404 => "404 Not Found".into(),
-                500 => "500 Internal Server Error".into(),
-                _ => "".into(),
-            },
-            ..Response::default()
-        }
+        Response::from_code(i)
     }
 }
 
 impl From<std::borrow::Cow<'_, [u8]>> for Response {
     fn from(i: std::borrow::Cow<'_, [u8]>) -> Response {
-        Response {
-            body: String::from_utf8_lossy(&i).to_string(),
-            ..Response::default()
-        }
+        Response::from_body(String::from_utf8_lossy(&i).to_string())
     }
 }

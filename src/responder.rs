@@ -19,7 +19,7 @@ impl Responder for Response {
 
 impl Responder for &str {
     fn to_response(self) -> Response {
-        Response::from(self.to_string())
+        Response::from(self)
     }
 }
 
@@ -47,7 +47,7 @@ impl<T: Responder, E: error::Error> Responder for Result<T, E> {
 impl<T: Responder> Responder for Option<T> {
     fn to_response(self) -> Response {
         match self {
-            None => Response::from(404),
+            None => Response::from_code(404),
             Some(s) => s.to_response(),
         }
     }
