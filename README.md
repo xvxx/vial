@@ -186,8 +186,15 @@ Right now the easiest way is to use [cargo-watch]:
 
 ## ~ T0D0 ~
 
-- [ ] example for each major feature
 - [ ] fix iphone text-size
+- [ ] example for each major feature
+  - [ ] redirect.rs
+  - [ ] query.rs
+  - [ ] responder.rs
+  - [ ] response.rs
+  - [ ] routes.rs TODO: *
+  - [ ] filters.rs TODO: REMOVE STATE
+  - [ ] text.rs
 
 ## ~ testing ~
 

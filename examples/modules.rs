@@ -1,7 +1,7 @@
 use vial;
 
-mod blog;
-mod wiki;
+mod mods;
+use mods::{blog, wiki};
 
 mod index {
     vial::routes! {

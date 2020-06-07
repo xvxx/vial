@@ -8,7 +8,8 @@ vial::routes! {
     GET "/" => |_| "Index page.";
 }
 
-mod blog;
+mod mods;
+use mods::blog;
 
 fn main() {
     vial::run!(self, blog, wiki).unwrap();

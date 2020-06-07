@@ -1,9 +1,23 @@
 use vial::prelude::*;
 
 routes! {
+    GET "/hello/:id/:name" => |req| {
+        let name = req.arg("name").unwrap_or("");
+        format!("Hello, {}. You're ID #{}", name, req.arg("id").unwrap_or("0"))
+    };
+
+    GET "/page/:name" => |req| {
+        format!("Page: {}", req.arg("name").unwrap_or("?"))
+    };
+
+    GET "/page/:name/edit" => |req| {
+        format!("Edit: {}", req.arg("name").unwrap_or("?"))
+    };
+
     GET "/" => hello_world;
     POST "/" => redirect_to_greeting;
     GET "/:name" => hello_name;
+    
     GET "/*path" => |req|
       Response::from(404).with_body(
         format!("<h1>404 Not Found: {}</h1>",

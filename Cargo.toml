@@ -14,7 +14,7 @@ readme = "README.md"
 dev-version-ext = "dev"
 
 [[example]]
-name = "horrorshow"
+name = "horror"
 required-features = ["horror"]
 
 [[example]]
@@ -22,7 +22,7 @@ name = "state"
 required-features = ["state"]
 
 [[example]]
-name = "filter"
+name = "filters"
 required-features = ["state"]
 
 [features]

@@ -1,8 +1,11 @@
-vial::routes! {
-    GET "/" => |_| "<img src='examples/doctor.png'/>";
+use vial::prelude::*;
+
+routes! {
+    GET "/" => |_| "<img src='/doctor.png' />";
+    GET "/welcome" => |_| Response::from_asset("welcome.html");
 }
 
 fn main() {
-    vial::asset_dir!(".");
-    vial::run!().unwrap();
+    asset_dir!("./examples/assets");
+    run!().unwrap();
 }

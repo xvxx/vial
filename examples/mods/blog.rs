@@ -46,6 +46,3 @@ fn show_raw(req: Request) -> impl Responder {
     ""
 }
 
-fn main() {
-    vial::run!().unwrap();
-}

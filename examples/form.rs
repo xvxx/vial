@@ -1,6 +1,7 @@
-vial::routes! {
-    GET "/" => |_| {
-        r#"
+use vial::prelude::*;
+
+routes! {
+    GET "/" => |_| r#"
 <h3>vial form</h3>
 <form method="POST" action="/">
     <p><label>Name: <input type="text" name="name"/></label></p>
@@ -15,21 +16,18 @@ vial::routes! {
     </label></p>
     <p><input type="submit"/></p>
 </form>
-    "#
-    };
+    "#;
 
-    POST "/" => |req| {
-        format!(r#"
+    POST "/" => |req| format!(r#"
 <h3>results</h3>
 <p><b>Name:</b> {}</p>
 <p><b>Age:</b> {}</p>
 "#,
-    req.form("name").unwrap_or(""),
-    req.form("age").unwrap_or(""),
-)
-    };
+        req.form("name").unwrap_or(""),
+        req.form("age").unwrap_or(""),
+    );
 }
 
 fn main() {
-    vial::run!().unwrap();
+    run!().unwrap();
 }

@@ -1,5 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-use vial::prelude::*;
+use {
+    std::sync::atomic::{AtomicUsize, Ordering},
+    vial::prelude::*,
+};
 
 routes! {
     // `count` will run before all routes in this block
@@ -12,7 +14,8 @@ routes! {
     #[filter(count)]
     GET "/double" => double;
 
-    // `echo` will be called when /echo is visited
+    // `echo` will be called when /echo is visited, as well as `count`
+    // because it's a module-level filter
     #[filter(echo)]
     GET "/echo" => |_| "Is there an echo in here?";
 }
@@ -48,6 +51,8 @@ impl Counter {
     }
 }
 
+// We do this purely for the convenience of using `req.counter()`
+// instead of `req.state::<Counter>()`.
 trait WithCounter {
     fn counter(&self) -> &Counter;
 }
