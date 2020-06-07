@@ -1,5 +1,4 @@
 use crate::Response;
-use std::error;
 
 /// The `Responder` trait converts your custom types or a few basic
 /// Rust types into a [Response](struct.Response.html) that gets hand
@@ -35,7 +34,7 @@ impl Responder for usize {
     }
 }
 
-impl<T: Responder, E: error::Error> Responder for Result<T, E> {
+impl<T: Responder, E: std::error::Error> Responder for Result<T, E> {
     fn to_response(self) -> Response {
         match self {
             Err(e) => Response::from_error(e),
@@ -50,5 +49,17 @@ impl<T: Responder> Responder for Option<T> {
             None => Response::from_code(404),
             Some(s) => s.to_response(),
         }
+    }
+}
+
+impl Responder for crate::Error {
+    fn to_response(self) -> Response {
+        Response::from_error(self)
+    }
+}
+
+impl Responder for () {
+    fn to_response(self) -> Response {
+        Response::default()
     }
 }
