@@ -1,12 +1,12 @@
 use vial::prelude::*;
 
 routes! {
-    GET "/echo" => echo;
+    GET "/" => echo;
     POST "/echo" => post;
 }
 
 fn echo(_: Request) -> impl Responder {
-    "<form method='POST'>
+    "<form method='POST' action='/echo'>
         <input type='text' name='echo'/>
         <input type='submit'/>
     </form>"

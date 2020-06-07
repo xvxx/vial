@@ -149,7 +149,6 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 let value = Span(start, pos);
                 headers.push((name, value));
                 if name.from_buf(&buffer).to_ascii_lowercase() == "content-length" {
-                    println!("content_length: {}", value.from_buf(&buffer));
                     content_length = value.from_buf(&buffer).parse().unwrap_or(0);
                 }
 
