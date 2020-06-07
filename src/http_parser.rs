@@ -142,11 +142,15 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
 
             headers.push((name, Span(start, pos)));
             name = Span::new();
-            iter.next();
             parsing_key = true;
 
             // skip \r\n or \n
-            pos += if *c == b'\n' { 1 } else { 2 };
+            pos += if *c == b'\n' {
+                1
+            } else {
+                iter.next();
+                2
+            };
 
             if buffer.get(pos) == Some(&b'\n')
                 || (buffer.get(pos) == Some(&b'\r') && buffer.get(pos + 1) == Some(&b'\n'))
