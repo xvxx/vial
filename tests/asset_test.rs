@@ -13,8 +13,14 @@ fn asset_exists() {
 #[test]
 fn etag_test() {
     vial::asset_dir!("./tests/assets/");
-    assert_ne!(asset::etag("dinner.jpg"), asset::etag("letter.jpg"));
-    assert_ne!(asset::etag("dinner.jpg"), asset::etag("made-up.gif"));
+    assert_ne!(
+        asset::etag("dinner.jpg").to_string(),
+        asset::etag("letter.jpg").to_string()
+    );
+    assert_ne!(
+        asset::etag("dinner.jpg").to_string(),
+        asset::etag("made-up.gif").to_string()
+    );
 }
 
 #[test]
