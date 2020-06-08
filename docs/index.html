@@ -52,7 +52,7 @@
       /* medium size */
       @media (max-width: 1500px) {
         main {
-          padding-left: 25px;
+          padding-left: 15px;
           float: left;
         }
         img:first-of-type {
@@ -64,7 +64,7 @@
       }
 
       /* small size */
-      @media (max-width: 1220px) {
+      @media (max-width: 1240px) {
         nav {
           display: none;
         }
@@ -93,18 +93,20 @@
       }
       /* iphone portrait mode */
       @media only screen and (min-device-width: 375px) and (max-device-width: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) {
-        p,
-        pre,
-        h2 {
-          font-size: 2.5em !important;
-        }
         h1 {
           font-size: 4.5em !important;
         }
+        h2 {
+          font-size: 3.5em !important;
+        }
 
+        p,
+        pre code {
+          font-size: 2.5em !important;
+        }
         h3,
         h4 {
-          font-size: 2em !important;
+          font-size: 2.5em !important;
         }
         img:first-of-type {
           height: 220px;
