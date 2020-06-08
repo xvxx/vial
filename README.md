@@ -25,6 +25,7 @@ To learn more, keep reading or visit one of these links:
 - [Documentation](https://vial.sh/)
 - [API Reference](https://docs.rs/vial)
 - [Source Code](https://github.com/xvxx/vial)
+- [Examples](https://github.com/xvxx/vial/tree/master/examples)
 
 ---
 
