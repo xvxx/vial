@@ -389,7 +389,7 @@ macro_rules! routes {
                     }
                 })+)*
 
-                res.unwrap_or_else(|| b(req.into()).to_response())
+                res.unwrap_or_else(|| b(req).to_response())
             }); )*
         }
     };

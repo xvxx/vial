@@ -31,42 +31,15 @@ impl Span {
         }
     }
 }
-/// Request contains all the info about a client's request. It's
-/// handed to your actions and filters, and is dropped after
-/// responding to the client.
-///
-/// The main ways you'll be using Request are:
-///
-/// - **[arg(&str)](#method.arg)**: Getting arguments from routes that
-///   include parameters, such as `GET "/:page.md" => show;`. You'd
-///   use `request.arg("page")` in this case.
-/// - **[query(&str)](#method.query)**: Getting decoded query
-///   parameters. If a request includes `?id=5&loc=CA` you can use
-///   `request.query("id")` and `request.query("loc")` to get both
-///   values.
-/// - **[form(&str)](#method.form)**: Same as above, but with
-///   submitted `<form>` data. Make sure your `<input>` elements have
-///   the right `name=` attribute.
-/// - **[path()](#method.path)**: The path requested, starting with an
-///   `/`, not including any `?query`.
-/// - **[full_path()](#method.full_path)**: The full path starting
-///   with `/`, including `?query`.
-/// - **[method()](#method.method)**: If you need the HTTP method.
-/// - **[cache()](#method.cache)**: The request local cache.
-///
-/// You may also modify a Request in a `filter` using:
-///
-/// - **[set_arg(&str, &str)](#method.set_arg)**
-/// - **[set_form(&str, &str)](#method.set_form)**
-/// - **[set_query(&str, &str)](#method.set_query)**
-/// - **[set_path(&str, &str)](#method.set_path)**
-/// - **[set_method(&str, &str)](#method.set_method)**
-/// - **[set_body(&str, &str)](#method.set_body)**
+
+/// Contains information about a single request.
 pub struct Request {
     /// The raw request.
     buffer: Vec<u8>,
 
     /// Includes `?query` and starts with `/`.
+    /// Calling `request.path()` delivers just the path without any
+    /// `?query` - use `request.full_path()` to get the full story.
     path: Span,
 
     /// HTTP Method
