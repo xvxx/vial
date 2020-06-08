@@ -1,4 +1,6 @@
-## v0.1.0-dev
+## vX.X.X-dev
+
+## v0.1.0
 
 This is the first public release of **Vial**, a micro micro-framework for the Rust programming language.
 
