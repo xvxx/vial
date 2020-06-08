@@ -28,14 +28,17 @@ pre-release-replacements = [
 
 [[example]]
 name = "horror"
+path = "examples/horror"
 required-features = ["horror"]
 
 [[example]]
 name = "state"
+path = "examples/state"
 required-features = ["state"]
 
 [[example]]
 name = "filters"
+path = "examples/filters"
 required-features = ["state"]
 
 [features]
