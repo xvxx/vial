@@ -80,16 +80,31 @@
         main {
           float: none;
           margin: 0 auto;
-          max-width: none;
         }
         #menu-toggle {
           display: block !important;
         }
       }
+      @media (max-width: 900px) {
+        main {
+          max-width: none !important;
+          width: 100% !important;
+        }
+      }
       /* iphone portrait mode */
       @media only screen and (min-device-width: 375px) and (max-device-width: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait) {
-        p {
-          font-size: 3em !important;
+        p,
+        pre,
+        h2 {
+          font-size: 2.5em !important;
+        }
+        h1 {
+          font-size: 4.5em !important;
+        }
+
+        h3,
+        h4 {
+          font-size: 2em !important;
         }
         img:first-of-type {
           height: 220px;
