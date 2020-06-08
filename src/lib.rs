@@ -44,7 +44,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! vial-v0.0.12-
+//! vial = "0.1"
 //! ```
 //!
 //! There are a handful of `--features` that you can enable, most of

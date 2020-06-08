@@ -2,7 +2,8 @@
 
 # ~ vial: a micro micro-framework ~
 
-**Vial** is a small web "framework" for making small web sites.
+**Vial** is a small web "framework" for making small web sites in
+Rust.
 
 It includes just a few basics:
 
@@ -41,7 +42,7 @@ To get started, just add `vial` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vial-v0.0.12-
+vial = "0.1"
 ```
 
 Now you can `use vial::prelude::*;` in your application to pull in the

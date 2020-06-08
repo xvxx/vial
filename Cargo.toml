@@ -19,10 +19,6 @@ exclude = [
 consolidate-commits = true
 dev-version-ext = "dev"
 pre-release-replacements = [
-  {file="README.md", search="vial = \"[a-z0-9\\.-]+\"", replace="{{crate_name}}-v{{version}}-"},
-  {file="docs/MANUAL.md", search="vial = \"[a-z0-9\\.-]+\"", replace="{{crate_name}}-v{{version}}-"},
-  {file="src/macros.rs", search="vial = \"[a-z0-9\\.-]+\"", replace="{{crate_name}}-v{{version}}-"},
-  {file="src/lib.rs", search="vial = \"[a-z0-9\\.-]+\"", replace="{{crate_name}}-v{{version}}-"},
   {file="CHANGELOG.md", search="## v\\d+\\.\\d+\\.\\d+-dev", replace="## vX.X.X-dev\n\n## v{{version}}"},
 ]
 
