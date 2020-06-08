@@ -416,6 +416,7 @@
         let nav = document.getElementsByTagName("nav")[0];
         if (nav.className == "show-mobile") nav.className = "";
         else nav.className = "show-mobile";
+        window.scrollTo(0, 0);
       }
     </script>
   </body>
