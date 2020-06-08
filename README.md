@@ -210,6 +210,6 @@ appreciated.
   http://opensource.org/licenses/MIT)
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
-[horrowshow]: https://github.com/Stebalien/horrorshow-rs
+[horrorshow]: https://github.com/Stebalien/horrorshow-rs
 [deadwiki]: https://github.com/xvxx/deadwiki
 [gh-build-action]: https://github.com/xvxx/vial/actions?query=workflow%3Abuild
