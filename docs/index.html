@@ -86,7 +86,7 @@
           display: block !important;
         }
         p {
-          font-size: 2em !important;
+          font-size: 3em !important;
         }
         img:first-of-type {
           height: 220px;
