@@ -80,12 +80,13 @@
         main {
           float: none;
           margin: 0 auto;
+          max-width: none;
         }
         #menu-toggle {
           display: block !important;
         }
         p {
-          font-size: 1.5em !important;
+          font-size: 2em !important;
         }
         img:first-of-type {
           height: 220px;

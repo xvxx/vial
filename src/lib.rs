@@ -221,6 +221,7 @@ pub mod http_parser;
 pub mod util;
 
 #[cfg(feature = "state")]
+#[doc(hidden)]
 pub mod storage;
 
 #[cfg(features = "horror")]
