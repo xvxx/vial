@@ -3,6 +3,15 @@ use vial::prelude::*;
 
 routes! {
     GET "/" => |_| "<a href='/profile'>Profile</a>";
+    GET "/login" => |_| "
+    <form action='POST'>
+        <p><input type='text' name='login' placeholder='Login'/></p>
+        <p><input type='password' name='password' placeholder='Password'/></p>
+        <p><input type='submit'/></p>
+    </form>
+    ";
+    POST "/login" => login;
+    #[filter(login_required)]
     GET "/profile" => profile;
 }
 
@@ -25,14 +34,26 @@ impl User {
     }
 }
 
+fn login_required(req: &mut Request) -> Option<Response> {
+    if let Some(_) = req.cache(current_user).as_ref() {
+        None
+    } else {
+        Some(Response::redirect_to("/login"))
+    }
+}
+
 fn current_user(req: &Request) -> Option<User> {
-    let header = req.header("X-User")?;
+    let header = req.query("username")?;
     Some(User::new(header))
 }
 
 fn profile(req: Request) -> Option<impl Responder> {
     let user = req.cache(current_user).as_ref()?;
     Some(format!("<b>{}</b>", user))
+}
+
+fn login(_req: Request) -> impl Responder {
+    unimplemented!()
 }
 
 fn main() {
