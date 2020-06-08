@@ -58,7 +58,7 @@
 //!
 //!
 use {
-    crate::{Error, Result},
+    crate::{util, Error, Result},
     std::{
         borrow::Cow,
         collections::{hash_map::DefaultHasher, HashMap},
@@ -121,6 +121,29 @@ pub fn is_bundled() -> bool {
 /// Access to read-only, in-memory assets in bundle mode.
 fn bundled_assets() -> Option<&'static HashMap<String, &'static [u8]>> {
     unsafe { crate::BUNDLED_ASSETS.as_ref() }
+}
+
+/// Size of an asset in `asset_dir()`. `0` if the asset doesn't exist.
+/// Works in bundled mode and regular mode.
+pub fn size(path: &str) -> usize {
+    if !exists(path) {
+        return 0;
+    }
+
+    let path = match normalize_path(path) {
+        Some(path) => path,
+        None => return 0,
+    };
+
+    if is_bundled() {
+        bundled_assets()
+            .unwrap()
+            .get(&path)
+            .map(|a| a.len())
+            .unwrap_or(0)
+    } else {
+        util::file_size(&path)
+    }
 }
 
 /// The directory of the asset dir.

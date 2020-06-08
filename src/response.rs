@@ -207,7 +207,9 @@ impl Response {
 
     /// Body builder. Returns a Response with the given body.
     pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Response {
-        self.body = Body::String(body.as_ref().to_string());
+        let body = body.as_ref();
+        self.body = Body::String(body.to_string());
+        self.set_header("Content-Length", &body.len().to_string());
         self
     }
 
@@ -235,6 +237,7 @@ impl Response {
                     if let Some(reader) = asset::as_reader(&path) {
                         self.set_header("ETag", asset::etag(&path).as_ref());
                         self.set_header("Content-Type", util::content_type(&path));
+                        self.set_header("Content-Length", &asset::size(&path).to_string());
                         return self.with_reader(reader);
                     }
                 } else {
@@ -300,20 +303,12 @@ impl Response {
 
     /// Writes this response to a stream.
     pub fn write<W: io::Write>(self, mut w: W) -> Result<()> {
-        // we don't set Content-Length on static files we stream
-        let content_length = if !self.is_empty() {
-            format!("Content-Length: {}\r\n", self.len())
-        } else {
-            "".to_string()
-        };
-
         // gross - move into print_headers or something
         let mut header = format!(
-            "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\n{}Connection: close\r\n",
+            "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
             self.code,
             crate::VERSION,
             util::http_current_date(),
-            content_length,
         );
 
         // TODO check for content-type, date, etc
