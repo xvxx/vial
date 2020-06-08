@@ -41,7 +41,7 @@ To get started, just add `vial` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vial = "0.1"
+vial = "0.1.0"
 ```
 
 Now you can `use vial::prelude::*;` in your application to pull in the

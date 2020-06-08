@@ -109,7 +109,7 @@ To begin, add **Vial** to your project's `Cargo.toml`:
 
 ```rust
 [dependencies]
-vial = "0.1"
+vial = "0.1.0"
 ```
 
 Now all you have to do is call `vial::routes!` to define your routes
@@ -699,7 +699,7 @@ must:
 
 ```toml
 [build-dependencies]
-vial = "0.1"
+vial = "0.1.0"
 ```
 
 (_Yes, you should now have `vial` in there twice. Once for
