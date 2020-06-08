@@ -111,14 +111,25 @@
 //! To _really_ break the mold, you can split your site into different
 //! modules:
 //!
-//! ```ignore
-//! mod wiki;
-//! mod blog;
+//! ```no_run
+//! mod wiki {
+//!     vial::routes! {
+//!         GET "/wiki" => |_| Response::from_file("wiki.html");
+//!         // etc...
+//!     }
+//! }
+//!
+//! mod blog {
+//!     vial::routes! {
+//!         GET "/blog" => |_| Response::from_file("wiki.html");
+//!         // etc...
+//!     }
+//! }
 //!
 //! mod index {
 //!     use vial::prelude::*;
 //!     routes! {
-//!         GET "/" => |_| Response::from_file("index.html")
+//!         GET "/" => |_| Response::from_file("index.html");
 //!     }
 //! }
 //!
@@ -235,3 +246,6 @@ pub static mut BUNDLED_ASSETS: Option<std::collections::HashMap<String, &'static
 
 /// Date and time this program was compiled.
 pub const BUILD_DATE: &str = env!("BUILD_DATE");
+
+/// Crate version
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");

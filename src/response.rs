@@ -311,7 +311,7 @@ impl Response {
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\n{}Connection: close\r\n",
             self.code,
-            env!("CARGO_PKG_VERSION"),
+            crate::VERSION,
             util::http_current_date(),
             content_length,
         );

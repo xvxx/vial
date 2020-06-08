@@ -17,17 +17,25 @@
 ///
 ///    For example:
 ///
-/// ```ignore
-/// mod wiki;
+/// ```no_run
+/// mod wiki {
+///     vial::routes! {
+///         GET "/wiki" => |_| Response::from_file("wiki.html");
+///     }
+/// }
+///
 /// mod blog {
 ///     vial::routes! {
 ///         GET "/blog" => show_blog;
 ///         // etc...
 ///     }
+///
 ///     fn show_blog(req: vial::Request) -> String {
 ///         // ...
+///         "blog".to_string()
 ///     }
 /// }
+///
 /// fn main() {
 ///     vial::run!(wiki, blog).unwrap();
 /// }
@@ -35,9 +43,9 @@
 ///
 /// 4. Using a combination of the above:
 ///
-/// ```ignore
-/// mod blog;
-/// mod wiki;
+/// ```no_run
+/// # mod blog { vial::routes! { GET "/blog" => |_| ""; }}
+/// # mod wiki { vial::routes! { GET "/wiki" => |_| ""; }}
 ///
 /// fn main() {
 ///     vial::run!("localhost:1111", blog, wiki).unwrap();

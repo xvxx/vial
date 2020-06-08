@@ -63,9 +63,10 @@ fn from_reader() {
 
     let mut out: Vec<u8> = vec![];
     let date = format!("Date: {}", vial::util::http_current_date());
+    let version = format!("Server: ~ vial {} ~", vial::VERSION);
     let mut expected = vec![
         "HTTP/1.1 200 OK",
-        "Server: ~ vial 0.0.11-dev ~",
+        &version,
         &date,
         "Connection: close",
         "content-type: text/html; charset=utf8",

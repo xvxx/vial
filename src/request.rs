@@ -341,10 +341,11 @@ impl Request {
     ///
     /// Here's an example:
     ///
-    /// ```ignore
+    /// ```no_run
     /// use vial::prelude::*;
+    /// # mod page { pub struct Page { pub name: String } }
     /// use page::Page;
-    /// use db;
+    /// # mod db { use super::Page; pub fn lookup(query: &str) -> Vec<Page> { vec![] } }
     ///
     /// routes! {
     ///     GET "/" => list;
