@@ -9,7 +9,7 @@ routes! {
 fn main() {
     asset_dir!("docs/");
 
-    thread::spawn(|| loop {
+    thread::spawn(|| {
         let mut child = std::process::Command::new("watch")
             .args(&["make", "docs"])
             .spawn()
