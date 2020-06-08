@@ -211,7 +211,7 @@ macro_rules! asset_dir {
 ///
 /// ```toml
 /// [build-dependencies]
-/// vial = "0.1.0"
+/// vial-v0.0.12-
 /// ```
 ///
 /// Then either create or open your existing `build.rs` file in the
