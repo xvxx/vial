@@ -224,12 +224,9 @@ pub mod util;
 #[doc(hidden)]
 pub mod storage;
 
-#[cfg(features = "horror")]
-#[macro_use]
-extern crate horrorshow;
-
-#[cfg(features = "horror")]
-pub use features::horrorshow::{box_html, html, owned_html};
+#[cfg(feature = "horror")]
+#[doc(hidden)]
+pub mod horrorshow;
 
 pub use {
     bundler::bundle_assets, cache::TypeCache, error::Error, method::Method, request::Request,

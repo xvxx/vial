@@ -119,6 +119,9 @@ But hey, who wants to putz around with HTML when you can be writing
 ```rust
 use vial::prelude::*;
 
+#[macro_use]
+extern crate horrorshow;
+
 routes! {
     GET "/" => |_| html! {
         p {

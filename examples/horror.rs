@@ -1,5 +1,8 @@
 use vial::prelude::*;
 
+#[macro_use]
+extern crate horrorshow;
+
 routes! {
     GET "/" => |_| html! {
         p {

@@ -20,5 +20,5 @@ pub use crate::{
 #[cfg(feature = "state")]
 pub use crate::use_state;
 
-#[cfg(features = "horror")]
-pub use features::horrorshow::{box_html, html, owned_html};
+#[cfg(feature = "horror")]
+pub use horrorshow;
