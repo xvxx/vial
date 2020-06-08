@@ -49,7 +49,7 @@
         display: block;
       }
 
-      /* responsive */
+      /* medium size */
       @media (max-width: 1500px) {
         main {
           padding-left: 25px;
@@ -63,6 +63,7 @@
         }
       }
 
+      /* small size */
       @media (max-width: 1220px) {
         nav {
           display: none;
@@ -82,6 +83,12 @@
         }
         #menu-toggle {
           display: block !important;
+        }
+        p {
+          font-size: 1.5em !important;
+        }
+        img:first-of-type {
+          height: 220px;
         }
       }
 
