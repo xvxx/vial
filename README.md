@@ -157,8 +157,8 @@ fn main() {
 ## ~ bonus features ~
 
 **vial** doesn't come with JSON or a template engine or any of that
-fancy stuff by default, but there are a few compile-time `--features`
-you can activate for enhanced productivity:
+fancy stuff by default, but there (will be) a few compile-time
+`--features` you can activate for enhanced productivity:
 
 <img src="./docs/img/alice.jpeg" alt="Alice" align="right" width="250" />
 
@@ -184,10 +184,6 @@ Right now the easiest way is to use [cargo-watch]:
 
     $ cargo install cargo-watch
     $ cargo watch -x 'run --example hello_world'
-
-## ~ T0D0 ~
-
-- [ ] fix iphone text-size
 
 ## ~ testing ~
 
