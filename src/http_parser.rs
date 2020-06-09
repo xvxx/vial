@@ -151,16 +151,23 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 // skip \r\n or \n
                 pos += if *c == b'\n' { 1 } else { 2 };
 
-                if buffer.get(pos) == Some(&b'\n')
-                    || (buffer.get(pos) == Some(&b'\r') && buffer.get(pos + 1) == Some(&b'\n'))
-                {
-                    pos += if buffer.get(pos) == Some(&b'\n') {
-                        1
-                    } else {
-                        2
-                    };
-                    saw_end = true;
-                    break;
+                if let Some(next) = buffer.get(pos) {
+                    match *next {
+                        b'\n' => {
+                            pos += 1;
+                            saw_end = true;
+                            break;
+                        }
+                        b'\r' => {
+                            if buffer.get(pos + 1) != Some(&b'\n') {
+                                return Ok(Status::Partial(buffer));
+                            }
+                            pos += 2;
+                            saw_end = true;
+                            break;
+                        }
+                        _ => {}
+                    }
                 }
 
                 start = pos;
