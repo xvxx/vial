@@ -1,4 +1,6 @@
-## v0.1.1-dev
+## vX.X.X-dev
+
+## v0.1.1
 
 This release fixes a few small bugs in error handling and HTTP
 parsing.
