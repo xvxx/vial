@@ -1,8 +1,9 @@
 use {
     crate::{asset, Request, Response, Result, Router},
     std::{
+        io::Write,
         net::{TcpListener, TcpStream, ToSocketAddrs},
-        sync::Arc,
+        sync::{Arc, Mutex},
     },
     threadpool::ThreadPool,
 };
@@ -55,6 +56,19 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
+        let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
+        std::panic::set_hook(Box::new(move |info| {
+            let mut res: Vec<u8> = vec![];
+
+            Response::from(500)
+                .with_body(format!("<pre>{}", info))
+                .write(&mut res)
+                .unwrap();
+
+            println!("ERR 500 {}", String::from_utf8_lossy(&res));
+            panic_writer.lock().unwrap().write_all(&res).unwrap();
+        }));
+
         let method = req.method().to_string();
         let path = req.path().to_string();
         let response = self.build_response(req);
