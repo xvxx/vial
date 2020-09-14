@@ -70,12 +70,12 @@
         }
         nav.show-mobile {
           display: block;
-          font-size: 150%;
+          font-size: 120%;
           margin-left: 200px;
           width: 100%;
         }
         nav.show-mobile h3 {
-          font-size: 150%;
+          font-size: 120%;
         }
         main {
           float: none;
