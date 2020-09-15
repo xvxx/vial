@@ -283,7 +283,7 @@ impl Response {
         match &self.body {
             Body::String(s) => s.len(),
             Body::Reader(..) => self
-                .header("content-length")
+                .header("Content-Length")
                 .unwrap_or("0")
                 .parse()
                 .unwrap_or(0),
