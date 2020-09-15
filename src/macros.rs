@@ -75,7 +75,7 @@ macro_rules! run {
 ///
 /// You can use {} in place of the server's address. For example:
 ///
-/// ```no_run
+/// ```ignore
 /// fn main() {
 ///     vial::run_with_banner!("--> deadwiki started at {}").unwrap();
 /// }
@@ -83,11 +83,15 @@ macro_rules! run {
 ///
 /// When we start this app, we'll see this:
 ///
-///     --> deadwiki started at http://0.0.0.0:7667
+/// ```ignore
+/// --> deadwiki started at http://0.0.0.0:7667
+/// ```
 ///
 /// Instead of the usual:
 ///
-///     ~ vial running at http://0.0.0.0:7667
+/// ```ignore
+///  ~ vial running at http://0.0.0.0:7667
+/// ```
 ///
 #[macro_export]
 macro_rules! run_with_banner {
