@@ -1,4 +1,7 @@
-## vX.X.X-dev
+## v0.1.3-dev
+
+- Hatter now rejects headers that are over 8KB in total.
+- Minor changes to HTTP header generation.
 
 ## v0.1.2
 
