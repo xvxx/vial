@@ -69,7 +69,7 @@ fn from_reader() {
         &version,
         &date,
         "Connection: close",
-        "Content-Type: text/html; charset=utf8",
+        "content-type: text/html; charset=utf8",
     ];
 
     res1.write(&mut out).unwrap();
