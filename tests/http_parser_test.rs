@@ -97,6 +97,13 @@ fn rejects_malformed_headers() {
 }
 
 #[test]
+fn rejects_large_headers() {
+    let fixture = fs::File::open("tests/http/bad_BIG_HEADERS.txt").unwrap();
+    let err = Request::from_reader(fixture);
+    assert_eq!(err.unwrap_err(), Error::ParseHeaderValue);
+}
+
+#[test]
 fn rejects_expected_but_no_body() {
     let fixture = fs::File::open("tests/http/bad_POST2.txt").unwrap();
     let err = Request::from_reader(fixture);

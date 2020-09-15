@@ -9,6 +9,9 @@ pub enum Status {
     Partial(Vec<u8>),
 }
 
+/// Total size limit for all headers combined.
+const MAX_HEADER_SIZE: usize = 8192;
+
 /// Parse a raw HTTP request into a Request struct.
 pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     let mut pos = 0;
@@ -114,6 +117,7 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
     let mut saw_end = false;
     let mut parsing_key = true;
     let mut content_length = 0;
+    let mut len = 0; // header length
 
     while let Some(c) = buffer.get(pos) {
         if parsing_key {
@@ -173,6 +177,10 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 start = pos;
                 continue;
             }
+        }
+        len += 1;
+        if len > MAX_HEADER_SIZE {
+            return Err(Error::ParseHeaderValue);
         }
         pos += 1;
     }
