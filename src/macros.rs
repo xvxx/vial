@@ -70,6 +70,44 @@ macro_rules! run {
     }};
 }
 
+/// Same as `vial::run!()`, but allows setting a banner that will be
+/// printed to the console when your Vial web app starts.
+///
+/// You can use {} in place of the server's address. For example:
+///
+/// ```no_run
+/// fn main() {
+///     vial::run_with_banner!("--> deadwiki started at {}").unwrap();
+/// }
+/// ```
+///
+/// When we start this app, we'll see this:
+///
+///     --> deadwiki started at http://0.0.0.0:7667
+///
+/// Instead of the usual:
+///
+///     ~ vial running at http://0.0.0.0:7667
+///
+#[macro_export]
+macro_rules! run_with_banner {
+    ($banner:expr) => {
+        vial::run_with_banner!($banner, "0.0.0.0:7667")
+    };
+    ($banner:expr, $addr:expr) => {{
+        vial::run_with_banner!($banner, $addr, self)
+    }};
+    ($banner:expr, $($module:ident),+) => {{
+        vial::run_with_banner!($banner, "0.0.0.0:7667", $($module),+)
+    }};
+    ($banner:expr, $addr:expr, $($module:ident),+) => {{
+        vial::setup!();
+        let mut router = ::vial::Router::new();
+        $($module::vial_add_to_router(&mut router);)+
+        vial::run($addr, router, Some($banner))
+    }};
+}
+
 /// Gives Vial a state object to manage globally. You can access it
 /// by enabling the `state` feature and calling
 /// [`request.state::<YourStruct>()`](struct.Request.html#method.state)

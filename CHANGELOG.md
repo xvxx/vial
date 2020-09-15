@@ -1,4 +1,8 @@
-## vX.X.X-dev
+## v0.1.2-dev
+
+- Any panic! in app code is now converted into an error page.
+- You can now disable or set your own startup banner to show
+  in the console.
 
 ## v0.1.1
 
