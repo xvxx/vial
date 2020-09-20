@@ -1,7 +1,4 @@
-use {
-    crate::{Request, TypeCache},
-    std::marker::PhantomData,
-};
+use crate::TypeCache;
 
 static mut STORAGE: Option<TypeCache> = None;
 
@@ -20,4 +17,3 @@ pub fn set<T: Send + Sync + 'static>(o: T) {
         STORAGE.as_ref().unwrap().set(o);
     }
 }
-
