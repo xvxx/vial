@@ -1,6 +1,5 @@
 use {
-    crate::{Method, Request, Response},
-    percent_encoding::percent_decode,
+    crate::{util::percent_decode, Method, Request, Response},
     std::collections::HashMap,
 };
 
@@ -48,21 +47,15 @@ impl Router {
                         continue 'outer;
                     }
                     if pattern[i].starts_with(':') && !req_part.is_empty() {
-                        req.set_arg(
-                            pattern[i].trim_start_matches(':').to_string(),
-                            percent_decode(req_part.as_bytes())
-                                .decode_utf8_lossy()
-                                .to_string(),
-                        );
+                        if let Some(decoded) = percent_decode(req_part) {
+                            req.set_arg(pattern[i].trim_start_matches(':').into(), decoded);
+                        }
                         continue;
                     } else if pattern[i].starts_with('*') && !req_part.is_empty() {
                         if let Some(idx) = req.path().find(&req_parts[i]) {
-                            req.set_arg(
-                                pattern[i].trim_start_matches('*').to_string(),
-                                percent_decode(req.path()[idx..].as_bytes())
-                                    .decode_utf8_lossy()
-                                    .to_string(),
-                            );
+                            if let Some(decoded) = percent_decode(&req.path()[idx..]) {
+                                req.set_arg(pattern[i].trim_start_matches('*').into(), decoded);
+                            }
                         }
                         return Some(action);
                     } else if *req_part == pattern[i] {

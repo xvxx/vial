@@ -45,7 +45,6 @@ default = []
 [dependencies]
 threadpool = "1.7.1"
 libc-strftime = "0.2.0"
-percent-encoding = "2.1.0"
 
 horrorshow = { version = "0.8.3", optional = true }
 
