@@ -180,6 +180,7 @@
 
       /* pandoc styles */
       code {
+        font-family: Menlo, Monaco, 'Courier New', monospace;
         white-space: pre-wrap;
       }
       span.smallcaps {
