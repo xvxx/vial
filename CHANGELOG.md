@@ -1,5 +1,7 @@
 ## vX.X.X-dev
 
+- Fix routing paths with fewer parts than a pattern.
+
 ## v0.1.3
 
 - Hatter now rejects headers that are over 8KB in total.
