@@ -1,5 +1,6 @@
 use {
     crate::{util::percent_decode, Method, Request, Response},
+    std::cmp::max,
     std::collections::HashMap,
 };
 
@@ -42,23 +43,28 @@ impl Router {
             let req_parts = Self::pattern_to_vec(req.path());
 
             'outer: for (pattern, action) in routes {
-                for (i, req_part) in req_parts.iter().enumerate() {
+                for i in 0..max(req_parts.len(), pattern.len()) {
                     if i >= pattern.len() {
                         continue 'outer;
                     }
-                    if pattern[i].starts_with(':') && !req_part.is_empty() {
+                    let pattern_part = &pattern[i];
+                    if i >= req_parts.len() {
+                        continue 'outer;
+                    }
+                    let req_part = &req_parts[i];
+                    if pattern_part.starts_with(':') && !req_part.is_empty() {
                         if let Some(decoded) = percent_decode(req_part) {
-                            req.set_arg(pattern[i].trim_start_matches(':').into(), decoded);
+                            req.set_arg(pattern_part.trim_start_matches(':').into(), decoded);
                         }
                         continue;
-                    } else if pattern[i].starts_with('*') && !req_part.is_empty() {
+                    } else if pattern_part.starts_with('*') && !req_part.is_empty() {
                         if let Some(idx) = req.path().find(&req_parts[i]) {
                             if let Some(decoded) = percent_decode(&req.path()[idx..]) {
-                                req.set_arg(pattern[i].trim_start_matches('*').into(), decoded);
+                                req.set_arg(pattern_part.trim_start_matches('*').into(), decoded);
                             }
                         }
                         return Some(action);
-                    } else if *req_part == pattern[i] {
+                    } else if req_part == pattern_part {
                         continue;
                     } else {
                         continue 'outer;

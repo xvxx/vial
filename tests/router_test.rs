@@ -102,4 +102,10 @@ fn routing() {
         router.action_for(&mut req).unwrap()(req).to_string(),
         "Mix: of Cargo.toml".to_string()
     );
+
+    let mut req = Request::from_path("/mix/of");
+    assert_eq!(
+        router.action_for(&mut req).unwrap()(req).to_string(),
+        "Parts: mix/of".to_string()
+    );
 }
