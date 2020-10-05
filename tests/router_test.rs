@@ -9,6 +9,9 @@ fn show_raw(r: Request) -> Response {
 fn show_parts(r: Request) -> Response {
     format!("Parts: {}", r.arg("parts").unwrap_or("?")).into()
 }
+fn show_thrice(_r: Request) -> Response {
+    "That's right.".into()
+}
 fn show_mix(r: Request) -> Response {
     format!(
         "Mix: {} {}",
@@ -31,6 +34,7 @@ fn routing() {
     router.insert("GET", "/:page", show);
     router.insert("GET", "/info", info);
     router.insert("GET", "/:page.md", show_raw);
+    router.insert("GET", "/three/url/parts", show_thrice);
     router.insert("GET", "/mix/:of/*things", show_mix);
     router.insert("GET", "/*parts", show_parts);
 
@@ -101,6 +105,18 @@ fn routing() {
     assert_eq!(
         router.action_for(&mut req).unwrap()(req).to_string(),
         "Mix: of Cargo.toml".to_string()
+    );
+
+    let mut req = Request::from_path("/three/url/parts");
+    assert_eq!(
+        router.action_for(&mut req).unwrap()(req).to_string(),
+        "That's right.".to_string()
+    );
+
+    let mut req = Request::from_path("/three/url");
+    assert_eq!(
+        router.action_for(&mut req).unwrap()(req).to_string(),
+        "Parts: three/url".to_string()
     );
 
     let mut req = Request::from_path("/mix/of");
