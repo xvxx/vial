@@ -1,4 +1,6 @@
-## v0.1.4-dev
+## vX.X.X-dev
+
+## v0.1.4
 
 - Fix routing paths with fewer parts than a pattern.
 - Removed the dependency on percent-encoding. Now Vial
