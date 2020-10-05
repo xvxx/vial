@@ -1,6 +1,8 @@
-## vX.X.X-dev
+## v0.1.4-dev
 
 - Fix routing paths with fewer parts than a pattern.
+- Removed the dependency on percent-encoding. Now Vial
+  has only **two** direct dependencies and four total.
 
 ## v0.1.3
 
