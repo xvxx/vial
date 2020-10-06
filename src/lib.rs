@@ -59,11 +59,12 @@
 //!
 //! - [x] **state**: Global state: `request.state::<YourStruct>()`
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
+//! - [x] **json_serde**: `Request::json` and `Response::with_json` powers,
+//!       via Serde.
 //! - [ ] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
 //! - [ ] **multipart**: Multipart form data (file uploads)
 //! - [ ] **log**: Access logging
-//! - [ ] **json**: `to_json` and `from_json` powers, via Serde.
 //!
 //! ## ~ hello world ~
 //!

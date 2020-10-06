@@ -198,3 +198,11 @@ fn from() {
     assert_eq!("text/html; charset=utf8", res.content_type());
     assert_eq!("", res.body());
 }
+
+#[test]
+#[cfg(feature = "json_serde")]
+fn with_json() {
+    let res = Response::from(200).with_json(serde_json::json!({"hello": "world"}));
+    assert_eq!("application/json", res.content_type());
+    assert_eq!("{\"hello\":\"world\"}", res.body());
+}

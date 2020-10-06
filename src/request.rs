@@ -199,6 +199,14 @@ impl Request {
         self
     }
 
+    /// Body of HTTP request deserialized as a JSON value.
+    ///
+    /// The `json_serde` feature must be enabled in `Cargo.toml`.
+    #[cfg(feature = "json_serde")]
+    pub fn json<'a, T: serde::Deserialize<'a>>(&'a self) -> serde_json::Result<T> {
+        Ok(serde_json::from_str(self.body())?)
+    }
+
     /// HTTP Method
     pub fn method(&self) -> &str {
         self.method.from_buf(&self.buffer)

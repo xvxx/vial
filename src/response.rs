@@ -213,6 +213,17 @@ impl Response {
         self
     }
 
+    /// Returns an `application/json` Response with a body serialized as JSON
+    /// from the given value.
+    ///
+    /// The `json_serde` feature must be enabled in `Cargo.toml`.
+    #[cfg(feature = "json_serde")]
+    pub fn with_json<T: serde::Serialize>(self, value: T) -> Response {
+        // Panics if to_value returns Err because this probably indicates a programming error.
+        self.with_body(serde_json::to_value(value).expect("Serialize failed").to_string())
+            .with_header("Content-Type", "application/json")
+    }
+
     /// Returns a `text/plain` Response with the given body.
     pub fn with_text<S: AsRef<str>>(self, text: S) -> Response {
         self.with_body(text)

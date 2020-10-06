@@ -170,11 +170,12 @@ fancy stuff by default, but there (will be) a few compile-time
       reference with `request.state::<T>()`.
 - [x] **horror**: Enable [horrorshow]: A small & fast macro-based HTML
       builder.
+- [X] **json_serde**: `Request::json` and `Response::with_json` powers, via
+      Serde.
 - [ ] **cookies**: Cookie monster!
 - [ ] **sessions**: Session support.
 - [ ] **uploads**: Multipart form data (file uploads)
 - [ ] **log**: Access logging
-- [ ] **json**: `to_json` and `from_json` powers, via Serde.
 
 _**Please note:** The list above is a work-in-progress._
 

@@ -28,6 +28,11 @@ path = "examples/horror.rs"
 required-features = ["horror"]
 
 [[example]]
+name = "json"
+path = "examples/json.rs"
+required-features = ["json_serde"]
+
+[[example]]
 name = "state"
 path = "examples/state.rs"
 required-features = ["state"]
@@ -39,6 +44,7 @@ required-features = ["state"]
 
 [features]
 horror = ['horrorshow']
+json_serde = ['serde', 'serde_json']
 state = []
 default = []
 
@@ -47,4 +53,5 @@ threadpool = "1.7.1"
 libc-strftime = "0.2.0"
 
 horrorshow = { version = "0.8.3", optional = true }
-
+serde = { version = "1", optional = true }
+serde_json = { version = "1", optional = true }

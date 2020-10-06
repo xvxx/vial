@@ -543,6 +543,9 @@ can set on a [Response] in your actions:
 
 - `fn with_text<S: AsRef<str>>(self, text: S) -> Response;`
 
+- `fn with_json<T: serde::Serialize>(self, value: T) -> Response;` (requires
+  the `json_serde` feature)
+
 - `fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response;`
 
 - `fn with_asset(mut self, path: &str) -> Response;`
@@ -925,7 +928,84 @@ _Optional Feature: Coming soon._
 
 ## JSON
 
-_Optional Feature: Coming soon._
+**Vial** supports JSON requests and responses via [Serde].
+
+First, enable the `json_serde` feature in your `Cargo.toml`:
+
+```toml
+[Dependencies]
+vial = { version = "*", features=["json_serde"] }
+```
+
+Now, you can use `Request::json` to deserialize a JSON request body, and
+`Response::with_json` to serialize a JSON response body:
+
+```rust
+use vial::prelude::*;
+
+routes! {
+    POST "/json" => post;
+}
+
+fn post(req: Request) -> impl Responder {
+    match req
+        .json::<serde_json::Value>()
+        .ok()
+        .as_ref()
+        .and_then(|val| val.as_object())
+        .and_then(|obj| obj.get("message"))
+        .and_then(|val| val.as_str())
+        .map(|message| message.to_string())
+    {
+        Some(message) => Response::from(200).with_json(serde_json::json!({
+            "message": format!("Echo: {}", message)
+        })),
+        None => Response::from(400).with_body("json request parse error"),
+    }
+}
+
+fn main() {
+    vial::run!().unwrap();
+}
+```
+
+[Serde's derive macro] can conveniently generate code to serialize and
+deserialize structs and enums, including helpful error messages. To use it, add
+a dependency on `serde` with the `derive` feature enabled in your `Cargo.toml`:
+
+```toml
+[Dependencies]
+serde = { version = "*", features=["derive"] }
+```
+
+Now, you can use `Request::json` and `Response::with_json` with any type
+implementing `serde::Deserialize` and `serde::Serialize`, respectively:
+
+```rust
+use vial::prelude::*;
+
+routes! {
+    POST "/json" => post;
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Echo {
+    message: String,
+}
+
+fn post(req: Request) -> impl Responder {
+    match req.json::<Echo>() {
+        Ok(echo) => Response::from(200).with_json(Echo {
+            message: format!("Echo: {}", echo.message),
+        }),
+        Err(e) => Response::from(400).with_body(e.to_string()),
+    }
+}
+
+fn main() {
+    vial::run!().unwrap();
+}
+```
 
 ## Database
 
@@ -949,3 +1029,5 @@ _"Pro Tip": Coming soon._
 [is_bundled api]: https://docs.rs/vial/latest/vial/assets/#method.is_bundled
 [to_string api]: https://docs.rs/vial/latest/vial/assets/#method.to_string
 [as_reader api]: https://docs.rs/vial/latest/vial/assets/#method.as_reader
+[Serde]: https://serde.rs/
+[Serde's derive macro]: https://serde.rs/derive.html
