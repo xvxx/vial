@@ -707,7 +707,7 @@ vial = "0.1"
 `dependencies` needs to list any optional features you want to use,
 however._)
 
-3. Create a `bundle.rs` and call `vial::bundle_assets!()` in it,
+3. Create a `build.rs` in the root of your project and call `vial::bundle_assets!()` in it,
    passing your asset directory as the sole argument:
 
 ```rust
