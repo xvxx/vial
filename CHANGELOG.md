@@ -31,5 +31,5 @@ For an overview, please see [the manual][manual] or the [README][readme].
 
 Enjoy.
 
-[manual]: https://vial.sh
+[manual]: https://vial.rs
 [readme]: https://github.com/xvxx/vial#readme

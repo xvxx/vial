@@ -27,7 +27,7 @@
 //!
 //! To learn more, keep reading or visit one of these links:
 //!
-//! - [Manual](https://vial.sh/)
+//! - [Manual](https://vial.rs/)
 //! - [Source Code](https://github.com/xvxx/vial)
 //! - [Bug Tracker](https://github.com/xvxx/vial/issues)
 //! - [Crate](https://crates.io/crates/vial)
