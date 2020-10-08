@@ -12,11 +12,30 @@ fn asset_exists() {
 
 #[test]
 fn etag_test() {
+    fn test_asset_mtime(path: &str) -> Option<String> {
+        use std::fs;
+        let path = format!("./tests/assets/{}", path);
+        if let Ok(meta) = fs::metadata(path) {
+            if let Ok(time) = meta.modified() {
+                return Some(format!("{:?}", time));
+            }
+        }
+        None
+    }
+
     vial::asset_dir!("./tests/assets/");
-    assert_ne!(
-        asset::etag("dinner.jpg").to_string(),
-        asset::etag("letter.jpg").to_string()
-    );
+    if test_asset_mtime("dinner.jpg") == test_asset_mtime("letter.jpg") {
+        assert_eq!(
+            asset::etag("dinner.jpg").to_string(),
+            asset::etag("letter.jpg").to_string()
+        );
+    } else {
+        assert_ne!(
+            asset::etag("dinner.jpg").to_string(),
+            asset::etag("letter.jpg").to_string()
+        );
+    }
+
     assert_ne!(
         asset::etag("dinner.jpg").to_string(),
         asset::etag("made-up.gif").to_string()
