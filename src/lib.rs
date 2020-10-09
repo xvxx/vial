@@ -52,12 +52,11 @@
 //!
 //! ```toml
 //! [dependencies]
-//! vial = { version = "*", features = ["state", "cookies"] }
+//! vial = { version = "*", features = ["horror", "cookies"] }
 //! ```
 //!
 //! This list is a work in progress:
 //!
-//! - [x] **state**: Global state: `request.state::<YourStruct>()`
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 //! - [ ] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
@@ -220,7 +219,6 @@ pub mod http_parser;
 #[doc(hidden)]
 pub mod util;
 
-#[cfg(feature = "state")]
 #[doc(hidden)]
 pub mod storage;
 

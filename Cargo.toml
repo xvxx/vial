@@ -1,13 +1,13 @@
 [package]
 name = "vial"
 description = "a micro micro-framework"
+homepage = "https://vial.rs"
+repository = "https://github.com/xvxx/vial"
 version = "0.1.5-dev"
 authors = ["chris west <c@xvxx.io>"]
 documentation = "https://docs.rs/vial/"
-homepage = "https://vial.rs/"
 edition = "2018"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/xvxx/vial"
 readme = "README.md"
 exclude = [
     "examples/*",
@@ -30,16 +30,13 @@ required-features = ["horror"]
 [[example]]
 name = "state"
 path = "examples/state.rs"
-required-features = ["state"]
 
 [[example]]
 name = "filters"
 path = "examples/filters.rs"
-required-features = ["state"]
 
 [features]
 horror = ['horrorshow']
-state = []
 default = []
 
 [dependencies]

@@ -736,9 +736,8 @@ There are two types of state available in **Vial**:
 1. Local State - Built-in to [Request]. Allows caching of expensive
    algorithms (like DB lookups) on a per-request basis.
 
-2. Global State - Requires the `state` feature. Allows you to share
-   any `Send + Sync + 'static` types (like database connections)
-   across all requests.
+2. Global State - Allows you to share any `Send + Sync + 'static`
+   types (like database connections) across all requests.
 
 ### Local State
 
@@ -811,17 +810,10 @@ fn main() {
 
 ### Global State
 
-There are three steps involved in setting up shared, global state in
+There are two steps involved in setting up shared, global state in
 **Vial**:
 
-1. Enable the `state` feature in your `Cargo.toml`:
-
-```toml
-[Dependencies]
-vial = { version = "*", features=["state"] }
-```
-
-2. Create a struct that is `Send + Sync` to hold your application's
+1. Create a struct that is `Send + Sync` to hold your application's
    shared state:
 
 ```rust
@@ -844,7 +836,7 @@ impl MyConfig {
 }
 ```
 
-3. Tell **Vial** about your state object before calling `run!`:
+2. Tell **Vial** about your state object before calling `run!`:
 
 ```rust
 fn main() {

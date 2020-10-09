@@ -8,7 +8,7 @@ build:
 
 .PHONY: docs
 docs: docs/index.html
-	cargo doc --features state
+	cargo doc 
 
 check:
 	@mkdir -p target/docs

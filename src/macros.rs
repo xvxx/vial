@@ -113,7 +113,7 @@ macro_rules! run_with_banner {
 }
 
 /// Gives Vial a state object to manage globally. You can access it
-/// by enabling the `state` feature and calling
+/// by calling
 /// [`request.state::<YourStruct>()`](struct.Request.html#method.state)
 /// in an action.
 ///
@@ -152,7 +152,6 @@ macro_rules! run_with_banner {
 ///     run!().unwrap();
 /// }
 /// ```
-#[cfg(feature = "state")]
 #[macro_export]
 macro_rules! use_state {
     ($state:expr) => {

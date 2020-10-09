@@ -383,8 +383,6 @@ impl Request {
     /// [`vial::use_state!`](macro.use_state.html) macro before
     /// starting your application with [`vial::run!`](macro.run.html).
     ///
-    /// The `state` feature must also be enabled in `Cargo.toml`.
-    ///
     /// ```ignore
     /// use std::sync::atomic::{AtomicUsize, Ordering};
     /// use vial::prelude::*;
@@ -417,7 +415,6 @@ impl Request {
     ///     run!();
     /// }
     /// ```
-    #[cfg(feature = "state")]
     pub fn state<T: Send + Sync + 'static>(&self) -> &T {
         crate::storage::get::<T>()
     }
