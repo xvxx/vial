@@ -12,9 +12,9 @@ docs: docs/index.html
 
 check:
 	@mkdir -p target/docs
-	@(which -s pandoc) || (echo "Need pandoc(1) installed"; exit 1)
-	@(which -s ruby) || (echo "Need ruby(1) installed"; exit 1)
-	@(which -s md-toc) || (echo "Need md-toc(1): cargo install markdown-toc"; exit 1)
+	@(which pandoc) > /dev/null || (echo "Need pandoc(1) installed"; exit 1)
+	@(which ruby) > /dev/null || (echo "Need ruby(1) installed"; exit 1)
+	@(which md-toc) > /dev/null || (echo "Need md-toc(1): cargo install markdown-toc"; exit 1)
 
 docs/index.html: check target/docs/toc.html docs/manual.tpl docs/MANUAL.md
 	@echo "building docs/index.html..."
