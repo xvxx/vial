@@ -24,7 +24,7 @@ fn hits(req: Request) -> impl Responder {
     format!("Hits: {}", req.counter().count())
 }
 
-fn double(req: Request) -> impl Responder {
+fn double(_req: Request) -> impl Responder {
     "Double trouble."
 }
 

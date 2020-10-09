@@ -25,9 +25,10 @@ use std::{
 /// assert_eq!(Some(&12345), cache.get::<usize>());
 /// ```
 ///
-/// We use this in Vial for global state (available when compiling
-/// with `--features state`) as well as local request state, which is
-/// always available.
+/// We use this in Vial for global state as well as local request
+/// state, however this design is flawed as the local cache shouldn't
+/// be forced into `Send + Sync`. These two will be separated in a
+/// future release.
 #[derive(Debug, Default)]
 pub struct TypeCache {
     map: RefCell<HashMap<TypeId, *mut dyn Any>>,

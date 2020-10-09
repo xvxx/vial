@@ -166,8 +166,6 @@ fancy stuff by default, but there (will be) a few compile-time
 
 <img src="./docs/img/alice.jpeg" alt="Alice" align="right" width="250" />
 
-- [x] **state**: Global state you set with `vial::use_state!(T)` and
-      reference with `request.state::<T>()`.
 - [x] **horror**: Enable [horrorshow]: A small & fast macro-based HTML
       builder.
 - [X] **json_serde**: `Request::json` and `Response::with_json` powers, via

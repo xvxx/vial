@@ -8,8 +8,6 @@
 //! - [`run!`](macro.run.html)
 //! - [`routes!`](macro.routes.html)
 //! - [`asset_dir!`](macro.asset_dir.html)
-//!
-//! With the `state` feature enabled, it also pulls in:
 //! - [`use_state!`](macro.use_state.html)
 
 pub use crate::{
@@ -17,7 +15,6 @@ pub use crate::{
     router::Router, routes, run,
 };
 
-#[cfg(feature = "state")]
 pub use crate::use_state;
 
 #[cfg(feature = "horror")]
