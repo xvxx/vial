@@ -19,6 +19,10 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
     let listener = TcpListener::bind(&addr)?;
     let addr = listener.local_addr()?;
     let server = Arc::new(Server::new(router));
+
+    #[cfg(feature = "state")]
+    eprintln!("! vial feature `state` is now built-in. You can safely remove it.");
+
     if let Some(banner) = banner {
         if !banner.is_empty() {
             println!("{}", banner.replace("{}", &format!("http://{}", addr)));

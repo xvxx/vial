@@ -43,6 +43,7 @@ path = "examples/filters.rs"
 [features]
 horror = ['horrorshow']
 json_serde = ['serde', 'serde_json']
+state = []
 default = []
 
 [dependencies]
