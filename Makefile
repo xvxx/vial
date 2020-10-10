@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	cargo test
+	cargo test --all-features
 
 .PHONY: build
 build:
