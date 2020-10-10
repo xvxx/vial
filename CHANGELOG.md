@@ -1,4 +1,8 @@
-## vX.X.X-dev
+## v0.1.5-dev
+
+- Added optional `json_serde` feature with support for
+  JSON via `Request::json` thanks to @tdryer!
+- Removed the `state` feature. Global state is built-in.
 
 ## v0.1.4
 
