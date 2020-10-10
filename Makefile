@@ -10,6 +10,9 @@ build:
 docs: docs/index.html
 	cargo doc --all-features
 
+# The Vial docs were originally built using:
+# pandoc 2.8
+# Compiled with pandoc-types 1.20, texmath 0.12, skylighting 0.8.2.3
 check:
 	@mkdir -p target/docs
 	@(which pandoc) > /dev/null || (echo "Need pandoc(1) installed"; exit 1)
