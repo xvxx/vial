@@ -700,7 +700,7 @@ must:
 
 2. Add `vial` as to `[build-dependencies]` in your `Cargo.toml`:
 
-```toml
+```
 [build-dependencies]
 vial = "0.1"
 ```
@@ -924,7 +924,7 @@ _Optional Feature: Coming soon._
 
 First, enable the `json_serde` feature in your `Cargo.toml`:
 
-```toml
+```
 [Dependencies]
 vial = { version = "*", features=["json_serde"] }
 ```
@@ -965,7 +965,7 @@ fn main() {
 deserialize structs and enums, including helpful error messages. To use it, add
 a dependency on `serde` with the `derive` feature enabled in your `Cargo.toml`:
 
-```toml
+```
 [Dependencies]
 serde = { version = "*", features=["derive"] }
 ```
@@ -1021,5 +1021,5 @@ _"Pro Tip": Coming soon._
 [is_bundled api]: https://docs.rs/vial/latest/vial/assets/#method.is_bundled
 [to_string api]: https://docs.rs/vial/latest/vial/assets/#method.to_string
 [as_reader api]: https://docs.rs/vial/latest/vial/assets/#method.as_reader
-[Serde]: https://serde.rs/
-[Serde's derive macro]: https://serde.rs/derive.html
+[serde]: https://serde.rs/
+[serde's derive macro]: https://serde.rs/derive.html
