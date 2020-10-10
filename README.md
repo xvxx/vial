@@ -166,6 +166,8 @@ fancy stuff by default, but there (will be) a few compile-time
 
 <img src="./docs/img/alice.jpeg" alt="Alice" align="right" width="250" />
 
+- [x] **hatter**: Enable [Hatter]: A positively mad, HTML templating
+      language.
 - [x] **horror**: Enable [horrorshow]: A small & fast macro-based HTML
       builder.
 - [X] **json_serde**: `Request::json` and `Response::with_json` powers, via
@@ -210,5 +212,6 @@ appreciated.
 
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrorshow]: https://github.com/Stebalien/horrorshow-rs
+[hatter]: https://github.com/xvxx/hatter
 [deadwiki]: https://github.com/xvxx/deadwiki
 [gh-build-action]: https://github.com/xvxx/vial/actions?query=workflow%3Abuild

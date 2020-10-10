@@ -23,6 +23,11 @@ pre-release-replacements = [
 ]
 
 [[example]]
+name = "hatter"
+path = "examples/hatter.rs"
+required-features = ["hatter"]
+
+[[example]]
 name = "horror"
 path = "examples/horror.rs"
 required-features = ["horror"]
@@ -50,6 +55,7 @@ default = []
 threadpool = "1.7.1"
 libc-strftime = "0.2.0"
 
+hatter = { version = "0.1.1", optional = true }
 horrorshow = { version = "0.8.3", optional = true }
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }

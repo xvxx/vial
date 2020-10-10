@@ -17,5 +17,8 @@ pub use crate::{
 
 pub use crate::use_state;
 
+#[cfg(feature = "hatter")]
+pub use hatter;
+
 #[cfg(feature = "horror")]
 pub use horrorshow;
