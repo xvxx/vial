@@ -1,4 +1,6 @@
-## v0.1.5-dev
+## vX.X.X-dev
+
+## v0.1.5
 
 - Added optional `json_serde` feature with support for
   JSON via `Request::json` thanks to @tdryer!
