@@ -101,6 +101,10 @@ impl Default for Response {
             "Content-Type".to_lowercase(),
             "text/html; charset=utf8".into(),
         );
+        headers.insert(
+            "Content-Length".to_lowercase(),
+            "0".into(),
+        );
 
         Response {
             code: 200,

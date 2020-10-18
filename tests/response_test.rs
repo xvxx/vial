@@ -127,6 +127,7 @@ fn from_code() {
 
     let res = Response::from_code(200);
     assert_eq!(200, res.code());
+    assert_eq!("0", res.header("Content-Length").unwrap());
 
     let res1 = Response::from_code(501);
     let res2 = Response::new().with_code(501);
