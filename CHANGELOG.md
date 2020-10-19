@@ -1,4 +1,9 @@
-## vX.X.X-dev
+## v0.1.6-dev
+
+- Fix user agent timeout on empty response body.
+- Fix date format in HTTP response.
+
+Thanks to https://redbot.org and @tdryer for this release!
 
 ## v0.1.5
 

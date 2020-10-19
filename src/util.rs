@@ -1,4 +1,4 @@
-const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S %Z";
+const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S";
 
 /// Content type for a file based on its extension.
 pub fn content_type(path: &str) -> &'static str {
@@ -38,7 +38,7 @@ pub fn decode_form_value(post: &str) -> String {
 /// Current date in HTTP format.
 pub fn http_current_date() -> String {
     let now = libc_strftime::epoch();
-    libc_strftime::strftime_gmt(HTTP_DATE_FMT, now)
+    libc_strftime::strftime_gmt(HTTP_DATE_FMT, now) + " GMT"
 }
 
 /// Mutably borrowed from the zero dependency httpserv project.

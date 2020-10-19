@@ -48,7 +48,11 @@ fn decode_form_value() {
 
 #[test]
 fn http_current_date() {
-    assert!(!util::http_current_date().is_empty());
+    // const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S";
+    let date = util::http_current_date();
+    let parts: Vec<_> = date.split(' ').collect();
+    assert_eq!(6, parts.len());
+    assert_eq!("GMT", parts[parts.len() - 1]);
 }
 
 #[test]
