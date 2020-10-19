@@ -64,21 +64,35 @@ fn from_reader() {
     let mut out: Vec<u8> = vec![];
     let date = format!("Date: {}", vial::util::http_current_date());
     let version = format!("Server: ~ vial {} ~", vial::VERSION);
-    let mut expected = vec![
+    let expected = vec![
         "HTTP/1.1 200 OK",
         &version,
         &date,
         "Connection: close",
+        "content-length: 0",
         "content-type: text/html; charset=utf8",
     ];
 
     res1.write(&mut out).unwrap();
-    for line in String::from_utf8_lossy(&out).split("\r\n") {
+    let out = String::from_utf8_lossy(&out);
+    let lines = out.split("\r\n");
+    let mut line_count = 0;
+    for (i, line) in lines.enumerate() {
+        // only care about headers
+        if line.is_empty() {
+            break;
+        }
+        line_count = i + 1;
         if !expected.is_empty() {
-            assert_eq!(line, expected.remove(0));
+            assert!(
+                expected.contains(&line),
+                "expected {:?} in {:?}",
+                line,
+                expected
+            );
         }
     }
-    assert!(expected.is_empty());
+    assert_eq!(expected.len(), line_count);
 }
 
 #[test]
