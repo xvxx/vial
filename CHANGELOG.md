@@ -1,4 +1,6 @@
-## v0.1.6-dev
+## v{{next_version}}-dev
+
+## v0.1.6
 
 - Fix user agent timeout on empty response body.
 - Fix date format in HTTP response.
