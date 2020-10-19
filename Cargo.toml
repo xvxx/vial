@@ -21,7 +21,7 @@ exclude = [
 consolidate-commits = true
 dev-version-ext = "dev"
 pre-release-replacements = [
-  {file="CHANGELOG.md", search="## v\\d+\\.\\d+\\.\\d+-dev", replace="## vX.X.X-dev\n\n## v{{version}}"},
+  {file="CHANGELOG.md", search="## v\\d+\\.\\d+\\.\\d+-dev", replace="## v{{next_version}}-dev\n\n## v{{version}}"},
 ]
 
 [[example]]
