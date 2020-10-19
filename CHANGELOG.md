@@ -1,4 +1,6 @@
-## v{{next_version}}-dev
+<!-- next-header -->
+
+## $Unreleased ($ReleaseDate)
 
 ## v0.1.6
 
