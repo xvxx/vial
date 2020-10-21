@@ -921,27 +921,34 @@ vial = { version = "*", features = ['cookies'] }
 ```
 
 Once it's enabled you can access cookies the client sent using
-`req.cookie(name)` and set cookies using a similar API to the [Request
-Headers](#request-headers) API:
+`req.cookie(name)`, set cookies using a similar API to the [Request
+Headers](#request-headers) API, or remove cookies using
+`remove_cookie()` or `without_cookie()`:
 
 ```rust
 use vial::prelude::*;
 
 routes! {
     GET "/" => show;
+    GET "/clear" => clear;
     GET "/set/:count" => set;
 }
 
 fn show(req: Request) -> impl Responder {
     let count: usize = req.cookie("count").unwrap_or("0").parse().unwrap();
     let new_count = count + 1;
-    Response::from(format!("count: {}", count)).with_cookie("count", new_count.to_string())
+    Response::from(format!("count: {}", count))
+        .with_cookie("count", new_count.to_string())
+}
 
+fn clear(req: Request) -> impl Responder {
+    Response::redirect_to("/").without_cookie("count")
 }
 
 fn set(req: Request) -> Option<impl Responder> {
     let val: usize = req.arg("count")?.parse().unwrap();
-    Response::redirect_to("/").with_cookie("count", val.to_string())
+    Response::redirect_to("/")
+        .with_cookie("count", val.to_string()).into()
 }
 
 fn main() {
