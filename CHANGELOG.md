@@ -2,6 +2,8 @@
 
 ## $Unreleased ($ReleaseDate)
 
+- Added optional `cookies` feature.
+
 ## v0.1.6
 
 - Fix user agent timeout on empty response body.
