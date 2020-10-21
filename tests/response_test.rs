@@ -221,3 +221,16 @@ fn with_json() {
     assert_eq!("application/json", res.content_type());
     assert_eq!("{\"hello\":\"world\"}", res.body());
 }
+
+#[test]
+#[cfg(feature = "cookies")]
+fn test_set_cookie() {
+    let mut res = Response::new();
+    res.set_cookie("Count", "2");
+    assert_eq!("2", res.cookie("Count").unwrap());
+
+    let mut out = vec![];
+    res.write(&mut out).unwrap();
+    let out = String::from_utf8_lossy(&out);
+    assert!(out.contains("Set-Cookie: count=\"2\"\r\n"));
+}

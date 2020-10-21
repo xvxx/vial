@@ -3,6 +3,9 @@ use {
     std::{collections::HashMap, fmt, io, mem, rc::Rc, str},
 };
 
+#[cfg(feature = "cookies")]
+use cookie2::Cookie;
+
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -57,6 +60,9 @@ pub struct Request {
 
     /// Local request cache.
     cache: Rc<TypeCache>,
+
+    #[cfg(feature = "cookies")]
+    cookies: Vec<(String, String)>,
 }
 
 impl fmt::Debug for Request {
@@ -104,6 +110,9 @@ impl Request {
             form: HashMap::new(),
             buffer: Vec::new(),
             cache: Rc::new(TypeCache::new()),
+
+            #[cfg(feature = "cookies")]
+            cookies: vec![],
         }
     }
 
@@ -140,6 +149,16 @@ impl Request {
             }
             req.body.1 = req.body.0 + size;
             req.parse_form();
+        }
+
+        #[cfg(feature = "cookies")]
+        {
+            if let Some(cookie) = req.header("Cookie") {
+                let cookie = Cookie::parse(cookie).map_err(|e| Error::Other(e.to_string()))?;
+                let name = cookie.name().to_owned();
+                let val = util::percent_decode(cookie.value()).unwrap();
+                req.cookies.push((name, val));
+            }
         }
 
         Ok(req)
@@ -425,5 +444,13 @@ impl Request {
     /// ```
     pub fn state<T: Send + Sync + 'static>(&self) -> &T {
         crate::storage::get::<T>()
+    }
+
+    #[cfg(feature = "cookies")]
+    /// Get the value of a cookie sent by the client.
+    pub fn cookie(&self, name: &str) -> Option<&str> {
+        self.cookies
+            .iter()
+            .find_map(|(k, v)| if k == name { Some(v.as_ref()) } else { None })
     }
 }

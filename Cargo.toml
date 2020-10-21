@@ -27,6 +27,11 @@ pre-release-replacements = [
 ]
 
 [[example]]
+name = "cookies"
+path = "examples/cookies.rs"
+required-features = ["cookies"]
+
+[[example]]
 name = "hatter"
 path = "examples/hatter.rs"
 required-features = ["hatter"]
@@ -53,12 +58,14 @@ path = "examples/filters.rs"
 horror = ['horrorshow']
 json_serde = ['serde', 'serde_json']
 state = []
+cookies = ['cookie2']
 default = []
 
 [dependencies]
 threadpool = "1.7.1"
 libc-strftime = "0.2.0"
 
+cookie2 = { version = "0.12.0", default-features = false, optional = true }
 hatter = { version = "0.1.1", optional = true }
 horrorshow = { version = "0.8.3", optional = true }
 serde = { version = "1", optional = true }

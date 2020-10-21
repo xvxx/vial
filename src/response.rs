@@ -67,6 +67,10 @@ pub struct Response {
 
     /// Response body.
     body: Body,
+
+    #[cfg(feature = "cookies")]
+    /// Cookies to set.
+    cookies: HashMap<String, String>,
 }
 
 impl PartialEq for Response {
@@ -110,6 +114,9 @@ impl Default for Response {
             code: 200,
             body: Body::None,
             headers,
+
+            #[cfg(feature = "cookies")]
+            cookies: HashMap::new(),
         }
     }
 }
@@ -150,6 +157,18 @@ impl Response {
         self.headers.insert(name.to_lowercase(), value.to_string());
     }
 
+    #[cfg(feature = "cookies")]
+    /// Get an individual cookie. `name` is case insensitive.
+    pub fn cookie(&self, name: &str) -> Option<&str> {
+        self.cookies.get(&name.to_lowercase()).map(|h| h.as_ref())
+    }
+
+    #[cfg(feature = "cookies")]
+    /// Set a cookie.
+    pub fn set_cookie(&mut self, name: &str, value: &str) {
+        self.cookies.insert(name.to_lowercase(), value.into());
+    }
+
     /// Convert into a Response.
     pub fn from<T: Into<Response>>(from: T) -> Response {
         from.into()
@@ -182,6 +201,13 @@ impl Response {
     /// addition to the defaults.
     pub fn from_header(name: &str, value: &str) -> Response {
         Response::default().with_header(name, value)
+    }
+
+    #[cfg(feature = "cookies")]
+    /// Creates a new Response and sets the given cookie, in
+    /// addition to the defaults.
+    pub fn from_cookie(name: &str, value: &str) -> Response {
+        Response::default().with_cookie(name, value)
     }
 
     /// Creates a new default Response with the given body.
@@ -293,6 +319,13 @@ impl Response {
         self
     }
 
+    #[cfg(feature = "cookies")]
+    /// Returns a Response with the given cookie set to the value.
+    pub fn with_cookie(mut self, key: &str, value: &str) -> Response {
+        self.set_cookie(key, value);
+        self
+    }
+
     /// Length of the body.
     pub fn len(&self) -> usize {
         match &self.body {
@@ -339,8 +372,19 @@ impl Response {
         if !header.ends_with("\r\n") {
             header.push_str("\r\n");
         }
-        header.push_str("\r\n");
 
+        #[cfg(feature = "cookies")]
+        {
+            for (name, val) in self.cookies {
+                header.push_str("Set-Cookie: ");
+                header.push_str(&name);
+                header.push('=');
+                header.push_str(&val);
+                header.push_str("\r\n");
+            }
+        }
+
+        header.push_str("\r\n");
         w.write_all(header.as_bytes())?;
 
         match self.body {

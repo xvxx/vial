@@ -912,7 +912,44 @@ _Optional Feature: Coming soon._
 
 ## Cookies
 
-_Optional Feature: Coming soon._
+Extremely basic cookie support is available by enabling the `cookies`
+feature in your `Cargo.toml`:
+
+```
+[Dependencies]
+vial = { version = "*", features = ['cookies'] }
+```
+
+Once it's enabled you can access cookies the client sent using
+`req.cookie(name)` and set cookies using a similar API to the [Request
+Headers](#request-headers) API:
+
+```rust
+use vial::prelude::*;
+
+routes! {
+    GET "/" => show;
+    GET "/set/:count" => set;
+}
+
+fn show(req: Request) -> impl Responder {
+    let count: usize = req.cookie("count").unwrap_or("0").parse().unwrap();
+    let new_count = count + 1;
+    Response::from(format!("count: {}", count)).with_cookie("count", new_count.to_string())
+
+}
+
+fn set(req: Request) -> Option<impl Responder> {
+    let val: usize = req.arg("count")?.parse().unwrap();
+    Response::redirect_to("/").with_cookie("count", val.to_string())
+}
+
+fn main() {
+    run!();
+}
+```
+
+Like all HTTP key/value pairs, cookie names are case insensitive.
 
 ## Sessions
 
@@ -926,7 +963,7 @@ First, enable the `json_serde` feature in your `Cargo.toml`:
 
 ```
 [Dependencies]
-vial = { version = "*", features=["json_serde"] }
+vial = { version = "*", features = ['json_serde'] }
 ```
 
 Now, you can use `Request::json` to deserialize a JSON request body, and
