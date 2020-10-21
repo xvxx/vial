@@ -35,11 +35,11 @@ jobs:
           components: clippy
           override: true
       - name: check
-        run: cargo check
+        run: cargo check --all-features
       - name: clippy
-        run: cargo clippy
+        run: cargo clippy --all-features
       - name: test
-        run: cargo test
+        run: cargo test --all-features
       - name: build
         run: cargo build --release
 
@@ -64,10 +64,10 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: check
-        run: cargo check
+        run: cargo check --all-features
       - name: clippy
-        run: cargo clippy
+        run: cargo clippy --all-features
       - name: test
-        run: cargo test
+        run: cargo test --all-features
       - name: build
         run: cargo build --release
