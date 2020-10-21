@@ -105,10 +105,7 @@ impl Default for Response {
             "Content-Type".to_lowercase(),
             "text/html; charset=utf8".into(),
         );
-        headers.insert(
-            "Content-Length".to_lowercase(),
-            "0".into(),
-        );
+        headers.insert("Content-Length".to_lowercase(), "0".into());
 
         Response {
             code: 200,
@@ -256,8 +253,12 @@ impl Response {
     #[cfg(feature = "json_serde")]
     pub fn with_json<T: serde::Serialize>(self, value: T) -> Response {
         // Panics if to_value returns Err because this probably indicates a programming error.
-        self.with_body(serde_json::to_value(value).expect("Serialize failed").to_string())
-            .with_header("Content-Type", "application/json")
+        self.with_body(
+            serde_json::to_value(value)
+                .expect("Serialize failed")
+                .to_string(),
+        )
+        .with_header("Content-Type", "application/json")
     }
 
     /// Returns a `text/plain` Response with the given body.

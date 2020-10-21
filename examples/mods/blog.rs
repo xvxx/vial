@@ -45,4 +45,3 @@ fn show(req: Request) -> impl Responder {
 fn show_raw(req: Request) -> impl Responder {
     ""
 }
-

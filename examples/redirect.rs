@@ -20,10 +20,7 @@ fn redirect_to_greeting(req: Request) -> Option<impl Responder> {
 }
 
 fn hello_name(req: Request) -> String {
-    format!(
-        "<h1>Why hello there, {}!</h1>",
-        req.arg("name").unwrap()
-    )
+    format!("<h1>Why hello there, {}!</h1>", req.arg("name").unwrap())
 }
 
 fn main() {
