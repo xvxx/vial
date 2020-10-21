@@ -1,6 +1,8 @@
 <!-- next-header -->
 
-## $Unreleased ($ReleaseDate)
+## [Unreleased] - ReleaseDate
+
+## 0.1.7 (2020-10-21)
 
 - Added optional `cookies` feature.
 
