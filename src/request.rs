@@ -8,13 +8,13 @@ use cookie2::Cookie;
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub struct Span(pub usize, pub usize);
 
 impl Span {
     /// Create a new, empty Span.
     pub fn new() -> Span {
-        Span(0, 0)
+        Span::default()
     }
 
     /// Is this span empty?

@@ -31,8 +31,8 @@ impl fmt::Display for Body {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Body::String(s) => write!(f, "{}", s),
-            Body::Reader(..) => write!(f, "{}", "(io::Read)"),
-            _ => write!(f, "{}", "None"),
+            Body::Reader(..) => write!(f, "(io::Read)"),
+            _ => write!(f, "None"),
         }
     }
 }

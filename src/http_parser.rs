@@ -125,11 +125,8 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 b':' => {
                     name = Span(start, pos);
                     // skip leading whitespace on value
-                    loop {
-                        match buffer.get(pos + 1) {
-                            Some(&b' ') | Some(&b'\t') => pos += 1,
-                            _ => break,
-                        }
+                    while let Some(&b' ') | Some(&b'\t') = buffer.get(pos + 1) {
+                        pos += 1;
                     }
                     parsing_key = false;
                     start = pos + 1;
@@ -137,46 +134,44 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 b'\r' | b'\n' | b' ' | b'\t' => return Err(Error::ParseHeaderName),
                 _ => {}
             }
-        } else {
-            if *c == b'\n' || (*c == b'\r' && buffer.get(pos + 1) == Some(&b'\n')) {
-                if name.is_empty() {
-                    return Err(Error::ParseError);
-                }
-
-                let value = Span(start, pos);
-                headers.push((name, value));
-                if name.from_buf(&buffer).to_ascii_lowercase() == "content-length" {
-                    content_length = value.from_buf(&buffer).parse().unwrap_or(0);
-                }
-
-                name = Span::new();
-                parsing_key = true;
-
-                // skip \r\n or \n
-                pos += if *c == b'\n' { 1 } else { 2 };
-
-                if let Some(next) = buffer.get(pos) {
-                    match *next {
-                        b'\n' => {
-                            pos += 1;
-                            saw_end = true;
-                            break;
-                        }
-                        b'\r' => {
-                            if buffer.get(pos + 1) != Some(&b'\n') {
-                                return Ok(Status::Partial(buffer));
-                            }
-                            pos += 2;
-                            saw_end = true;
-                            break;
-                        }
-                        _ => {}
-                    }
-                }
-
-                start = pos;
-                continue;
+        } else if *c == b'\n' || (*c == b'\r' && buffer.get(pos + 1) == Some(&b'\n')) {
+            if name.is_empty() {
+                return Err(Error::ParseError);
             }
+
+            let value = Span(start, pos);
+            headers.push((name, value));
+            if name.from_buf(&buffer).to_ascii_lowercase() == "content-length" {
+                content_length = value.from_buf(&buffer).parse().unwrap_or(0);
+            }
+
+            name = Span::new();
+            parsing_key = true;
+
+            // skip \r\n or \n
+            pos += if *c == b'\n' { 1 } else { 2 };
+
+            if let Some(next) = buffer.get(pos) {
+                match *next {
+                    b'\n' => {
+                        pos += 1;
+                        saw_end = true;
+                        break;
+                    }
+                    b'\r' => {
+                        if buffer.get(pos + 1) != Some(&b'\n') {
+                            return Ok(Status::Partial(buffer));
+                        }
+                        pos += 2;
+                        saw_end = true;
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+
+            start = pos;
+            continue;
         }
         len += 1;
         if len > MAX_HEADER_SIZE {

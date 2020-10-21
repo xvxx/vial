@@ -71,7 +71,7 @@ impl PartialEq for Error {
     fn eq(&self, other: &Self) -> bool {
         use Error::*;
         match self {
-            IO(_) => return false,
+            IO(_) => false,
             AssetNotFound(s) => match other {
                 AssetNotFound(o) => s == o,
                 _ => false,
@@ -84,30 +84,12 @@ impl PartialEq for Error {
                 Other(o) => s == o,
                 _ => false,
             },
-            ConnectionClosed => match other {
-                ConnectionClosed => true,
-                _ => false,
-            },
-            ParseVersion => match other {
-                ParseVersion => true,
-                _ => false,
-            },
-            ExpectedCRLF => match other {
-                ExpectedCRLF => true,
-                _ => false,
-            },
-            ParseHeaderName => match other {
-                ParseHeaderName => true,
-                _ => false,
-            },
-            ParseHeaderValue => match other {
-                ParseHeaderValue => true,
-                _ => false,
-            },
-            ParseError => match other {
-                ParseError => true,
-                _ => false,
-            },
+            ConnectionClosed => matches!(other, ConnectionClosed),
+            ParseVersion => matches!(other, ParseVersion),
+            ExpectedCRLF => matches!(other, ExpectedCRLF),
+            ParseHeaderName => matches!(other, ParseHeaderName),
+            ParseHeaderValue => matches!(other, ParseHeaderValue),
+            ParseError => matches!(other, ParseError),
         }
     }
 }
