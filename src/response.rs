@@ -169,6 +169,12 @@ impl Response {
         self.cookies.insert(name.to_lowercase(), value.into());
     }
 
+    #[cfg(feature = "cookies")]
+    /// Remove a cookie from the client.
+    pub fn remove_cookie(&mut self, name: &str) {
+        self.cookies.insert(name.to_lowercase(), "".into());
+    }
+
     /// Convert into a Response.
     pub fn from<T: Into<Response>>(from: T) -> Response {
         from.into()
@@ -326,6 +332,13 @@ impl Response {
         self
     }
 
+    #[cfg(feature = "cookies")]
+    /// Returns a Response with an instruction to remove the cookie.
+    pub fn without_cookie(mut self, key: &str) -> Response {
+        self.remove_cookie(key);
+        self
+    }
+
     /// Length of the body.
     pub fn len(&self) -> usize {
         match &self.body {
@@ -379,7 +392,11 @@ impl Response {
                 header.push_str("Set-Cookie: ");
                 header.push_str(&name);
                 header.push('=');
-                header.push_str(&val);
+                if val.is_empty() {
+                    header.push_str("; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+                } else {
+                    header.push_str(&val);
+                }
                 header.push_str("\r\n");
             }
         }

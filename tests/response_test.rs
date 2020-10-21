@@ -224,13 +224,19 @@ fn with_json() {
 
 #[test]
 #[cfg(feature = "cookies")]
-fn test_set_cookie() {
+fn test_cookies() {
     let mut res = Response::new();
     res.set_cookie("Count", "2");
     assert_eq!("2", res.cookie("Count").unwrap());
-
     let mut out = vec![];
     res.write(&mut out).unwrap();
     let out = String::from_utf8_lossy(&out);
-    assert!(out.contains("Set-Cookie: count=\"2\"\r\n"));
+    assert!(out.contains("\r\nSet-Cookie: count=2\r\n"));
+
+    let mut res = Response::new();
+    res.remove_cookie("Count");
+    let mut out = vec![];
+    res.write(&mut out).unwrap();
+    let out = String::from_utf8_lossy(&out);
+    assert!(out.contains("\r\nSet-Cookie: count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n"));
 }
