@@ -61,6 +61,18 @@ fn parses_big_GET() {
 }
 
 #[test]
+fn parses_stacked_headers_GET() {
+    let request = parse_fixture("tests/http/stacked_headers_GET.txt");
+    assert_eq!("/index.html", request.path());
+    assert_eq!("GET", request.method());
+    assert_eq!("www.nowhere123.com", request.header("Host").unwrap());
+    assert_eq!(
+        "image/gif, image/jpeg, */*",
+        request.header("Accept").unwrap()
+    );
+}
+
+#[test]
 fn parses_simple_POST() {
     let fixture = fs::File::open("tests/http/simple_POST.txt").unwrap();
     let request = Request::from_reader(fixture).unwrap();
