@@ -1,6 +1,6 @@
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
-    std::{collections::HashMap, fmt, io, mem, rc::Rc, str},
+    std::{borrow::Cow, collections::HashMap, fmt, io, mem, rc::Rc, str},
 };
 
 #[cfg(feature = "cookies")]
@@ -264,12 +264,22 @@ impl Request {
     }
 
     /// Get a header value. `name` is case insensitive.
-    pub fn header(&self, name: &str) -> Option<&str> {
+    pub fn header(&self, name: &str) -> Option<Cow<str>> {
         let name = name.to_lowercase();
-        self.headers
+        let mut headers = self
+            .headers
             .iter()
-            .find(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
-            .map(|(_, v)| v.from_buf(&self.buffer).trim_end())
+            .filter(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
+            .map(|(_, v)| v.from_buf(&self.buffer).trim_end());
+
+        let count = headers.clone().count();
+        if count == 0 {
+            None
+        } else if count == 1 {
+            Some(Cow::from(headers.next().unwrap()))
+        } else {
+            Some(Cow::from(headers.collect::<Vec<_>>().join(", ")))
+        }
     }
 
     /// Was the given form value sent?
