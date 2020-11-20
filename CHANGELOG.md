@@ -1,6 +1,6 @@
 <!-- next-header -->
 
-## [Unreleased] - ReleaseDate
+## [$Unreleased] - $ReleaseDate
 
 ## [0.1.8] - 2020-11-20
 
