@@ -2,6 +2,7 @@
 
 ## [Unreleased] - ReleaseDate
 
+- Added a lot more content types thanks to [Mozilla][moz mime types].
 - Fixed parsing of HTTP headers with the same name. An HTTP client can
   now send "Accept: image/gif\r\nAccept: image/jpeg\r\n" and Vial will
   will return "image/gif, image/jpeg" from `request.header("Accept")`.
@@ -9,6 +10,8 @@
   For more information see RFC2616:
 
   https://greenbytes.de/tech/webdav/rfc2616.html#message.headers
+
+[moz mime types]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 
 ## 0.1.7 (2020-10-21)
 

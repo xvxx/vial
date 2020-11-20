@@ -1,28 +1,5 @@
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S";
 
-/// Content type for a file based on its extension.
-pub fn content_type(path: &str) -> &'static str {
-    match path
-        .split('.')
-        .last()
-        .unwrap_or("?")
-        .to_lowercase()
-        .as_ref()
-    {
-        "gif" => "image/gif",
-        "jpg" => "image/jpeg",
-        "jpeg" => "image/jpeg",
-        "png" => "image/png",
-        "svg" => "image/svg+xml",
-        "pdf" => "application/pdf",
-        "css" => "text/css; charset=utf8",
-        "htm" => "text/html; charset=utf8",
-        "html" => "text/html; charset=utf8",
-        "txt" => "text/plain; charset=utf8",
-        _ => "text/plain; charset=utf8",
-    }
-}
-
 /// Size of a file on disk. 0 if it doesn't exist.
 pub fn file_size(path: &str) -> usize {
     std::fs::File::open(path)
@@ -61,4 +38,86 @@ pub fn percent_decode(mut inp: &str) -> Option<String> {
     }
     out.extend_from_slice(inp.as_bytes());
     String::from_utf8(out).ok()
+}
+
+/// Content type for a file based on its extension.
+/// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+pub fn content_type(path: &str) -> &'static str {
+    match path
+        .split('.')
+        .last()
+        .unwrap_or("?")
+        .to_lowercase()
+        .as_ref()
+    {
+        "aac" => "audio/aac",
+        "abw" => "application/x-abiword",
+        "arc" => "application/x-freearc",
+        "avi" => "video/x-msvideo",
+        "azw" => "application/vnd.amazon.ebook",
+        "bin" => "application/octet-stream",
+        "bmp" => "image/bmp",
+        "bz" => "application/x-bzip",
+        "bz2" => "application/x-bzip2",
+        "csh" => "application/x-csh",
+        "css" => "text/css; charset=utf8",
+        "csv" => "text/csv",
+        "doc" => "application/msword",
+        "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "eot" => "application/vnd.ms-fontobject",
+        "epub" => "application/epub+zip",
+        "gz" => "gzip",
+        "gif" => "image/gif",
+        "htm" | "html" => "text/html; charset=utf8",
+        "ico" => "image/vnd.microsoft.icon",
+        "ics" => "text/calendar",
+        "jar" => "application/java-archive",
+        "jpeg" | "jpg" => "image/jpeg",
+        "js" => "text/javascript",
+        "json" => "application/json",
+        "jsonld" => "application/ld+json",
+        "mid" | "midi" => "audio/midi",
+        "mjs" => "text/javascript",
+        "mp3" => "audio/mpeg",
+        "mpeg" => "video/mpeg",
+        "mpkg" => "application/vnd.apple.installer+xml",
+        "odp" => "application/vnd.oasis.opendocument.presentation",
+        "ods" => "application/vnd.oasis.opendocument.spreadsheet",
+        "odt" => "application/vnd.oasis.opendocument.text",
+        "oga" => "audio/ogg",
+        "ogv" => "video/ogg",
+        "ogx" => "application/ogg",
+        "opus" => "audio/opus",
+        "otf" => "font/otf",
+        "png" => "image/png",
+        "pdf" => "application/pdf",
+        "php" => "application/x-httpd-php",
+        "ppt" => "application/vnd.ms-powerpoint",
+        "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "rar" => "application/vnd.rar",
+        "rtf" => "application/rtf",
+        "sh" => "application/x-sh",
+        "svg" => "image/svg+xml",
+        "swf" => "application/x-shockwave-flash",
+        "tar" => "application/x-tar",
+        "tif" | "tiff" => "image/tiff",
+        "ts" => "video/mp2t",
+        "ttf" => "font/ttf",
+        "txt" => "text/plain; charset=utf8",
+        "vsd" => "application/vnd.visio",
+        "wav" => "audio/wav",
+        "weba" => "audio/webm",
+        "webm" => "video/webm",
+        "webp" => "image/webp",
+        "woff" => "font/woff",
+        "woff2" => "font/woff2",
+        "xhtml" => "application/xhtml+xml",
+        "xls" => "application/vnd.ms-excel",
+        "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "xul" => "application/vnd.mozilla.xul+xml",
+        "xml" => "application/xml",
+        "zip" => "application/zip",
+        "7z" => "application/x-7z-compressed",
+        _ => "text/plain; charset=utf8",
+    }
 }
