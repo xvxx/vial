@@ -13,6 +13,7 @@ pub fn content_type(path: &str) -> &'static str {
         "jpg" => "image/jpeg",
         "jpeg" => "image/jpeg",
         "png" => "image/png",
+        "svg" => "image/svg+xml",
         "pdf" => "application/pdf",
         "css" => "text/css; charset=utf8",
         "htm" => "text/html; charset=utf8",
