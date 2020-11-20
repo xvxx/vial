@@ -1,6 +1,6 @@
 <!-- next-header -->
 
-## [Unreleased] - ReleaseDate
+## [$Unreleased] - $ReleaseDate
 
 - Added a lot more content types thanks to [Mozilla][moz mime types].
 - Fixed parsing of HTTP headers with the same name. An HTTP client can
