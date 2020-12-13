@@ -60,7 +60,7 @@
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 //! - [x] **json_serde**: `Request::json` and `Response::with_json` powers,
 //!       via Serde.
-//! - [ ] **cookies**: Cookie monster!
+//! - [x] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
 //! - [ ] **multipart**: Multipart form data (file uploads)
 //! - [ ] **log**: Access logging
