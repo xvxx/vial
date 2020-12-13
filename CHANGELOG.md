@@ -2,6 +2,9 @@
 
 ## [$Unreleased] - $ReleaseDate
 
+- Changed `ASSET_DIR` to store a `String` instead of `&'static str`,
+  meaning it can now be set dynamically when your Vial app starts.
+
 ## [0.1.8] - 2020-11-20
 
 - Added a lot more content types thanks to [Mozilla][moz mime types].

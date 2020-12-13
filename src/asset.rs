@@ -147,8 +147,8 @@ pub fn size(path: &str) -> usize {
 }
 
 /// The directory of the asset dir.
-fn asset_dir() -> Option<&'static str> {
-    unsafe { crate::ASSET_DIR }
+fn asset_dir() -> Option<&'static String> {
+    unsafe { crate::ASSET_DIR.as_ref() }
 }
 
 /// Does the asset exist on disk? `path` is the path relative to

@@ -1,6 +1,15 @@
 use vial::{self, asset};
 
+// Asset tests need to be run in serial because setting asset_dir!()
+// is not threadsafe.
 #[test]
+fn asset_tests() {
+    asset_exists();
+    etag_test();
+    normalize_path_test();
+    to_string_test();
+}
+
 fn asset_exists() {
     vial::asset_dir!("./tests/assets/");
 
@@ -10,7 +19,6 @@ fn asset_exists() {
     assert!(!asset::exists("pooooof.gif"));
 }
 
-#[test]
 fn etag_test() {
     fn test_asset_mtime(path: &str) -> Option<String> {
         use std::fs;
@@ -42,7 +50,6 @@ fn etag_test() {
     );
 }
 
-#[test]
 fn normalize_path_test() {
     vial::asset_dir!("./tests/assets/");
 
@@ -76,7 +83,6 @@ fn normalize_path_test() {
     );
 }
 
-#[test]
 fn to_string_test() {
     vial::asset_dir!("./tests/assets/");
 

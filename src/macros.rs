@@ -231,7 +231,7 @@ macro_rules! asset_dir {
     };
     ($dir:expr) => {
         unsafe {
-            ::vial::ASSET_DIR = Some($dir);
+            ::vial::ASSET_DIR = Some($dir.into());
         }
     };
 }
