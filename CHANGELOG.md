@@ -1,6 +1,8 @@
 <!-- next-header -->
 
-## [$Unreleased] - $ReleaseDate
+## [] - 
+
+## [0.1.9] - 2020-12-13
 
 - Changed `ASSET_DIR` to store a `String` instead of `&'static str`,
   meaning it can now be set dynamically when your Vial app starts.
