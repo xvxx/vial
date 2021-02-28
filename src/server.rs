@@ -55,7 +55,8 @@ impl Server {
 
     fn handle_request(&self, stream: TcpStream) -> Result<()> {
         let reader = stream.try_clone()?;
-        let req = Request::from_reader(reader)?;
+        let mut req = Request::from_reader(reader)?;
+        req.set_remote_addr(stream.peer_addr()?.to_string());
         self.write_response(stream, req)
     }
 
