@@ -87,15 +87,11 @@ impl Server {
 
     fn build_response(&self, mut req: Request) -> Response {
         if asset::exists(req.path()) {
-            if let Some(req_etag) = req.header("If-None-Match") {
-                if req_etag == asset::etag(req.path()).as_ref() {
-                    Response::from(304)
-                } else {
-                    Response::from_asset(req.path())
-                }
+            req.header("If-None-Match").map_or_else(|| Response::from_asset(req.path()), |req_etag| if req_etag == asset::etag(req.path()).as_ref() {
+                Response::from(304)
             } else {
                 Response::from_asset(req.path())
-            }
+            })
         } else if let Some(action) = self.router.action_for(&mut req) {
             action(req)
         } else {
