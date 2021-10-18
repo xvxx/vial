@@ -32,7 +32,7 @@ To learn more, keep reading or visit one of these links:
 
 **⚠ Status:** Vial is currently in early development. It is being
 developed alongside [deadwiki], but that is _strictly_ for personal
-use. Please proceed with caution and wear a hart hat at all times.
+use. Please proceed with caution and wear a hard hat at all times.
 
 ---
 
