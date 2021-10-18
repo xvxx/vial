@@ -37,8 +37,8 @@ pub struct TypeCache {
 
 impl TypeCache {
     /// Create a new, empty TypeCache.
-    pub fn new() -> TypeCache {
-        TypeCache::default()
+    #[must_use] pub fn new() -> Self {
+        Self::default()
     }
 
     /// TypeCache works like a regular hash map, but with types as
@@ -50,7 +50,7 @@ impl TypeCache {
             self.map
                 .borrow()
                 .get(&TypeId::of::<T>())
-                .map(|ptr| &*(*ptr as *const dyn Any as *const T))
+                .map(|ptr| &*(*ptr as *const dyn Any).cast::<T>())
         };
         self.unlock();
         item

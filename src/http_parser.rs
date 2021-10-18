@@ -125,7 +125,7 @@ pub fn parse(mut buffer: Vec<u8>) -> Result<Status, Error> {
                 b':' => {
                     name = Span(start, pos);
                     // skip leading whitespace on value
-                    while let Some(&b' ') | Some(&b'\t') = buffer.get(pos + 1) {
+                    while let Some(&(b' ' | b'\t')) = buffer.get(pos + 1) {
                         pos += 1;
                     }
                     parsing_key = false;

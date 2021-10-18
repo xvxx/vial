@@ -49,8 +49,8 @@ struct Server {
 }
 
 impl Server {
-    pub fn new(router: Router) -> Server {
-        Server { router }
+    pub fn new(router: Router) -> Self {
+        Self { router }
     }
 
     fn handle_request(&self, stream: TcpStream) -> Result<()> {
