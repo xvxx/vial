@@ -8,18 +8,18 @@ use {
     threadpool::ThreadPool,
 };
 
-const MAX_CONNECTIONS: usize = 10;
+const INITIAL_THREADS: usize = 10;
+const MAXIMUM_THREADS: usize = 400;
 
 /// Starts a new Vial server. Should always be invoked via the
 /// [`vial::run!()`](macro.run.html) macro, since there is some setup
 /// that needs to happen.
 #[doc(hidden)]
 pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> Result<()> {
-    let pool = ThreadPool::new(MAX_CONNECTIONS);
+    let mut pool = ThreadPool::new(INITIAL_THREADS);
     let listener = TcpListener::bind(&addr)?;
     let addr = listener.local_addr()?;
     let server = Arc::new(Server::new(router));
-
     #[cfg(feature = "state")]
     eprintln!("! vial feature `state` is now built-in. You can safely remove it.");
 
@@ -32,6 +32,18 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
     }
 
     for stream in listener.incoming() {
+        // if all threads are active, extend by one
+        if pool.active_count() == pool.max_count() {
+            pool.set_num_threads(pool.max_count() + 1);
+        }
+
+        // if (all threads) is more than (10 times the active threads), 
+        // reduce thread count to 2x the active threads
+        if pool.max_count() > 10 * pool.active_count() {
+            pool.set_num_threads(pool.active_count() * 2);
+        }
+
+
         let server = server.clone();
         let stream = stream?;
         pool.execute(move || {

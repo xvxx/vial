@@ -121,8 +121,11 @@ impl Request {
     pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Request> {
         let mut buffer = Vec::with_capacity(512);
         let mut read_buf = [0u8; 512];
-
+        let sw = stopwatch::Stopwatch::start_new();
         let mut req = loop {
+            if sw.elapsed_ms() > 1000 {
+                return Err(Error::ConnectionClosed)
+            }
             let n = reader.read(&mut read_buf)?;
             if n == 0 {
                 return Err(Error::ConnectionClosed);
