@@ -33,20 +33,14 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
     }
 
     for stream in listener.incoming() {
-        // if all threads are active, extend by one
-        if pool.active_count() == pool.max_count() && pool.max_count() < MAXIMUM_THREADS {
-            pool.set_num_threads(pool.max_count() + 1);
+        // if all threads are active, extend by two
+        if pool.active_count() > pool.max_count() - 1 && pool.max_count() < MAXIMUM_THREADS {
+            pool.set_num_threads(pool.max_count() + 2);
         }
-
-        // tldr: if total thread count is significantly more than the current load,
-        // drop the number of total threads to just double the current load.
-        // these constants may need tweaking to avoid constant resizing under fluctuating load,
-        // but a 10x fluctuation in load should probably trigger resizing.
-        if pool.max_count() > 10 * pool.active_count()
-            && pool.max_count() > INITIAL_THREADS
-            && pool.active_count() != 0
-        {
-            pool.set_num_threads(pool.active_count() * 2);
+        // tldr: if no active threads and the threadpool has
+        // been expanded, halve the total number of threads.
+        if pool.active_count() == 0 && pool.max_count() > INITIAL_THREADS * 2 {
+            pool.set_num_threads(pool.max_count() / 2);
         }
 
         let server = server.clone();
