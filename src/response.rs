@@ -304,7 +304,7 @@ impl Response {
         }
         match fs::File::open(path) {
             Ok(file) => {
-                self.set_header("ETag", &asset::etag(path).as_ref());
+                self.set_header("ETag", asset::etag(path).as_ref());
                 self.set_header("Content-Type", util::content_type(path));
                 self.set_header("Content-Length", &util::file_size(path).to_string());
                 self.with_reader(Box::new(BufReader::new(file)))

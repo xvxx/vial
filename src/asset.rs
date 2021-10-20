@@ -99,8 +99,7 @@ fn last_modified(path: &str) -> Option<String> {
 /// Cleans a path of tricky things like `..` and puts it in a format
 /// we can use in other asset functions.
 pub fn normalize_path(path: &str) -> Option<String> {
-    if let Some(root) = asset_dir() {
-        Some(format!(
+    asset_dir().map(|root| format!(
             "{}/{}",
             root.trim_end_matches('/'),
             path.trim_start_matches(root)
@@ -108,9 +107,6 @@ pub fn normalize_path(path: &str) -> Option<String> {
                 .trim_start_matches('/')
                 .replace("..", ".")
         ))
-    } else {
-        None
-    }
 }
 
 /// Have assets been bundled into the binary?
