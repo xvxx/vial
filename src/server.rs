@@ -4,7 +4,7 @@ use {
         io::Write,
         net::{TcpListener, TcpStream, ToSocketAddrs},
         sync::{Arc, Mutex},
-        time::Duration
+        time::Duration,
     },
     threadpool::ThreadPool,
 };
@@ -42,10 +42,12 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
         // drop the number of total threads to just double the current load.
         // these constants may need tweaking to avoid constant resizing under fluctuating load,
         // but a 10x fluctuation in load should probably trigger resizing.
-        if pool.max_count() > 10 * pool.active_count() && pool.max_count() > INITIAL_THREADS && pool.active_count() != 0 {
+        if pool.max_count() > 10 * pool.active_count()
+            && pool.max_count() > INITIAL_THREADS
+            && pool.active_count() != 0
+        {
             pool.set_num_threads(pool.active_count() * 2);
         }
-
 
         let server = server.clone();
         let stream = stream?;
@@ -72,7 +74,7 @@ impl Server {
         let reader = stream.try_clone()?;
 
         //discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
-        let _ = reader.set_read_timeout(Some(Duration::from_millis(1000))); 
+        let _ = reader.set_read_timeout(Some(Duration::from_millis(1000)));
 
         let req = Request::from_reader(reader)?;
         self.write_response(stream, req)
