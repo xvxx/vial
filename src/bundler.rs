@@ -82,7 +82,8 @@ fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
         let path = entry.path();
         let meta = fs::metadata(&path)?;
         if meta.is_dir() {
-            files.extend_from_slice(&files_in_dir(path.to_str().unwrap_or("bad"))?);
+            let dir = path.to_string_lossy() + "/";
+            files.extend_from_slice(&files_in_dir(dir.as_ref())?);
         } else {
             files.push(path);
         }
