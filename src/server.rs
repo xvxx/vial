@@ -4,6 +4,7 @@ use {
         io::Write,
         net::{TcpListener, TcpStream, ToSocketAddrs},
         sync::{Arc, Mutex},
+        time::Duration
     },
     threadpool::ThreadPool,
 };
@@ -33,13 +34,15 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
 
     for stream in listener.incoming() {
         // if all threads are active, extend by one
-        if pool.active_count() == pool.max_count() {
+        if pool.active_count() == pool.max_count() && pool.max_count() < MAXIMUM_THREADS {
             pool.set_num_threads(pool.max_count() + 1);
         }
 
-        // if (all threads) is more than (10 times the active threads), 
-        // reduce thread count to 2x the active threads
-        if pool.max_count() > 10 * pool.active_count() {
+        // tldr: if total thread count is significantly more than the current load,
+        // drop the number of total threads to just double the current load.
+        // these constants may need tweaking to avoid constant resizing under fluctuating load,
+        // but a 10x fluctuation in load should probably trigger resizing.
+        if pool.max_count() > 10 * pool.active_count() && pool.max_count() > INITIAL_THREADS && pool.active_count() != 0 {
             pool.set_num_threads(pool.active_count() * 2);
         }
 
@@ -67,6 +70,10 @@ impl Server {
 
     fn handle_request(&self, stream: TcpStream) -> Result<()> {
         let reader = stream.try_clone()?;
+
+        //discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
+        let _ = reader.set_read_timeout(Some(Duration::from_millis(1000))); 
+
         let req = Request::from_reader(reader)?;
         self.write_response(stream, req)
     }
