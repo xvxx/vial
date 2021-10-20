@@ -67,7 +67,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
 #[doc(hidden)]
 #[allow(dead_code)]
 /// Iterator over all the files in a directory.
-pub fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
+#[must_use] pub fn walk(dir: &str) -> std::vec::IntoIter<PathBuf> {
     if let Ok(files) = files_in_dir(dir) {
         files.into_iter()
     } else {

@@ -13,8 +13,8 @@ pub struct Span(pub usize, pub usize);
 
 impl Span {
     /// Create a new, empty Span.
-    pub fn new() -> Span {
-        Span::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Is this span empty?
@@ -83,25 +83,18 @@ impl fmt::Debug for Request {
 impl Request {
     /// Create a new Request from a raw one. You probably want
     /// `default()` to get an empty `Request`.
-    pub fn new(
+    #[must_use] pub fn new(
         method: Span,
         path: Span,
         headers: Vec<(Span, Span)>,
         body: Span,
         buffer: Vec<u8>,
-    ) -> Request {
-        Request {
-            method,
-            path,
-            headers,
-            body,
-            buffer,
-            ..Request::default()
-        }
+    ) -> Self {
+        Self { buffer, path, method, headers, body, ..Self::default() }
     }
     /// Produce an empty Request.
-    pub fn default() -> Request {
-        Request {
+    #[must_use] pub fn default() -> Self {
+        Self {
             path: Span::new(),
             method: Span::new(),
             body: Span::new(),
@@ -118,16 +111,16 @@ impl Request {
 
     /// Read a raw HTTP request from `reader` and create an
     /// appropriate `Request` to represent it.
-    pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Request> {
+    pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Self> {
         let mut buffer = Vec::with_capacity(512);
-        let mut read_buf = [0u8; 512];
+        let mut read_buf = [0_u8; 512];
         let mut req = loop {
             let n = reader.read(&mut read_buf)?;
             if n == 0 {
                 return Err(Error::ConnectionClosed);
             }
             buffer.extend_from_slice(&read_buf[..n]);
-            match http_parser::parse(mem::replace(&mut buffer, vec![]))? {
+            match http_parser::parse(std::mem::take(&mut buffer))? {
                 http_parser::Status::Complete(req) => break req,
                 http_parser::Status::Partial(b) => {
                     let _ = mem::replace(&mut buffer, b);
@@ -164,7 +157,7 @@ impl Request {
     }
 
     /// Path requested, starting with `/` and not including `?query`.
-    pub fn path(&self) -> &str {
+    #[must_use] pub fn path(&self) -> &str {
         let span = if let Some(idx) = self.full_path().find('?') {
             Span(self.path.0, self.path.0 + idx)
         } else {
@@ -174,13 +167,13 @@ impl Request {
     }
 
     /// Full path requested, starting with `/` and including `?query`.
-    pub fn full_path(&self) -> &str {
+    #[must_use] pub fn full_path(&self) -> &str {
         self.path.from_buf(&self.buffer)
     }
 
     /// Create a request from an arbitrary path. Used in testing.
-    pub fn from_path(path: &str) -> Request {
-        Request::default().with_path(path)
+    #[must_use] pub fn from_path(path: &str) -> Self {
+        Self::default().with_path(path)
     }
 
     /// Give a request an arbitrary `path`. Can be used in tests or
@@ -192,7 +185,7 @@ impl Request {
 
     /// Give a request an arbitrary `path`. Can be used in tests or
     /// with `filter`.
-    pub fn with_path(mut self, path: &str) -> Request {
+    #[must_use] pub fn with_path(mut self, path: &str) -> Self {
         self.set_path(path);
         self
     }
@@ -200,7 +193,7 @@ impl Request {
     /// Raw body of HTTP request. If you are using methods like
     /// `with_path` or `set_arg` this will not accurately represent
     /// the raw HTTP request that was made.
-    pub fn body(&self) -> &str {
+    #[must_use] pub fn body(&self) -> &str {
         self.body.from_buf(&self.buffer)
     }
 
@@ -212,7 +205,7 @@ impl Request {
 
     /// Give this Request an arbitrary body from a string and return
     /// the new Request.
-    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Request {
+    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Self {
         self.set_body(body);
         self
     }
@@ -226,7 +219,7 @@ impl Request {
     }
 
     /// HTTP Method
-    pub fn method(&self) -> &str {
+    #[must_use] pub fn method(&self) -> &str {
         self.method.from_buf(&self.buffer)
     }
 
@@ -237,7 +230,7 @@ impl Request {
     }
 
     /// Give this Request a new HTTP Method and return the new Request.
-    pub fn with_method(mut self, method: &str) -> Request {
+    #[must_use] pub fn with_method(mut self, method: &str) -> Self {
         self.set_method(method);
         self
     }
@@ -245,8 +238,8 @@ impl Request {
     /// In a route defined with `routes!` like `"/names/:name"`,
     /// calling `request.arg("name")` will return `Some("peter")` when
     /// the request is `/names/peter`.
-    pub fn arg(&self, name: &str) -> Option<&str> {
-        self.args.get(name).map(|v| v.as_ref())
+    #[must_use] pub fn arg(&self, name: &str) -> Option<&str> {
+        self.args.get(name).map(std::convert::AsRef::as_ref)
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -258,12 +251,12 @@ impl Request {
     #[doc(hidden)]
     /// For testing. You should use [`header()`](#method.header) to
     /// get a specific header from this Request.
-    pub fn headers(&self) -> &Vec<(Span, Span)> {
+    #[must_use] pub fn headers(&self) -> &Vec<(Span, Span)> {
         &self.headers
     }
 
     /// Get a header value. `name` is case insensitive.
-    pub fn header(&self, name: &str) -> Option<Cow<str>> {
+    #[must_use] pub fn header(&self, name: &str) -> Option<Cow<'_, str>> {
         let name = name.to_lowercase();
         let mut headers = self
             .headers
@@ -287,8 +280,8 @@ impl Request {
     }
 
     /// Return a value from the POSTed form data.
-    pub fn form(&self, name: &str) -> Option<&str> {
-        self.form.get(name).map(|s| s.as_ref())
+    #[must_use] pub fn form(&self, name: &str) -> Option<&str> {
+        self.form.get(name).map(std::convert::AsRef::as_ref)
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -316,12 +309,12 @@ impl Request {
     }
 
     /// Was the given query value sent?
-    pub fn has_query(&self, name: &str) -> bool {
+    #[must_use] pub fn has_query(&self, name: &str) -> bool {
         self.query(name).is_some()
     }
 
     /// Return a value from the ?querystring=
-    pub fn query(&self, name: &str) -> Option<&str> {
+    #[must_use] pub fn query(&self, name: &str) -> Option<&str> {
         let idx = self.full_path().find('?')?;
         self.full_path()[idx + 1..]
             .split('&')
@@ -406,11 +399,11 @@ impl Request {
     /// ```
     pub fn cache<T, F>(&self, fun: F) -> &T
     where
-        F: FnOnce(&Request) -> T,
+        F: FnOnce(&Self) -> T,
         T: Send + Sync + 'static,
     {
         self.cache.get().unwrap_or_else(|| {
-            self.cache.set(fun(&self));
+            self.cache.set(fun(self));
             self.cache.get().unwrap()
         })
     }
@@ -451,7 +444,7 @@ impl Request {
     ///     run!();
     /// }
     /// ```
-    pub fn state<T: Send + Sync + 'static>(&self) -> &T {
+    #[must_use] pub fn state<T: Send + Sync + 'static>(&self) -> &T {
         crate::storage::get::<T>()
     }
 

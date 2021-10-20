@@ -28,21 +28,21 @@ impl std::str::FromStr for Method {
     /// Converts an "ALL-CAPS" HTTP method into our enum.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
-            "GET" => Method::GET,
-            "HEAD" => Method::HEAD,
-            "POST" => Method::POST,
-            "PUT" => Method::PUT,
-            "DELETE" => Method::DELETE,
-            "PATCH" => Method::PATCH,
-            "OPTIONS" => Method::OPTIONS,
-            "TRACE" => Method::TRACE,
+            "GET" => Self::GET,
+            "HEAD" => Self::HEAD,
+            "POST" => Self::POST,
+            "PUT" => Self::PUT,
+            "DELETE" => Self::DELETE,
+            "PATCH" => Self::PATCH,
+            "OPTIONS" => Self::OPTIONS,
+            "TRACE" => Self::TRACE,
             _ => return Err(Error::UnknownHTTPMethod(s.into())),
         })
     }
 }
 
 impl From<&str> for Method {
-    fn from(s: &str) -> Method {
-        s.parse().unwrap_or(Method::GET)
+    fn from(s: &str) -> Self {
+        s.parse().unwrap_or(Self::GET)
     }
 }

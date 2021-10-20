@@ -64,13 +64,13 @@ use {
         collections::{hash_map::DefaultHasher, HashMap},
         fs,
         hash::{Hash, Hasher},
-        io::{self, BufReader, Read},
+        io::{BufReader, Read},
         str,
     },
 };
 
 /// Produce an etag for an asset.
-pub fn etag(path: &str) -> Cow<str> {
+#[must_use] pub fn etag(path: &str) -> Cow<'_, str> {
     if is_bundled() {
         Cow::from(crate::BUILD_DATE)
     } else {
@@ -98,23 +98,21 @@ fn last_modified(path: &str) -> Option<String> {
 
 /// Cleans a path of tricky things like `..` and puts it in a format
 /// we can use in other asset functions.
-pub fn normalize_path(path: &str) -> Option<String> {
-    if let Some(root) = asset_dir() {
-        Some(format!(
+#[must_use] pub fn normalize_path(path: &str) -> Option<String> {
+    asset_dir().map(|root| {
+        format!(
             "{}/{}",
             root.trim_end_matches('/'),
             path.trim_start_matches(root)
                 .trim_start_matches('.')
                 .trim_start_matches('/')
                 .replace("..", ".")
-        ))
-    } else {
-        None
-    }
+        )
+    })
 }
 
 /// Have assets been bundled into the binary?
-pub fn is_bundled() -> bool {
+#[must_use] pub fn is_bundled() -> bool {
     bundled_assets().is_some()
 }
 
@@ -125,7 +123,7 @@ fn bundled_assets() -> Option<&'static HashMap<String, &'static [u8]>> {
 
 /// Size of an asset in `asset_dir()`. `0` if the asset doesn't exist.
 /// Works in bundled mode and regular mode.
-pub fn size(path: &str) -> usize {
+#[must_use] pub fn size(path: &str) -> usize {
     if !exists(path) {
         return 0;
     }
@@ -139,8 +137,7 @@ pub fn size(path: &str) -> usize {
         bundled_assets()
             .unwrap()
             .get(&path)
-            .map(|a| a.len())
-            .unwrap_or(0)
+            .map_or(0, |a| a.len())
     } else {
         util::file_size(&path)
     }
@@ -155,7 +152,7 @@ fn asset_dir() -> Option<&'static String> {
 /// `ASSET_DIR` ex: asset::exists("index.html") checks for
 /// "./static/index.html" if `ASSET_DIR` is set to `static`.
 /// Works both in regular mode and bundle mode.
-pub fn exists(path: &str) -> bool {
+#[must_use] pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
         if is_bundled() {
             return bundled_assets().unwrap().contains_key(&path);
@@ -180,7 +177,7 @@ pub fn to_string(path: &str) -> Result<String> {
 }
 
 /// Produces a boxed `io::Read` for an asset.
-pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
+#[must_use] pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
     let path = normalize_path(path)?;
     if is_bundled() {
         if let Some(v) = bundled_assets().unwrap().get(&path) {
@@ -197,7 +194,7 @@ pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
 }
 
 /// Read an asset to [u8].
-pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
+#[must_use] pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = normalize_path(path)?;
     if is_bundled() {
         if let Some(v) = bundled_assets().unwrap().get(&path) {

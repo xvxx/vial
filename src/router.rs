@@ -26,8 +26,8 @@ pub struct Router {
 
 impl Router {
     /// Create a new `Router`. You shouldn't have to do this.
-    pub fn new() -> Router {
-        Router {
+    #[must_use] pub fn new() -> Self {
+        Self {
             routes: HashMap::new(),
         }
     }

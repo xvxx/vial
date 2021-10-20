@@ -2814,15 +2814,15 @@ test! {
 #[test]
 fn test_request_partial() {
     match parse(b"GET / HTTP/1.1\r\n\r".to_vec()) {
-        Ok(Status::Partial(..)) => assert!(true),
-        _ => assert!(false),
+        Ok(Status::Partial(..)) => {},
+        _ => panic!(),
     }
 }
 
 #[test]
 fn test_request_partial_version() {
     match parse(b"GET / HTTP/1.".to_vec()) {
-        Ok(Status::Partial(..)) => assert!(true),
-        _ => assert!(false),
+        Ok(Status::Partial(..)) => {},
+        _ => panic!(),
     }
 }

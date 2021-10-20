@@ -1,27 +1,27 @@
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S";
 
 /// Size of a file on disk. 0 if it doesn't exist.
-pub fn file_size(path: &str) -> usize {
+#[must_use] pub fn file_size(path: &str) -> usize {
     std::fs::File::open(path)
         .map(|f| f.metadata().map(|m| m.len()).unwrap_or(0))
         .unwrap_or(0) as usize
 }
 
 /// Does what it says.
-pub fn decode_form_value(post: &str) -> String {
+#[must_use] pub fn decode_form_value(post: &str) -> String {
     let cleaned = post.replace('+', " ").replace('\r', "");
     percent_decode(&cleaned).unwrap_or_else(|| "".into())
 }
 
 /// Current date in HTTP format.
-pub fn http_current_date() -> String {
+#[must_use] pub fn http_current_date() -> String {
     let now = libc_strftime::epoch();
     libc_strftime::strftime_gmt(HTTP_DATE_FMT, now) + " GMT"
 }
 
 /// Mutably borrowed from the zero dependency httpserv project.
 /// https://github.com/nic-hartley/httpserv/blob/585c020/src/http.rs
-pub fn percent_decode(mut inp: &str) -> Option<String> {
+#[must_use] pub fn percent_decode(mut inp: &str) -> Option<String> {
     let mut out = Vec::new();
     loop {
         let next_pct = match inp.find('%') {
@@ -42,7 +42,7 @@ pub fn percent_decode(mut inp: &str) -> Option<String> {
 
 /// Content type for a file based on its extension.
 /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-pub fn content_type(path: &str) -> &'static str {
+#[must_use] pub fn content_type(path: &str) -> &'static str {
     match path
         .split('.')
         .last()

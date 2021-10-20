@@ -8,7 +8,7 @@ pub fn init() {
     }
 }
 
-pub fn get<T: Send + Sync + 'static>() -> &'static T {
+#[must_use] pub fn get<T: Send + Sync + 'static>() -> &'static T {
     unsafe { STORAGE.as_ref().unwrap().get::<T>().as_ref().unwrap() }
 }
 

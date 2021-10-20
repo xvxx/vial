@@ -183,7 +183,7 @@ fn redirect_to() {
 
 #[test]
 fn write_response() {
-    assert!(true); // TODO
+     // TODO
 }
 
 #[test]

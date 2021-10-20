@@ -1,5 +1,3 @@
-use vial;
-
 mod mods;
 use mods::{blog, wiki};
 

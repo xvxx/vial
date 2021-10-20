@@ -26,14 +26,14 @@ pub enum Error {
 }
 
 impl From<Error> for io::Error {
-    fn from(err: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+    fn from(err: Error) -> Self {
+        Self::new(io::ErrorKind::Other, err.to_string())
     }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::IO(err)
+    fn from(err: io::Error) -> Self {
+        Self::IO(err)
     }
 }
 
@@ -52,7 +52,7 @@ impl fmt::Display for Error {
             f,
             "{}",
             match self {
-                Error::UnknownHTTPMethod(reason) => &reason,
+                Error::UnknownHTTPMethod(reason) => reason,
                 Error::ConnectionClosed => "Connection Closed By Client",
                 Error::ParseVersion => "Error Parsing HTTP Version",
                 Error::ExpectedCRLF => "Expected CRLF in HTTP Request",
@@ -61,7 +61,7 @@ impl fmt::Display for Error {
                 Error::ParseError => "Error Parsing HTTP Request",
                 Error::AssetNotFound(..) => "Can't Find Asset",
                 Error::IO(..) => "io::Error While Parsing HTTP Request",
-                Error::Other(reason) => &reason,
+                Error::Other(reason) => reason,
             }
         )
     }
@@ -69,7 +69,7 @@ impl fmt::Display for Error {
 
 impl PartialEq for Error {
     fn eq(&self, other: &Self) -> bool {
-        use Error::*;
+        use Error::{AssetNotFound, ConnectionClosed, ExpectedCRLF, IO, Other, ParseError, ParseHeaderName, ParseHeaderValue, ParseVersion, UnknownHTTPMethod};
         match self {
             IO(_) => false,
             AssetNotFound(s) => match other {
