@@ -318,7 +318,7 @@ impl Request {
 
     /// Parse and decode form POST data into a Hash. Should be called
     /// when this Request is created.
-    #[doc(Hidden)]
+    #[doc(hidden)]
     pub fn parse_form(&mut self) {
         let mut map = HashMap::new();
         for kv in self.body().split('&') {
