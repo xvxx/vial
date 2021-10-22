@@ -67,7 +67,7 @@ impl fmt::Display for Error {
                         "io::Error While Parsing HTTP Request"
                     }
                 }
-                Error::Other(reason) => &reason,
+                Error::Other(reason) => reason,
             }
         )
     }
