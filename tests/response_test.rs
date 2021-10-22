@@ -34,7 +34,7 @@ fn from_asset() {
     assert_eq!(404, res.code());
 
     let res2 = Response::new().with_asset("puff.gif");
-    assert_eq!(res1, res2);
+    assert!(&res1.eq(&res2));
 }
 
 #[test]
