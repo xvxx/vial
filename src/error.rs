@@ -52,7 +52,7 @@ impl fmt::Display for Error {
             f,
             "{}",
             match self {
-                Error::UnknownHTTPMethod(reason) => &reason,
+                Error::UnknownHTTPMethod(reason) => reason,
                 Error::ConnectionClosed => "Connection Closed By Client",
                 Error::ParseVersion => "Error Parsing HTTP Version",
                 Error::ExpectedCRLF => "Expected CRLF in HTTP Request",
