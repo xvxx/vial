@@ -1,3 +1,11 @@
+# Changes from upstream
+* clippy formatting (https://github.com/xvxx/vial/pull/11)
+* resizing thread pool and set TcpStream timeout (https://github.com/xvxx/vial/pull/10)
+* remote_addr field (https://github.com/xvxx/vial/pull/6)
+* Maybe fix cookies? (working on it :p)
+# Why not PR? 
+* Author has been inactive since Dec 2020, and I really like this framework and want to see it improved. :)
+
 <img src="./docs/img/drink-me.jpeg" alt="Drink Me." align="left" height="300" />
 
 # ~ vial: a micro micro-framework ~
