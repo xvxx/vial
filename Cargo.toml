@@ -1,5 +1,3 @@
-cargo-features = ["edition2021"]
-
 [package]
 name = "vial"
 description = "a micro micro-framework"
