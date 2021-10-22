@@ -69,7 +69,6 @@ impl Server {
         //discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
         let _ = reader.set_read_timeout(Some(Duration::from_millis(1000)));
 
-        let req = Request::from_reader(reader)?;
         let mut req = Request::from_reader(reader)?;
         req.set_remote_addr(stream.peer_addr()?.to_string());
         self.write_response(stream, req)
