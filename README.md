@@ -2,7 +2,7 @@
 * clippy formatting (https://github.com/xvxx/vial/pull/11)
 * resizing thread pool and set TcpStream timeout (https://github.com/xvxx/vial/pull/10)
 * remote_addr field (https://github.com/xvxx/vial/pull/6)
-* Maybe fix cookies? (working on it :p)
+* Fix cookies :D ([documentation](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies))
 # Why not PR? 
 * Author has been inactive since Dec 2020, and I really like this framework and want to see it improved. :)
 
