@@ -35,7 +35,7 @@ impl User {
 }
 
 fn login_required(req: &mut Request) -> Option<Response> {
-    if let Some(_) = req.cache(current_user).as_ref() {
+    if req.cache(current_user).as_ref().is_some() {
         None
     } else {
         Some(Response::redirect_to("/login"))

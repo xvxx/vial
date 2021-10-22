@@ -52,7 +52,7 @@ impl fmt::Display for Error {
             f,
             "{}",
             match self {
-                Error::UnknownHTTPMethod(reason) => &reason,
+                Error::UnknownHTTPMethod(reason) => reason,
                 Error::ConnectionClosed => "Connection Closed By Client",
                 Error::ParseVersion => "Error Parsing HTTP Version",
                 Error::ExpectedCRLF => "Expected CRLF in HTTP Request",
@@ -61,7 +61,7 @@ impl fmt::Display for Error {
                 Error::ParseError => "Error Parsing HTTP Request",
                 Error::AssetNotFound(..) => "Can't Find Asset",
                 Error::IO(..) => "io::Error While Parsing HTTP Request",
-                Error::Other(reason) => &reason,
+                Error::Other(reason) => reason,
             }
         )
     }
