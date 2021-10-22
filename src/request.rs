@@ -4,7 +4,7 @@ use {
 };
 
 #[cfg(feature = "cookies")]
-use cookie2::Cookie;
+use cookie::Cookie;
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
