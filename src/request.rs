@@ -37,6 +37,9 @@ impl Span {
 
 /// Contains information about a single request.
 pub struct Request {
+    /// Remote address.
+    remote_addr: String,
+
     /// The raw request.
     buffer: Vec<u8>,
 
@@ -102,6 +105,7 @@ impl Request {
     /// Produce an empty Request.
     pub fn default() -> Request {
         Request {
+            remote_addr: String::new(),
             path: Span::new(),
             method: Span::new(),
             body: Span::new(),
@@ -162,6 +166,16 @@ impl Request {
         }
 
         Ok(req)
+    }
+
+    /// Sets the remote address of the request.
+    pub fn set_remote_addr(&mut self, s: String) {
+        self.remote_addr = s;
+    }
+
+    /// Remote address of the request.
+    pub fn remote_addr(&self) -> &str {
+        &self.remote_addr
     }
 
     /// Path requested, starting with `/` and not including `?query`.
