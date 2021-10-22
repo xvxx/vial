@@ -2,7 +2,8 @@
 * clippy formatting (https://github.com/xvxx/vial/pull/11)
 * resizing thread pool and set TcpStream timeout (https://github.com/xvxx/vial/pull/10)
 * remote_addr field (https://github.com/xvxx/vial/pull/6)
-* Fix cookies :D ([documentation](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies))
+* switch cookie crate from `cookie2` to `basic-cookies` (can parse multiple cookies instead of just first)
+* Fix cookies :D ([documentation](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies)) (previously, only first cookie was parsed)
 # Why not PR? 
 * Author has been inactive since Dec 2020, and I really like this framework and want to see it improved. :)
 
