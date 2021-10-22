@@ -4,7 +4,7 @@ use {
 };
 
 #[cfg(feature = "cookies")]
-use cookie::Cookie;
+use basic_cookies::Cookie;
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
@@ -158,12 +158,13 @@ impl Request {
         #[cfg(feature = "cookies")]
         {
             if let Some(cookie) = req.header("Cookie") {
-                for cookie in cookie.into_owned().split_inclusive("; ") {
-                    let cookie2 =
-                        Cookie::parse(cookie.clone()).map_err(|e| Error::Other(e.to_string()))?;
-                    let name = cookie2.name().to_owned();
-                    let val = util::percent_decode(cookie2.value()).unwrap();
-                    req.cookies.push((name, val));
+                if let Ok(cookies) = Cookie::parse(&cookie.into_owned()) {
+                    for cookie in cookies {
+                        req.cookies.push((
+                            cookie.get_name().to_string(),
+                            cookie.get_value().to_string(),
+                        ))
+                    }
                 }
             }
         }

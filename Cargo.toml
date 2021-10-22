@@ -58,14 +58,14 @@ path = "examples/filters.rs"
 horror = ['horrorshow']
 json_serde = ['serde', 'serde_json']
 state = []
-cookies = ['cookie']
+cookies = ['basic-cookies']
 default = []
 
 [dependencies]
 threadpool = "1.7.1"
 libc-strftime = "0.2.0"
 
-cookie = { version = "0.15.1", optional = true }
+basic-cookies = { version = "0.1.4", optional = true }
 hatter = { version = "0.1.1", optional = true }
 horrorshow = { version = "0.8.3", optional = true }
 serde = { version = "1", optional = true }
