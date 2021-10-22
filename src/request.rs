@@ -158,10 +158,13 @@ impl Request {
         #[cfg(feature = "cookies")]
         {
             if let Some(cookie) = req.header("Cookie") {
-                let cookie = Cookie::parse(cookie).map_err(|e| Error::Other(e.to_string()))?;
-                let name = cookie.name().to_owned();
-                let val = util::percent_decode(cookie.value()).unwrap();
-                req.cookies.push((name, val));
+                for cookie in cookie.into_owned().split_inclusive("; ") {
+                    let cookie2 =
+                        Cookie::parse(cookie.clone()).map_err(|e| Error::Other(e.to_string()))?;
+                    let name = cookie2.name().to_owned();
+                    let val = util::percent_decode(cookie2.value()).unwrap();
+                    req.cookies.push((name, val));
+                }
             }
         }
 
