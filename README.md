@@ -1,7 +1,7 @@
 # Changes from upstream
 * clippy formatting (https://github.com/xvxx/vial/pull/11)
-* resizing thread pool and set TcpStream timeout (https://github.com/xvxx/vial/pull/10)
-* remote_addr field (https://github.com/xvxx/vial/pull/6)
+* resizing thread pool and set TcpStream timeout (basically, dynamically increase threads when demand increases. avoids slow loris attacks as well) (https://github.com/xvxx/vial/pull/10)
+* remote_addr field (access client's IP address from the request) (https://github.com/xvxx/vial/pull/6)
 * switch cookie crate from `cookie2` to `basic-cookies` (can parse multiple cookies instead of just first)
 * Fix cookies :D ([documentation](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies)) (previously, only first cookie was parsed)
 # Why not PR? 

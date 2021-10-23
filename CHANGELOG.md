@@ -2,6 +2,12 @@
 
 ## [] - 
 
+## [0.1.11] - 2021-10-23 (sigaloid/vial fork)
+- Dynamically increase threadpool size when filled up [link](https://github.com/xvxx/vial/pull/10)
+- Actually make cookies work (switch to different cookie crate) [instructions from MANUAL.md still apply](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies)
+- Remote_addr field in request [link](https://github.com/xvxx/vial/pull/6)
+
+
 ## [0.1.9] - 2020-12-13
 
 - Changed `ASSET_DIR` to store a `String` instead of `&'static str`,
