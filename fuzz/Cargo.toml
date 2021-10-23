@@ -10,6 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
+afl = "*"
 
 [dependencies.vial]
 path = ".."
@@ -19,7 +20,12 @@ path = ".."
 members = ["."]
 
 [[bin]]
-name = "fuzz_target_1"
-path = "fuzz_targets/fuzz_target_1.rs"
+name = "libfuzzer"
+path = "fuzz_targets/libfuzzer.rs"
+test = false
+doc = false
+[[bin]]
+name = "afl"
+path = "fuzz_targets/afl.rs"
 test = false
 doc = false
