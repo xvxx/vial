@@ -1,0 +1,5 @@
+GET / HTTP/1.1
+Host: www.example.com
+Cookie: FOO    = bar;   baz  =   raz
+
+hi

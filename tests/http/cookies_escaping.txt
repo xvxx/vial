@@ -1,0 +1,5 @@
+GET / HTTP/1.1
+Host: www.example.com
+Cookie: foo="bar=123456789&name=Magic+Mouse"
+
+hi

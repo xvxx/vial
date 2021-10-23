@@ -1,0 +1,5 @@
+GET / HTTP/1.1
+Host: www.example.com
+Cookie: email=%20%22%2c%3b%2f
+
+hi
