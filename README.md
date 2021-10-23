@@ -5,6 +5,7 @@
 * switch cookie crate from `cookie2` to `basic-cookies` (can parse multiple cookies instead of just first)
 * Fix cookies :D ([documentation](https://github.com/sigaloid/vial/blob/master/docs/MANUAL.md#cookies)) (previously, only first cookie was parsed)
 * Fix header parsing issue that could crash a thread (https://github.com/sigaloid/vial/issues/5)
+* Fix OOM (https://github.com/sigaloid/vial/issues/7)
 # Why not PR? 
 * Author has been inactive since Dec 2020, and I really like this framework and want to see it improved. :)
 
