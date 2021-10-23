@@ -31,10 +31,12 @@ pub fn percent_decode(mut inp: &str) -> Option<String> {
         };
         let (push, pct_rest) = inp.split_at(next_pct);
         out.extend_from_slice(push.as_bytes());
-        let (pct, rest) = pct_rest.split_at(3);
-        inp = rest;
-        let val = u8::from_str_radix(&pct[1..], 16).ok()?;
-        out.push(val);
+        if pct_rest.is_char_boundary(3) {
+            let (pct, rest) = pct_rest.split_at(3);
+            inp = rest;
+            let val = u8::from_str_radix(&pct[1..], 16).ok()?;
+            out.push(val);
+        }
     }
     out.extend_from_slice(inp.as_bytes());
     String::from_utf8(out).ok()
