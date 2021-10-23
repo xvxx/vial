@@ -23,7 +23,7 @@ pub fn http_current_date() -> String {
 /// https://github.com/nic-hartley/httpserv/blob/585c020/src/http.rs
 pub fn percent_decode(mut inp: &str) -> Option<String> {
     let mut out = Vec::new();
-    loop {
+    for _ in 0..512 {
         let next_pct = match inp.find('%') {
             Some(l) if l < if inp.len() > 1 { inp.len() - 2 } else { 0 } => l,
             Some(_) => return None,
