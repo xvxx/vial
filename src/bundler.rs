@@ -5,10 +5,11 @@ use {
         env,
         fs::{self, File},
         io::Write,
-        os::unix,
         path::{Path, PathBuf},
     },
 };
+#[cfg(target_family = "unix")]
+use std::os::unix;
 
 /// You should use the
 /// [`vial::bundle_assets!()`](macro.bundle_assets.html) macro instead
