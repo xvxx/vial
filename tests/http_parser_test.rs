@@ -2,7 +2,7 @@
 
 use std::fs;
 use vial::{
-    http_parser::{parse, Status},
+    http_parser::parse,
     Error, Request,
 };
 
@@ -14,8 +14,8 @@ fn fixture(name: &str) -> String {
 }
 
 fn parse_fixture(name: &str) -> Request {
-    match parse(fixture(name).as_bytes().to_vec()).unwrap() {
-        Status::Complete(request) => request,
+    match parse(fixture(name).as_bytes().to_vec()) {
+        Ok(request) => request,
         _ => panic!("Expected Status::Complete"),
     }
 }
