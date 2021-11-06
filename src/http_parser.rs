@@ -1,5 +1,6 @@
-use crate::{Error, Request, request::Span};
 use crate::error::Error::ConnectionClosed;
+use crate::{request::Span, Error, Request};
+use std::panic;
 
 /// Total size limit for all headers combined.
 const MAX_HEADER_SIZE: usize = 8192;
@@ -28,9 +29,11 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
 
     macro_rules! consume_whitespace_to_eol {
         () => {
-            while buffer[pos].is_ascii_whitespace() && (buffer[pos] != b'\r' && buffer[pos] != b'\n') {
+            while buffer.get(pos).is_some() && buffer.get(pos).unwrap().is_ascii_whitespace()
+                && (buffer[pos] != b'\r' && buffer[pos] != b'\n')
+            {
                 if !peek!(1) {
-                    break
+                    break;
                 }
                 pos += 1;
             }
@@ -50,7 +53,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
                     pos += 1;
                 } else {
                     found = false;
-                    break
+                    break;
                 }
             }
             if found {
@@ -90,13 +93,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
 
     // Expecting Headers but if there's another EOL we're done and we can just return the struct
     if consume_eol!() {
-        return Ok(Request::new(
-            method,
-            path,
-            Vec::new(),
-            Span::new(),
-            buffer,
-        ));
+        return Ok(Request::new(method, path, Vec::new(), Span::new(), buffer));
     }
 
     // Parse headers
@@ -135,42 +132,55 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
         return Err(ConnectionClosed);
     }
 
-    Ok(Request::new(
-        method, path, headers, body, buffer,
-    ))
+    Ok(Request::new(method, path, headers, body, buffer))
 }
 
 fn parse_method(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
-    let size = match &buffer[start..start + 3] {
-        b"GET" | b"PUT" => 3,
-        b"HEA" | b"POS" => match &buffer[start..start + 4] {
-            b"HEAD" | b"POST" => 4,
+    if let Some(bytes) = buffer.get(start..start + 3) {
+        let size = match bytes {
+            b"GET" | b"PUT" => 3,
+            b"HEA" | b"POS" => match buffer.get(start..start + 4) {
+                Some(bytes) => match bytes {
+                    b"HEAD" | b"POST" => 4,
+                    _ => 0,
+                },
+                None => return Err(Error::ParseError),
+            },
+            b"PAT" | b"TRA" => match buffer.get(start..start + 5) {
+                Some(bytes) => match bytes {
+                    b"PATCH" | b"TRACE" => 5,
+                    _ => 0,
+                },
+                None => return Err(Error::ParseError),
+            },
+            b"DEL" => match buffer.get(0..6) {
+                Some(buffer) => {
+                    if &buffer[0..6] == b"DELETE" {
+                        6
+                    } else {
+                        0
+                    }
+                }
+                None => return Err(Error::ParseError),
+            },
+            b"CON" | b"OPT" => match buffer.get(start..start + 7) {
+                Some(bytes) => match bytes {
+                    b"CONNECT" | b"OPTIONS" => 7,
+                    _ => 0,
+                },
+                None => return Err(Error::ParseError),
+            },
             _ => 0,
-        },
-        b"PAT" | b"TRA" => match &buffer[start..start + 5] {
-            b"PATCH" | b"TRACE" => 5,
-            _ => 0,
-        },
-        b"DEL" => {
-            if &buffer[0..6] == b"DELETE" {
-                6
-            } else {
-                0
-            }
+        };
+        if size == 0 {
+            return Err(Error::UnknownHTTPMethod("?".into()));
+        } else {
+            *pos += size;
+            return Ok(Span(start, start + size));
         }
-        b"CON" | b"OPT" => match &buffer[start..start + 7] {
-            b"CONNECT" | b"OPTIONS" => 7,
-            _ => 0,
-        },
-        _ => 0,
-    };
-    if size == 0 {
-        Err(Error::UnknownHTTPMethod("?".into()))
-    } else {
-        *pos += size;
-        Ok(Span(start, start + size))
     }
+    return Err(Error::ParseError);
 }
 
 fn parse_path(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
@@ -178,7 +188,7 @@ fn parse_path(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     let end = buffer[start..].iter().position(|c| *c == b' ');
     let end = match end {
         Some(number) => number,
-        None => 0
+        None => 0,
     };
     if end == 0 {
         return Err(Error::ParsePath);
@@ -190,25 +200,36 @@ fn parse_path(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
 fn parse_header_name(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
     loop {
-        match buffer[*pos] {
-            b':' => break,
-            b'\r' | b'\n' | b' ' | b'\t' => return Err(Error::ParseHeaderName),
-            _ => {
-                *pos += 1;
-                if *pos == buffer.len() {
-                    return Err(Error::ParseHeaderName);
+        match buffer.get(*pos) {
+            Some(bytes) => match bytes {
+                b':' => break,
+                b'\r' | b'\n' | b' ' | b'\t' => return Err(Error::ParseHeaderName),
+                _ => {
+                    *pos += 1;
+                    if *pos == buffer.len() {
+                        return Err(Error::ParseHeaderName);
+                    }
                 }
-            }
+            },
+            None => return Err(Error::ParseError),
         }
-    };
+    }
     let end = *pos;
     Ok(Span(start, end))
 }
 
 fn parse_header_value(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
-    while *pos < buffer.len() && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n') {
-        *pos += 1;
+    while *pos < buffer.len() {
+        let value = buffer.get(*pos);
+        // && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n')
+        if let Some(byte) = value {
+            if *byte != b'\r' && *byte != b'\n' {
+                *pos += 1;
+            }
+        } else {
+            return Err(Error::ParseError);
+        }
     }
     let end = *pos;
     Ok(Span(start, end))
