@@ -135,7 +135,7 @@ impl Request {
                 }
                 Err(e) => return Err(Error::IO(e)),
             };
-        };
+        }
 
         let mut req = http_parser::parse(mem::replace(&mut buffer, vec![]))?;
 
@@ -162,7 +162,7 @@ impl Request {
 
     /// Read a raw HTTP request from `TcpStream` and create an
     /// appropriate `Request` to represent it.
-    pub fn from_stream( stream: &TcpStream) -> Result<Request> {
+    pub fn from_stream(stream: &TcpStream) -> Result<Request> {
         stream.set_nonblocking(true)?;
         Request::from_reader(stream)
     }

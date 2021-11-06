@@ -1,26 +1,17 @@
 // httparse tests <3
 // https://github.com/seanmonstar/httparse/blob/master/tests/uri.rs
 
-use vial::{
-    http_parser::parse,
-    Error,
-};
+use vial::{http_parser::parse, Error};
 
 macro_rules! test {
     ($name:ident, $buf:expr, |$arg:ident| $body:expr) => {
         #[test]
         fn $name() {
-            use vial::{
-                http_parser::parse,
-                Request,
-            };
+            use vial::{http_parser::parse, Request};
 
             let req = match parse($buf.to_vec()) {
                 Ok(request) => request,
-                Err(e) => panic!(
-                    "Expected Status::Complete, got Err - {})",
-                    e
-                ),
+                Err(e) => panic!("Expected Status::Complete, got Err - {})", e),
             };
             closure(req);
 
@@ -2822,7 +2813,7 @@ fn test_request_partial() {
 #[test]
 fn test_request_partial_version() {
     match parse(b"GET / HTTP/1.".to_vec()) {
-        Err(Error::ConnectionClosed)=> assert!(true),
+        Err(Error::ConnectionClosed) => assert!(true),
         _ => assert!(false),
     }
 }
