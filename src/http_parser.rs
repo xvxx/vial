@@ -1,6 +1,5 @@
 use crate::error::Error::ConnectionClosed;
 use crate::{request::Span, Error, Request};
-use std::panic;
 
 /// Total size limit for all headers combined.
 const MAX_HEADER_SIZE: usize = 8192;
@@ -135,7 +134,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
     Ok(Request::new(method, path, headers, body, buffer))
 }
 
-fn parse_method(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
+fn parse_method(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
     if let Some(bytes) = buffer.get(start..start + 3) {
         let size = match bytes {
@@ -180,16 +179,13 @@ fn parse_method(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
             return Ok(Span(start, start + size));
         }
     }
-    return Err(Error::ParseError);
+    Err(Error::ParseError)
 }
 
-fn parse_path(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
+fn parse_path(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
     let end = buffer[start..].iter().position(|c| *c == b' ');
-    let end = match end {
-        Some(number) => number,
-        None => 0,
-    };
+    let end = end.unwrap_or(0);
     if end == 0 {
         return Err(Error::ParsePath);
     };
@@ -197,7 +193,7 @@ fn parse_path(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     Ok(Span(start, start + end))
 }
 
-fn parse_header_name(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
+fn parse_header_name(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
     loop {
         match buffer.get(*pos) {
@@ -218,7 +214,7 @@ fn parse_header_name(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     Ok(Span(start, end))
 }
 
-fn parse_header_value(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
+fn parse_header_value(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
     while *pos < buffer.len() && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n') {
         *pos += 1;

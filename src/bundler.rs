@@ -1,5 +1,4 @@
 #[cfg(target_family = "unix")]
-use std::os::unix;
 #[allow(unused_imports)]
 use {
     crate::Result,

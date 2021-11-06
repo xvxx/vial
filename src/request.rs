@@ -1,7 +1,7 @@
 use std::net::TcpStream;
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
-    std::{borrow::Cow, collections::HashMap, fmt, io, mem, rc::Rc, str},
+    std::{borrow::Cow, collections::HashMap, fmt, io, rc::Rc, str},
 };
 
 #[cfg(feature = "cookies")]
@@ -129,7 +129,7 @@ impl Request {
             match reader.read_to_end(&mut buffer) {
                 Ok(_) => break,
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                    if buffer.len() > 0 {
+                    if !buffer.is_empty() {
                         break;
                     }
                 }
@@ -137,7 +137,7 @@ impl Request {
             };
         }
 
-        let mut req = http_parser::parse(mem::replace(&mut buffer, vec![]))?;
+        let mut req = http_parser::parse(std::mem::take(&mut buffer))?;
 
         if req.header("Content-Length").is_some() {
             req.parse_form();
