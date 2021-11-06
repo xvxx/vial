@@ -220,16 +220,8 @@ fn parse_header_name(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
 
 fn parse_header_value(buffer: &Vec<u8>, pos: &mut usize) -> Result<Span, Error> {
     let start = *pos;
-    while *pos < buffer.len() {
-        let value = buffer.get(*pos);
-        // && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n')
-        if let Some(byte) = value {
-            if *byte != b'\r' && *byte != b'\n' {
-                *pos += 1;
-            }
-        } else {
-            return Err(Error::ParseError);
-        }
+    while *pos < buffer.len() && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n') {
+        *pos += 1;
     }
     let end = *pos;
     Ok(Span(start, end))
