@@ -1,10 +1,7 @@
 #![allow(non_snake_case)]
 
 use std::{fs, fs::File};
-use vial::{
-    http_parser::{parse, Status},
-    Error, Request,
-};
+use vial::{http_parser::parse, Error, Request};
 
 ////
 // helpers
@@ -14,12 +11,11 @@ fn fixture(name: &str) -> String {
 }
 
 fn parse_fixture(name: &str) -> Request {
-    let x = parse(fixture(name).as_bytes().to_vec());
-    println!("{:?}", x);
-
-    match x.unwrap() {
-        Status::Complete(request) => request,
-        _ => panic!("Expected Status::Complete"),
+    let parse_result = parse(fixture(name).as_bytes().to_vec());
+    println!("{:?}", parse_result);
+    match parse_result {
+        Ok(request) => request,
+        Err(error) => panic!("Error with request!"),
     }
 }
 

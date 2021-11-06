@@ -57,11 +57,13 @@ fn http_current_date() {
 
 #[test]
 fn file_size() {
-    #[cfg(target_family = "windows")] {
+    #[cfg(target_family = "windows")]
+    {
         assert_eq!(1072, util::file_size("LICENSE-MIT"));
         assert_eq!(25835, util::file_size("tests/assets/rfcs/rfc1288.txt"));
     }
-    #[cfg(target_family = "unix")] {
+    #[cfg(target_family = "unix")]
+    {
         assert_eq!(1052, util::file_size("LICENSE-MIT"));
         assert_eq!(25161, util::file_size("tests/assets/rfcs/rfc1288.txt"));
     }

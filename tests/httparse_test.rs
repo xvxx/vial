@@ -1,26 +1,17 @@
 // httparse tests <3
 // https://github.com/seanmonstar/httparse/blob/master/tests/uri.rs
 
-use vial::{
-    http_parser::{parse, Status},
-    Error,
-};
+use vial::{http_parser::parse, Error};
 
 macro_rules! test {
     ($name:ident, $buf:expr, |$arg:ident| $body:expr) => {
         #[test]
         fn $name() {
-            use vial::{
-                http_parser::{parse, Status},
-                Request,
-            };
+            use vial::{http_parser::parse, Request};
 
-            let req = match parse($buf.to_vec()).unwrap() {
-                Status::Complete(request) => request,
-                Status::Partial(buf) => panic!(
-                    "Expected Status::Complete, got Status::Partial({})",
-                    buf.len()
-                ),
+            let req = match parse($buf.to_vec()) {
+                Ok(request) => request,
+                Err(e) => panic!("Expected Status::Complete, got Err - {})", e),
             };
             closure(req);
 
@@ -104,7 +95,7 @@ test! {
 test! {
     urltest_007,
     b"GET  foo.com HTTP/1.1\r\nHost: \r\n\r\n",
-    Error::ParseVersion
+    Error::ParsePath
 }
 
 test! {
@@ -2814,7 +2805,7 @@ test! {
 #[test]
 fn test_request_partial() {
     match parse(b"GET / HTTP/1.1\r\n\r".to_vec()) {
-        Ok(Status::Partial(..)) => assert!(true),
+        Err(Error::ConnectionClosed) => assert!(true),
         _ => assert!(false),
     }
 }
@@ -2822,7 +2813,7 @@ fn test_request_partial() {
 #[test]
 fn test_request_partial_version() {
     match parse(b"GET / HTTP/1.".to_vec()) {
-        Ok(Status::Partial(..)) => assert!(true),
+        Err(Error::ConnectionClosed) => assert!(true),
         _ => assert!(false),
     }
 }

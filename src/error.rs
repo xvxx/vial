@@ -17,6 +17,8 @@ pub enum Error {
     ParseHeaderName,
     /// Failed to parse HTTP header value.
     ParseHeaderValue,
+    /// Failed to parse HTTP path value.
+    ParsePath,
     /// Failed to parse HTTP request.
     ParseError,
     /// io::Error
@@ -54,6 +56,7 @@ impl fmt::Display for Error {
             match self {
                 Error::UnknownHTTPMethod(reason) => reason,
                 Error::ConnectionClosed => "Connection Closed By Client",
+                Error::ParsePath => "Error Parsing HTTP Path",
                 Error::ParseVersion => "Error Parsing HTTP Version",
                 Error::ExpectedCRLF => "Expected CRLF in HTTP Request",
                 Error::ParseHeaderName => "Error Parsing HTTP Header name",
@@ -91,6 +94,7 @@ impl PartialEq for Error {
                 _ => false,
             },
             ConnectionClosed => matches!(other, ConnectionClosed),
+            ParsePath => matches!(other, ParsePath),
             ParseVersion => matches!(other, ParseVersion),
             ExpectedCRLF => matches!(other, ExpectedCRLF),
             ParseHeaderName => matches!(other, ParseHeaderName),

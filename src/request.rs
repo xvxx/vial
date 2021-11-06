@@ -1,3 +1,4 @@
+use std::net::TcpStream;
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
     std::{borrow::Cow, collections::HashMap, fmt, io, mem, rc::Rc, str},
@@ -19,7 +20,7 @@ impl Span {
 
     /// Is this span empty?
     pub fn is_empty(&self) -> bool {
-        self.0 == 0 && self.1 == 0
+        self.0 == self.1
     }
 
     /// Find and return the str this span represents from the given
@@ -124,34 +125,21 @@ impl Request {
     /// appropriate `Request` to represent it.
     pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Request> {
         let mut buffer = Vec::with_capacity(512);
-        let mut read_buf = [0u8; 512];
-
-        let mut req = loop {
-            let n = reader.read(&mut read_buf)?;
-            if n == 0 {
-                return Err(Error::ConnectionClosed);
-            }
-            buffer.extend_from_slice(&read_buf[..n]);
-            match http_parser::parse(std::mem::take(&mut buffer))? {
-                http_parser::Status::Complete(req) => break req,
-                http_parser::Status::Partial(b) => {
-                    let _ = mem::replace(&mut buffer, b);
+        loop {
+            match reader.read_to_end(&mut buffer) {
+                Ok(_) => break,
+                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                    if buffer.len() > 0 {
+                        break;
+                    }
                 }
-            }
-        };
+                Err(e) => return Err(Error::IO(e)),
+            };
+        }
 
-        if let Some(size) = req.header("Content-Length") {
-            let size = size.parse().unwrap_or(0);
-            let start = req.body.0;
+        let mut req = http_parser::parse(mem::replace(&mut buffer, vec![]))?;
 
-            while req.buffer[start..].len() < size {
-                let n = reader.read(&mut read_buf)?;
-                if n == 0 {
-                    break;
-                }
-                req.buffer.extend_from_slice(&read_buf[..n]);
-            }
-            req.body.1 = req.body.0 + size;
+        if req.header("Content-Length").is_some() {
             req.parse_form();
         }
 
@@ -170,6 +158,13 @@ impl Request {
         }
 
         Ok(req)
+    }
+
+    /// Read a raw HTTP request from `TcpStream` and create an
+    /// appropriate `Request` to represent it.
+    pub fn from_stream(stream: &TcpStream) -> Result<Request> {
+        stream.set_nonblocking(true)?;
+        Request::from_reader(stream)
     }
 
     /// Sets the remote address of the request.
