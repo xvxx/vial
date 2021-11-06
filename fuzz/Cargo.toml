@@ -10,7 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-afl = "*"
+# afl = "*"
 
 [dependencies.vial]
 path = ".."
