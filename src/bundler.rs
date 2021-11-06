@@ -32,7 +32,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
         if link.exists() {
             fs::remove_file(&link)?;
         }
-        unix::fs::symlink(env::current_dir()?.join(dir), link)?;
+        std::os::unix::fs::symlink(env::current_dir()?.join(dir), link)?;
         let bundle_rs = Path::new(&out_dir).join("bundle.rs");
         if bundle_rs.exists() {
             fs::remove_file(&bundle_rs)?;
