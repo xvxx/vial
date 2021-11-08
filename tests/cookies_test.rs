@@ -26,7 +26,7 @@ fn parse_fixture(name: &str) -> Request {
 #[cfg(feature = "cookies")]
 fn assign_only_once() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_assign_only_once.txt").unwrap())
+        Request::from_reader(fs::File::open("tests/http/cookies_assign_only_once.txt").unwrap())
             .unwrap();
     assert_eq!("%1", request.cookie("foo").unwrap());
     assert_eq!("bar", request.cookie("bar").unwrap());
@@ -36,14 +36,14 @@ fn assign_only_once() {
 #[cfg(feature = "cookies")]
 fn basic() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_basic.txt").unwrap()).unwrap();
+        Request::from_reader(fs::File::open("tests/http/cookies_basic.txt").unwrap()).unwrap();
     assert_eq!("bar", request.cookie("foo").unwrap());
 }
 #[test]
 #[cfg(feature = "cookies")]
 fn escaping() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_escaping.txt").unwrap()).unwrap();
+        Request::from_reader(fs::File::open("tests/http/cookies_escaping.txt").unwrap()).unwrap();
     assert_eq!(
         "bar=123456789&name=Magic+Mouse",
         request.cookie("foo").unwrap()
@@ -53,7 +53,7 @@ fn escaping() {
 #[cfg(feature = "cookies")]
 fn ignore_escaping_error_and_return_orig_value() {
     let request = Request::from_reader(
-        File::open("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt").unwrap(),
+        fs::File::open("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt").unwrap(),
     )
     .unwrap();
     assert_eq!("%1", request.cookie("foo").unwrap());
@@ -63,7 +63,7 @@ fn ignore_escaping_error_and_return_orig_value() {
 #[cfg(feature = "cookies")]
 fn ignore_non_values() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_ignore_non_values.txt").unwrap())
+        Request::from_reader(fs::File::open("tests/http/cookies_ignore_non_values.txt").unwrap())
             .unwrap();
     assert_eq!("%1", request.cookie("foo").unwrap());
     assert_eq!("bar", request.cookie("bar").unwrap());
@@ -73,7 +73,7 @@ fn ignore_non_values() {
 #[cfg(feature = "cookies")]
 fn unencoded() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_unencoded.txt").unwrap()).unwrap();
+        Request::from_reader(fs::File::open("tests/http/cookies_unencoded.txt").unwrap()).unwrap();
     assert_eq!(
         "bar=123456789&name=Magic+Mouse",
         request.cookie("foo").unwrap()
@@ -83,7 +83,7 @@ fn unencoded() {
 #[cfg(feature = "cookies")]
 fn unencoded_2() {
     let request =
-        Request::from_reader(File::open("tests/http/cookies_unencoded_2.txt").unwrap()).unwrap();
+        Request::from_reader(fs::File::open("tests/http/cookies_unencoded_2.txt").unwrap()).unwrap();
     assert_eq!("%20%22%2c%3b%2f", request.cookie("email").unwrap());
 }
 
