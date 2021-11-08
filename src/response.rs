@@ -436,7 +436,9 @@ impl Response {
                                     body.write_all(&zstd)?;
                                 }
                             }
-                            Compression::Identity => todo!(),
+                            Compression::Identity => {
+                                io::copy(&mut reader, &mut body)?;
+                            }
                         },
                         None => {
                             io::copy(&mut reader, &mut body)?;
@@ -452,54 +454,6 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
-                    // match _encoding {
-                    //     Some(encoding) => match encoding {
-                    //         Compression::Gzip => {
-                    //             let mut vec = vec![];
-                    //             if reader.read_to_end(&mut vec).is_ok() {
-                    //                 body.write_all(
-                    //                     &libflate::gzip::Encoder::new(vec)
-                    //                         .unwrap()
-                    //                         .finish()
-                    //                         .into_result()
-                    //                         .unwrap(),
-                    //                 )?;
-                    //             }
-                    //         }
-                    //         Compression::Deflate => {
-                    //             let mut vec = vec![];
-                    //             if reader.read_to_end(&mut vec).is_ok() {
-                    //                 body.write_all(
-                    //                     &libflate::deflate::Encoder::new(vec)
-                    //                         .finish()
-                    //                         .into_result()
-                    //                         .unwrap(),
-                    //                 )?;
-                    //             }
-                    //         }
-                    //         Compression::Brotli => {
-                    //             io::copy(
-                    //                 &mut brotli2::read::BrotliEncoder::new(reader, 6),
-                    //                 &mut body,
-                    //             )?;
-                    //         }
-                    //         Compression::Zstd => {
-                    //             let mut vec = vec![];
-                    //             if reader.read_to_end(&mut vec).is_ok() {
-                    //                 let zstd = zstd::stream::write::Encoder::new(vec, 3)
-                    //                     .unwrap()
-                    //                     .finish()
-                    //                     .unwrap();
-                    //                 body.write_all(&zstd)?;
-                    //                 // io::copy(&mut zstd, &mut body)?;
-                    //             }
-                    //         }
-                    //         Compression::Identity => todo!(),
-                    //     },
-                    //     None => {
-                    //         io::copy(&mut reader, &mut body)?;
-                    //     }
-                    // }
                     match _encoding {
                         Some(encoding) => match encoding {
                             Compression::Gzip => {
@@ -507,10 +461,40 @@ impl Response {
                                 encoder.write_all(s.as_bytes())?;
                                 body.write_all(&encoder.finish().into_result().unwrap())?;
                             }
-                            Compression::Deflate => todo!(),
-                            Compression::Brotli => todo!(),
-                            Compression::Zstd => todo!(),
-                            Compression::Identity => todo!(),
+                            Compression::Deflate => {
+                                let mut vec = vec![];
+                                if vec.write_all(s.as_bytes()).is_ok() {
+                                    body.write_all(
+                                        &libflate::deflate::Encoder::new(vec)
+                                            .finish()
+                                            .into_result()
+                                            .unwrap(),
+                                    )?;
+                                }
+                            }
+                            Compression::Brotli => {
+                                let mut vec = vec![];
+                                if vec.write_all(s.as_bytes()).is_ok() {
+                                    let x = brotli2::read::BrotliEncoder::new(
+                                        std::io::Cursor::new(vec),
+                                        6,
+                                    );
+                                    io::copy(&mut x.into_inner(), &mut body)?;
+                                }
+                            }
+                            Compression::Zstd => {
+                                let mut vec = vec![];
+                                if vec.write_all(s.as_bytes()).is_ok() {
+                                    body.write_all(
+                                        &zstd::stream::write::Encoder::new(vec, 3)
+                                            .unwrap()
+                                            .finish()?,
+                                    )?;
+                                }
+                            }
+                            Compression::Identity => {
+                                body.write_all(s.as_bytes())?;
+                            }
                         },
                         None => {
                             body.write_all(s.as_bytes())?;
