@@ -28,7 +28,8 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
 
     macro_rules! consume_whitespace_to_eol {
         () => {
-            while buffer.get(pos).is_some() && buffer.get(pos).unwrap().is_ascii_whitespace()
+            while buffer.get(pos).is_some()
+                && buffer.get(pos).unwrap().is_ascii_whitespace()
                 && (buffer[pos] != b'\r' && buffer[pos] != b'\n')
             {
                 if !peek!(1) {

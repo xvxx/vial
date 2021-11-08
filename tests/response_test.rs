@@ -33,8 +33,10 @@ fn from_asset() {
     let res = Response::from_asset("something-fake.gif");
     assert_eq!(404, res.code());
 
-    let res2 = Response::new().with_asset("puff.gif");
-    assert!(&res1.eq(&res2));
+    let res2 = Response::default().with_asset("puff.gif");
+    assert_eq!(res1.body(), res2.body());
+    assert_eq!(res1.headers(), res2.headers());
+    assert_eq!(res1, res2, "\n\n1 len: {}\n2 len: {}", res1.len(), res2.len());
 }
 
 #[test]
@@ -69,11 +71,11 @@ fn from_reader() {
         &version,
         &date,
         "Connection: close",
-        "content-length: 0",
+        "content-length: 6529",
         "content-type: text/html; charset=utf8",
     ];
 
-    res1.write(&mut out).unwrap();
+    res1.write(&mut out, false).unwrap();
     let out = String::from_utf8_lossy(&out);
     let lines = out.split("\r\n");
     let mut line_count = 0;
@@ -229,14 +231,14 @@ fn test_cookies() {
     res.set_cookie("Count", "2");
     assert_eq!("2", res.cookie("Count").unwrap());
     let mut out = vec![];
-    res.write(&mut out).unwrap();
+    res.write(&mut out, false).unwrap();
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=2\r\n"));
 
     let mut res = Response::new();
     res.remove_cookie("Count");
     let mut out = vec![];
-    res.write(&mut out).unwrap();
+    res.write(&mut out, false).unwrap();
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n"));
 }

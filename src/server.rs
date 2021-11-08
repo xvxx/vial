@@ -66,7 +66,8 @@ impl Server {
 
     fn handle_request(&self, stream: TcpStream) -> Result<()> {
         let stream = stream.try_clone()?;
-        //discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
+        // discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
+        // "An Err is returned if the zero Duration is passed to this method." thus no need to check result
         let _ = stream.set_read_timeout(Some(Duration::from_millis(1000)));
         let mut req = Request::from_stream(&stream)?;
         req.set_remote_addr(stream.peer_addr()?.to_string());
@@ -74,13 +75,15 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
+        let gzip = false;
+        #[cfg(feature = "gzip")]
+        let gzip = req.gzip();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
             let mut res: Vec<u8> = vec![];
-
             Response::from(500)
                 .with_body(format!("<pre>{}", info))
-                .write(&mut res)
+                .write(&mut res, gzip)
                 .unwrap();
 
             println!("ERR 500 {}", String::from_utf8_lossy(&res));
@@ -89,31 +92,35 @@ impl Server {
 
         let method = req.method().to_string();
         let path = req.path().to_string();
-        let response = self.build_response(req);
+        let (response, gzip) = self.build_response(req);
 
         println!("{} {} {}", method, response.code(), path);
         if response.code() == 500 {
             eprintln!("{}", response.body());
         }
-
-        response.write(stream)
+        response.write(stream, gzip)
     }
 
-    fn build_response(&self, mut req: Request) -> Response {
+    fn build_response(&self, mut req: Request) -> (Response, bool) {
+        let bool = false;
+        #[cfg(feature = "gzip")]
+        let bool = req.gzip();
+        //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
             if let Some(req_etag) = req.header("If-None-Match") {
                 if req_etag == asset::etag(req.path()).as_ref() {
-                    Response::from(304)
+                    (Response::from(304), bool)
                 } else {
-                    Response::from_asset(req.path())
+                    (Response::from_asset(req.path()), bool)
                 }
             } else {
-                Response::from_asset(req.path())
+                (Response::from_asset(req.path()), bool)
             }
         } else if let Some(action) = self.router.action_for(&mut req) {
-            action(req)
+            let gzip = bool;
+            (action(req), gzip)
         } else {
-            Response::from(404)
+            (Response::from(404), bool)
         }
     }
 }

@@ -67,6 +67,9 @@ pub struct Request {
 
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
+
+    #[cfg(feature = "gzip")]
+    gzip: bool,
 }
 
 impl fmt::Debug for Request {
@@ -118,6 +121,8 @@ impl Request {
 
             #[cfg(feature = "cookies")]
             cookies: vec![],
+            #[cfg(feature = "gzip")]
+            gzip: false,
         }
     }
 
@@ -347,6 +352,16 @@ impl Request {
                 }
             })
             .next()
+    }
+    #[cfg(feature = "gzip")]
+    /// Return whether the request has a Content-Encoding header containing "gzip"
+    pub fn gzip(&self) -> bool {
+        if let Some(content_encoding) = self.header("Accept-Encoding") {
+            if content_encoding.into_owned().contains("gzip") {
+                return true;
+            }
+        }
+        false
     }
 
     /// Request's `cache()` lives for only a single Request, but can

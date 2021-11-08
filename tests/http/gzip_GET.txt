@@ -1,0 +1,4 @@
+GET / HTTP/1.1
+Accept-encoding: gzip
+Host: www.codecademy.com
+
