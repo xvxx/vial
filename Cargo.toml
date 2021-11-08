@@ -60,7 +60,8 @@ json_serde = ['serde', 'serde_json']
 state = []
 cookies = ['basic-cookies']
 default = []
-compression = ['libflate', 'fly-accept-encoding']
+# compression = ['libflate', 'fly-accept-encoding']
+compression = ['libflate']
 
 [dependencies]
 threadpool = "1.7.1"
