@@ -69,7 +69,6 @@ pub struct Request {
 
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
-
     // #[cfg(feature = "compression")]
     // compression: Encoding,
 }
@@ -357,8 +356,8 @@ impl Request {
     }
     #[cfg(feature = "compression")]
     /// Return the compression type from accept-encoding header
-    pub fn compression(&self) -> Option<crate::response::VialEncoding> {
-        use crate::response::VialEncoding;
+    pub fn compression(&self) -> Option<crate::Compression> {
+        use crate::Compression;
 
         if let Some(content_encoding) = self.header("Accept-Encoding") {
             let mut headers = http::header::HeaderMap::new();
@@ -368,10 +367,10 @@ impl Request {
             );
             if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
                 return match compression {
-                    Encoding::Gzip => Some(VialEncoding::Gzip),
-                    Encoding::Deflate => Some(VialEncoding::Deflate),
-                    Encoding::Brotli => Some(VialEncoding::Brotli),
-                    Encoding::Zstd => Some(VialEncoding::Zstd),
+                    Encoding::Gzip => Some(Compression::Gzip),
+                    Encoding::Deflate => Some(Compression::Deflate),
+                    Encoding::Brotli => Some(Compression::Brotli),
+                    Encoding::Zstd => Some(Compression::Zstd),
                     Encoding::Identity => None,
                 };
             }

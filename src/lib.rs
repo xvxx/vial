@@ -246,3 +246,18 @@ pub const BUILD_DATE: &str = env!("BUILD_DATE");
 
 /// Crate version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Encoding. Internal enum to avoid importing content encoding package w/o feature
+#[derive(PartialEq, PartialOrd, Debug)]
+pub enum Compression {
+    /// Gzip compression
+    Gzip,
+    /// Deflate compression
+    Deflate,
+    /// Brotli compression
+    Brotli,
+    /// Zstandard compression
+    Zstd,
+    /// No compression
+    Identity,
+}

@@ -2,6 +2,8 @@ use std::io::Write;
 
 #[cfg(feature = "compression")] //REMOVE
 use libflate::gzip::Encoder;
+
+use crate::Compression;
 use {
     crate::{asset, util, Result},
     std::{
@@ -10,14 +12,6 @@ use {
         io::{self, BufReader},
     },
 };
-/// Encoding. Internal enum to avoid importing content encoding package w/o feature
-pub enum VialEncoding {
-    Gzip,
-    Deflate,
-    Brotli,
-    Zstd,
-    Identity,
-}
 /// Response Body. Will be either a `String` or `io::Read`, like from
 /// a File.
 enum Body {
@@ -386,7 +380,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W, _encoding: &Option<VialEncoding>) -> Result<()> {
+    pub fn write<W: io::Write>(mut self, mut w: W, _encoding: &Option<Compression>) -> Result<()> {
         // gross - move into print_headers or something
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
@@ -403,7 +397,7 @@ impl Response {
                 {
                     match _encoding {
                         Some(encoding) => match encoding {
-                            VialEncoding::Gzip => {
+                            Compression::Gzip => {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     body.write_all(
@@ -415,7 +409,7 @@ impl Response {
                                     )?;
                                 }
                             }
-                            VialEncoding::Deflate => {
+                            Compression::Deflate => {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     body.write_all(
@@ -426,13 +420,13 @@ impl Response {
                                     )?;
                                 }
                             }
-                            VialEncoding::Brotli => {
+                            Compression::Brotli => {
                                 io::copy(
                                     &mut brotli2::read::BrotliEncoder::new(reader, 6),
                                     &mut body,
                                 )?;
                             }
-                            VialEncoding::Zstd => {
+                            Compression::Zstd => {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     let zstd = zstd::stream::write::Encoder::new(vec, 3)
@@ -440,10 +434,9 @@ impl Response {
                                         .finish()
                                         .unwrap();
                                     body.write_all(&zstd)?;
-                                    // io::copy(&mut zstd, &mut body)?;
                                 }
                             }
-                            VialEncoding::Identity => todo!(),
+                            Compression::Identity => todo!(),
                         },
                         None => {
                             io::copy(&mut reader, &mut body)?;
@@ -459,17 +452,65 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
+                    // match _encoding {
+                    //     Some(encoding) => match encoding {
+                    //         Compression::Gzip => {
+                    //             let mut vec = vec![];
+                    //             if reader.read_to_end(&mut vec).is_ok() {
+                    //                 body.write_all(
+                    //                     &libflate::gzip::Encoder::new(vec)
+                    //                         .unwrap()
+                    //                         .finish()
+                    //                         .into_result()
+                    //                         .unwrap(),
+                    //                 )?;
+                    //             }
+                    //         }
+                    //         Compression::Deflate => {
+                    //             let mut vec = vec![];
+                    //             if reader.read_to_end(&mut vec).is_ok() {
+                    //                 body.write_all(
+                    //                     &libflate::deflate::Encoder::new(vec)
+                    //                         .finish()
+                    //                         .into_result()
+                    //                         .unwrap(),
+                    //                 )?;
+                    //             }
+                    //         }
+                    //         Compression::Brotli => {
+                    //             io::copy(
+                    //                 &mut brotli2::read::BrotliEncoder::new(reader, 6),
+                    //                 &mut body,
+                    //             )?;
+                    //         }
+                    //         Compression::Zstd => {
+                    //             let mut vec = vec![];
+                    //             if reader.read_to_end(&mut vec).is_ok() {
+                    //                 let zstd = zstd::stream::write::Encoder::new(vec, 3)
+                    //                     .unwrap()
+                    //                     .finish()
+                    //                     .unwrap();
+                    //                 body.write_all(&zstd)?;
+                    //                 // io::copy(&mut zstd, &mut body)?;
+                    //             }
+                    //         }
+                    //         Compression::Identity => todo!(),
+                    //     },
+                    //     None => {
+                    //         io::copy(&mut reader, &mut body)?;
+                    //     }
+                    // }
                     match _encoding {
                         Some(encoding) => match encoding {
-                            VialEncoding::Gzip => {
+                            Compression::Gzip => {
                                 let mut encoder = Encoder::new(vec![]).unwrap();
                                 encoder.write_all(s.as_bytes())?;
                                 body.write_all(&encoder.finish().into_result().unwrap())?;
                             }
-                            VialEncoding::Deflate => todo!(),
-                            VialEncoding::Brotli => todo!(),
-                            VialEncoding::Zstd => todo!(),
-                            VialEncoding::Identity => todo!(),
+                            Compression::Deflate => todo!(),
+                            Compression::Brotli => todo!(),
+                            Compression::Zstd => todo!(),
+                            Compression::Identity => todo!(),
                         },
                         None => {
                             body.write_all(s.as_bytes())?;
@@ -488,17 +529,19 @@ impl Response {
         #[cfg(feature = "compression")]
         let _encoding_opt = match _encoding {
             Some(encoding) => match encoding {
-                VialEncoding::Gzip => Some("gzip"),
-                VialEncoding::Deflate => Some("deflate"),
-                VialEncoding::Brotli => Some("br"),
-                VialEncoding::Zstd => Some("zstd"),
-                VialEncoding::Identity => None,
+                Compression::Gzip => Some("gzip"),
+                Compression::Deflate => Some("deflate"),
+                Compression::Brotli => Some("br"),
+                Compression::Zstd => Some("zstd"),
+                Compression::Identity => None,
             },
             None => None,
         };
         if let Some(encoding_content) = _encoding_opt {
-            self.headers
-                .insert("content-encoding".to_lowercase(), encoding_content.to_string());
+            self.headers.insert(
+                "content-encoding".to_lowercase(),
+                encoding_content.to_string(),
+            );
         }
 
         header.push_str(

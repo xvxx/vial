@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::response::VialEncoding;
+use crate::Compression;
 use {
     crate::{asset, Request, Response, Result, Router},
     std::{
@@ -77,7 +77,7 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
-        let _compression: Option<VialEncoding> = None;
+        let _compression: Option<Compression> = None;
         #[cfg(feature = "compression")]
         let _compression = req.compression();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
@@ -103,8 +103,8 @@ impl Server {
         response.write(stream, &encoding)
     }
 
-    fn build_response(&self, mut req: Request) -> (Response, Option<VialEncoding>) {
-        let _encoding: Option<VialEncoding> = None;
+    fn build_response(&self, mut req: Request) -> (Response, Option<Compression>) {
+        let _encoding: Option<Compression> = None;
         #[cfg(feature = "compression")]
         let _encoding = req.compression();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?

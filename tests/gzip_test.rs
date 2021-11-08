@@ -1,5 +1,5 @@
-use std::{fs};
-use vial::{http_parser::parse, Request};
+use std::fs;
+use vial::{http_parser::parse, Compression, Request};
 
 ////
 // helpers
@@ -19,5 +19,5 @@ fn parse_fixture(name: &str) -> Request {
 #[cfg(feature = "compression")]
 fn gzip_header_test() {
     let request = Request::from_reader(fs::File::open("tests/http/gzip_GET.txt").unwrap()).unwrap();
-    assert!(request.gzip());
+    assert_eq!(request.compression(), Some(Compression::Gzip));
 }

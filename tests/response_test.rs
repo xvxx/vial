@@ -81,7 +81,7 @@ fn from_reader() {
         "content-type: text/html; charset=utf8",
     ];
 
-    res1.write(&mut out, false).unwrap();
+    res1.write(&mut out, &None).unwrap();
     let out = String::from_utf8_lossy(&out);
     let lines = out.split("\r\n");
     let mut line_count = 0;
@@ -234,14 +234,14 @@ fn test_cookies() {
     res.set_cookie("Count", "2");
     assert_eq!("2", res.cookie("Count").unwrap());
     let mut out = vec![];
-    res.write(&mut out, false).unwrap();
+    res.write(&mut out, &None).unwrap();
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=2\r\n"));
 
     let mut res = Response::new();
     res.remove_cookie("Count");
     let mut out = vec![];
-    res.write(&mut out, false).unwrap();
+    res.write(&mut out, &None).unwrap();
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n"));
 }
