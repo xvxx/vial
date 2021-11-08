@@ -1,0 +1,7 @@
+
+tasks:
+  - init: cargo build && make
+    command: cargo watch -x run
+vscode:
+  extensions:
+    - matklad.rust-analyzer

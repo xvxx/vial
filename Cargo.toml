@@ -60,8 +60,7 @@ json_serde = ['serde', 'serde_json']
 state = []
 cookies = ['basic-cookies']
 default = []
-# compression = ['libflate', 'fly-accept-encoding']
-compression = ['libflate']
+compression = ['libflate', 'brotli2', 'zstd', 'http', 'fly-accept-encoding']
 
 [dependencies]
 threadpool = "1.7.1"
@@ -72,8 +71,11 @@ hatter = { version = "0.1.1", optional = true }
 horrorshow = { version = "0.8.3", optional = true }
 serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
-libflate = { version = "1.1.1", optional = true }
-# fly-accept-encoding = { version = "0.2.0-alpha.5", optional = true }
+libflate = { version = "1.1.1", optional = true } #gzip and deflate
+fly-accept-encoding = { version = "0.2.0-alpha.5", optional = true } 
+brotli2 = { version = "*", optional = true }
+zstd = { version = "*", optional = true }
+http = { version = "*", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }

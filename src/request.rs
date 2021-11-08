@@ -70,8 +70,8 @@ pub struct Request {
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
 
-    #[cfg(feature = "compression")]
-    compression: Encoding,
+    // #[cfg(feature = "compression")]
+    // compression: Encoding,
 }
 
 impl fmt::Debug for Request {
@@ -123,8 +123,8 @@ impl Request {
 
             #[cfg(feature = "cookies")]
             cookies: vec![],
-            #[cfg(feature = "compression")]
-            compression: Encoding::Identity,
+            // #[cfg(feature = "compression")]
+            // compression: Encoding::Identity,
         }
     }
 

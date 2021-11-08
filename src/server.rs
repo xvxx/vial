@@ -77,15 +77,15 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
-        let compression: Option<VialEncoding> = None;
+        let _compression: Option<VialEncoding> = None;
         #[cfg(feature = "compression")]
-        let compression = req.compression();
+        let _compression = req.compression();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
             let mut res: Vec<u8> = vec![];
             Response::from(500)
                 .with_body(format!("<pre>{}", info))
-                .write(&mut res, &compression)
+                .write(&mut res, &_compression)
                 .unwrap();
 
             println!("ERR 500 {}", String::from_utf8_lossy(&res));
@@ -104,25 +104,25 @@ impl Server {
     }
 
     fn build_response(&self, mut req: Request) -> (Response, Option<VialEncoding>) {
-        let encoding: Option<VialEncoding> = None;
+        let _encoding: Option<VialEncoding> = None;
         #[cfg(feature = "compression")]
-        let encoding = req.compression();
+        let _encoding = req.compression();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
             if let Some(req_etag) = req.header("If-None-Match") {
                 if req_etag == asset::etag(req.path()).as_ref() {
-                    (Response::from(304), encoding)
+                    (Response::from(304), _encoding)
                 } else {
-                    (Response::from_asset(req.path()), encoding)
+                    (Response::from_asset(req.path()), _encoding)
                 }
             } else {
-                (Response::from_asset(req.path()), encoding)
+                (Response::from_asset(req.path()), _encoding)
             }
         } else if let Some(action) = self.router.action_for(&mut req) {
-            let gzip = encoding;
+            let gzip = _encoding;
             (action(req), gzip)
         } else {
-            (Response::from(404), encoding)
+            (Response::from(404), _encoding)
         }
     }
 }

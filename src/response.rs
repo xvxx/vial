@@ -386,7 +386,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W, encoding: &Option<VialEncoding>) -> Result<()> {
+    pub fn write<W: io::Write>(mut self, mut w: W, _encoding: &Option<VialEncoding>) -> Result<()> {
         // gross - move into print_headers or something
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
@@ -401,7 +401,7 @@ impl Response {
             Body::Reader(mut reader) => {
                 #[cfg(feature = "compression")]
                 {
-                    match encoding {
+                    match _encoding {
                         Some(encoding) => match encoding {
                             VialEncoding::Gzip => {
                                 let mut vec = vec![];
@@ -459,7 +459,7 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
-                    match encoding {
+                    match _encoding {
                         Some(encoding) => match encoding {
                             VialEncoding::Gzip => {
                                 let mut encoder = Encoder::new(vec![]).unwrap();
@@ -484,8 +484,9 @@ impl Response {
         }
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
+        let _encoding_opt: Option<&str> = None;
         #[cfg(feature = "compression")]
-        let encoding = match encoding {
+        let _encoding_opt = match _encoding {
             Some(encoding) => match encoding {
                 VialEncoding::Gzip => Some("gzip"),
                 VialEncoding::Deflate => Some("deflate"),
@@ -495,7 +496,7 @@ impl Response {
             },
             None => None,
         };
-        if let Some(encoding_content) = encoding {
+        if let Some(encoding_content) = _encoding_opt {
             self.headers
                 .insert("content-encoding".to_lowercase(), encoding_content.to_string());
         }
