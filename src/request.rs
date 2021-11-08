@@ -16,8 +16,8 @@ pub struct Span(pub usize, pub usize);
 
 impl Span {
     /// Create a new, empty Span.
-    pub fn new() -> Span {
-        Span::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Is this span empty?
@@ -97,19 +97,19 @@ impl Request {
         headers: Vec<(Span, Span)>,
         body: Span,
         buffer: Vec<u8>,
-    ) -> Request {
-        Request {
+    ) -> Self {
+        Self {
             method,
             path,
             headers,
             body,
             buffer,
-            ..Request::default()
+            ..Self::default()
         }
     }
     /// Produce an empty Request.
-    pub fn default() -> Request {
-        Request {
+    pub fn default() -> Self {
+        Self {
             remote_addr: String::new(),
             path: Span::new(),
             method: Span::new(),
@@ -129,7 +129,7 @@ impl Request {
 
     /// Read a raw HTTP request from `reader` and create an
     /// appropriate `Request` to represent it.
-    pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Request> {
+    pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Self> {
         let mut buffer = Vec::with_capacity(512);
         loop {
             match reader.read_to_end(&mut buffer) {
@@ -168,9 +168,9 @@ impl Request {
 
     /// Read a raw HTTP request from `TcpStream` and create an
     /// appropriate `Request` to represent it.
-    pub fn from_stream(stream: &TcpStream) -> Result<Request> {
+    pub fn from_stream(stream: &TcpStream) -> Result<Self> {
         stream.set_nonblocking(true)?;
-        Request::from_reader(stream)
+        Self::from_reader(stream)
     }
 
     /// Sets the remote address of the request.
@@ -199,8 +199,8 @@ impl Request {
     }
 
     /// Create a request from an arbitrary path. Used in testing.
-    pub fn from_path(path: &str) -> Request {
-        Request::default().with_path(path)
+    pub fn from_path(path: &str) -> Self {
+        Self::default().with_path(path)
     }
 
     /// Give a request an arbitrary `path`. Can be used in tests or
@@ -212,7 +212,7 @@ impl Request {
 
     /// Give a request an arbitrary `path`. Can be used in tests or
     /// with `filter`.
-    pub fn with_path(mut self, path: &str) -> Request {
+    pub fn with_path(mut self, path: &str) -> Self {
         self.set_path(path);
         self
     }
@@ -232,7 +232,7 @@ impl Request {
 
     /// Give this Request an arbitrary body from a string and return
     /// the new Request.
-    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Request {
+    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Self {
         self.set_body(body);
         self
     }
@@ -257,7 +257,7 @@ impl Request {
     }
 
     /// Give this Request a new HTTP Method and return the new Request.
-    pub fn with_method(mut self, method: &str) -> Request {
+    pub fn with_method(mut self, method: &str) -> Self {
         self.set_method(method);
         self
     }
@@ -283,7 +283,7 @@ impl Request {
     }
 
     /// Get a header value. `name` is case insensitive.
-    pub fn header(&self, name: &str) -> Option<Cow<str>> {
+    pub fn header(&self, name: &str) -> Option<Cow<'_, str>> {
         let name = name.to_lowercase();
         let mut headers = self
             .headers
@@ -449,7 +449,7 @@ impl Request {
     /// ```
     pub fn cache<T, F>(&self, fun: F) -> &T
     where
-        F: FnOnce(&Request) -> T,
+        F: FnOnce(&Self) -> T,
         T: Send + Sync + 'static,
     {
         self.cache.get().unwrap_or_else(|| {

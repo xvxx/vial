@@ -37,8 +37,8 @@ pub struct TypeCache {
 
 impl TypeCache {
     /// Create a new, empty TypeCache.
-    pub fn new() -> TypeCache {
-        TypeCache::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// TypeCache works like a regular hash map, but with types as

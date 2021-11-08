@@ -28,14 +28,14 @@ pub enum Error {
 }
 
 impl From<Error> for io::Error {
-    fn from(err: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, err.to_string())
+    fn from(err: Error) -> Self {
+        Self::new(io::ErrorKind::Other, err.to_string())
     }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::IO(err)
+    fn from(err: io::Error) -> Self {
+        Self::IO(err)
     }
 }
 

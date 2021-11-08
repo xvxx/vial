@@ -1,5 +1,5 @@
 use std::fs;
-use vial::{http_parser::parse, Compression, Request};
+use vial::{http_parser::parse, Request};
 
 ////
 // helpers

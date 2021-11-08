@@ -70,7 +70,7 @@ use {
 };
 
 /// Produce an etag for an asset.
-pub fn etag(path: &str) -> Cow<str> {
+pub fn etag(path: &str) -> Cow<'_, str> {
     if is_bundled() {
         Cow::from(crate::BUILD_DATE)
     } else {

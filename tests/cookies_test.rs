@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use std::{fs, fs::File};
+use std::{fs};
 use vial::{http_parser::parse, Request};
 
 ////

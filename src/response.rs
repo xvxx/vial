@@ -104,7 +104,7 @@ impl fmt::Display for Response {
 }
 
 impl Default for Response {
-    fn default() -> Response {
+    fn default() -> Self {
         let mut headers = HashMap::new();
         headers.insert(
             "Content-Type".to_lowercase(),
@@ -112,7 +112,7 @@ impl Default for Response {
         );
         headers.insert("Content-Length".to_lowercase(), "0".into());
 
-        Response {
+        Self {
             code: 200,
             body: Body::None,
             headers,
@@ -125,8 +125,8 @@ impl Default for Response {
 
 impl Response {
     /// Create a new, empty, 200 response - ready for HTML!
-    pub fn new() -> Response {
-        Response::default()
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// HTTP Status Code
@@ -178,37 +178,37 @@ impl Response {
     }
 
     /// Convert into a Response.
-    pub fn from<T: Into<Response>>(from: T) -> Response {
+    pub fn from<T: Into<Self>>(from: T) -> Self {
         from.into()
     }
 
     /// Create a response from an asset. See the
     /// [`asset`](asset/index.html) module for more information on
     /// using assets.
-    pub fn from_asset(path: &str) -> Response {
-        Response::default().with_asset(path)
+    pub fn from_asset(path: &str) -> Self {
+        Self::default().with_asset(path)
     }
 
     /// Create a response from a (boxed) io::Read.
-    pub fn from_reader(reader: Box<dyn io::Read>) -> Response {
-        Response::default().with_reader(reader)
+    pub fn from_reader(reader: Box<dyn io::Read>) -> Self {
+        Self::default().with_reader(reader)
     }
 
     /// Creates a response from a file on disk.
     /// TODO: Path?
-    pub fn from_file(path: &str) -> Response {
-        Response::default().with_file(path)
+    pub fn from_file(path: &str) -> Self {
+        Self::default().with_file(path)
     }
 
     /// Creates a 500 response from an error, displaying it.
-    pub fn from_error<E: error::Error>(err: E) -> Response {
-        Response::default().with_error(err)
+    pub fn from_error<E: error::Error>(err: E) -> Self {
+        Self::default().with_error(err)
     }
 
     /// Creates a new Response and sets the given header, in
     /// addition to the defaults.
-    pub fn from_header(name: &str, value: &str) -> Response {
-        Response::default().with_header(name, value)
+    pub fn from_header(name: &str, value: &str) -> Self {
+        Self::default().with_header(name, value)
     }
 
     #[cfg(feature = "cookies")]
@@ -219,22 +219,22 @@ impl Response {
     }
 
     /// Creates a new default Response with the given body.
-    pub fn from_body<S: AsRef<str>>(body: S) -> Response {
-        Response::default().with_body(body)
+    pub fn from_body<S: AsRef<str>>(body: S) -> Self {
+        Self::default().with_body(body)
     }
 
     /// Creates a new `text/plain` Response with the given body.
-    pub fn from_text<S: AsRef<str>>(text: S) -> Response {
-        Response::default().with_text(text)
+    pub fn from_text<S: AsRef<str>>(text: S) -> Self {
+        Self::default().with_text(text)
     }
 
     /// Creates a new response with the given HTTP Status Code.
-    pub fn from_code(code: usize) -> Response {
-        Response::default().with_code(code)
+    pub fn from_code(code: usize) -> Self {
+        Self::default().with_code(code)
     }
 
     /// Creates a new response with the given HTTP Status Code.
-    pub fn with_code(mut self, code: usize) -> Response {
+    pub fn with_code(mut self, code: usize) -> Self {
         self.code = code;
         match code {
             404 => self.with_body("404 Not Found"),
@@ -244,7 +244,7 @@ impl Response {
     }
 
     /// Body builder. Returns a Response with the given body.
-    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Response {
+    pub fn with_body<S: AsRef<str>>(mut self, body: S) -> Self {
         let body = body.as_ref();
         self.body = Body::String(body.to_string());
         self.set_header("Content-Length", &body.len().to_string());
@@ -267,13 +267,13 @@ impl Response {
     }
 
     /// Returns a `text/plain` Response with the given body.
-    pub fn with_text<S: AsRef<str>>(self, text: S) -> Response {
+    pub fn with_text<S: AsRef<str>>(self, text: S) -> Self {
         self.with_body(text)
             .with_header("Content-Type", "text/plain; charset=utf8")
     }
 
     /// Returns a Response using the given reader for the body.
-    pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response {
+    pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Self {
         self.body = Body::Reader(reader);
         self
     }
@@ -283,7 +283,7 @@ impl Response {
     ///
     /// See the [`asset`](asset/index.html) module for more
     /// information on using assets.
-    pub fn with_asset(mut self, path: &str) -> Response {
+    pub fn with_asset(mut self, path: &str) -> Self {
         if let Some(path) = asset::normalize_path(path) {
             if asset::exists(&path) {
                 if asset::is_bundled() {
@@ -314,9 +314,9 @@ impl Response {
 
     /// Sets this Response's body to the body of the given file and
     /// sets the `Content-Type` header based on the file's extension.
-    pub fn with_file(mut self, path: &str) -> Response {
+    pub fn with_file(mut self, path: &str) -> Self {
         if !std::path::Path::new(path).exists() {
-            return Response::from(404);
+            return Self::from(404);
         }
         match fs::File::open(path) {
             Ok(file) => {
@@ -331,13 +331,13 @@ impl Response {
     }
 
     /// Sets the response code to 500 and the body to the error's text.
-    pub fn with_error<E: error::Error>(self, err: E) -> Response {
+    pub fn with_error<E: error::Error>(self, err: E) -> Self {
         self.with_code(500)
             .with_body(&format!("<h1>500 Internal Error</h1><pre>{:?}", err))
     }
 
     /// Returns a Response with the given header set to the value.
-    pub fn with_header(mut self, key: &str, value: &str) -> Response {
+    pub fn with_header(mut self, key: &str, value: &str) -> Self {
         self.set_header(key, value);
         self
     }
@@ -375,8 +375,8 @@ impl Response {
     }
 
     /// Returns a 302 redirect to the given URL.
-    pub fn redirect_to<U: AsRef<str>>(url: U) -> Response {
-        Response::from(302).with_header("location", url.as_ref())
+    pub fn redirect_to<U: AsRef<str>>(url: U) -> Self {
+        Self::from(302).with_header("location", url.as_ref())
     }
 
     /// Writes this response to a stream.
@@ -565,31 +565,31 @@ impl Response {
 }
 
 impl From<&str> for Response {
-    fn from(s: &str) -> Response {
-        Response::from_body(s.to_string())
+    fn from(s: &str) -> Self {
+        Self::from_body(s.to_string())
     }
 }
 
 impl From<&String> for Response {
-    fn from(s: &String) -> Response {
-        Response::from_body(s.clone())
+    fn from(s: &String) -> Self {
+        Self::from_body(s.clone())
     }
 }
 
 impl From<String> for Response {
-    fn from(body: String) -> Response {
-        Response::from_body(body)
+    fn from(body: String) -> Self {
+        Self::from_body(body)
     }
 }
 
 impl From<usize> for Response {
-    fn from(i: usize) -> Response {
-        Response::from_code(i)
+    fn from(i: usize) -> Self {
+        Self::from_code(i)
     }
 }
 
 impl From<std::borrow::Cow<'_, [u8]>> for Response {
-    fn from(i: std::borrow::Cow<'_, [u8]>) -> Response {
-        Response::from_body(String::from_utf8_lossy(&i).to_string())
+    fn from(i: std::borrow::Cow<'_, [u8]>) -> Self {
+        Self::from_body(String::from_utf8_lossy(&i).to_string())
     }
 }

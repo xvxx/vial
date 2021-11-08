@@ -112,7 +112,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
         }
         headers.push((name, value));
 
-        consume_eol!(return Err(Error::ConnectionClosed));
+        consume_eol!(return Err(ConnectionClosed));
 
         if consume_eol!() {
             break;
