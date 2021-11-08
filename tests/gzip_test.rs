@@ -16,7 +16,7 @@ fn parse_fixture(name: &str) -> Request {
 }
 
 #[test]
-// #[cfg(feature = "gzip")]
+#[cfg(feature = "compression")]
 fn gzip_header_test() {
     let request = Request::from_reader(File::open("tests/http/gzip_GET.txt").unwrap()).unwrap();
     assert!(request.gzip());

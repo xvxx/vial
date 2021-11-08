@@ -1,6 +1,6 @@
 use std::io::Write;
 
-#[cfg(feature = "gzip")] //REMOVE
+#[cfg(feature = "compression")] //REMOVE
 use libflate::gzip::Encoder;
 use {
     crate::{asset, util, Result},
@@ -393,7 +393,7 @@ impl Response {
         // let mut len;
         match self.body {
             Body::Reader(mut reader) => {
-                #[cfg(feature = "gzip")]
+                #[cfg(feature = "compression")]
                 {
                     if gzip {
                         let mut vec = vec![];
@@ -407,13 +407,13 @@ impl Response {
                     }
                 }
 
-                #[cfg(not(feature = "gzip"))]
+                #[cfg(not(feature = "compression"))]
                 {
                     io::copy(&mut reader, &mut body)?;
                 }
             }
             Body::String(s) => {
-                #[cfg(feature = "gzip")]
+                #[cfg(feature = "compression")]
                 {
                     if gzip {
                         let mut encoder = Encoder::new(vec![]).unwrap();
@@ -424,14 +424,14 @@ impl Response {
                     }
                 }
 
-                #[cfg(not(feature = "gzip"))]
+                #[cfg(not(feature = "compression"))]
                 body.write_all(s.as_bytes())?;
             }
             _ => {}
         }
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
-        #[cfg(feature = "gzip")]
+        #[cfg(feature = "compression")]
         if gzip {
             self.headers
                 .insert("content-encoding".to_lowercase(), "gzip".into());

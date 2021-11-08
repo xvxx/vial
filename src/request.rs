@@ -68,7 +68,7 @@ pub struct Request {
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
 
-    #[cfg(feature = "gzip")]
+    #[cfg(feature = "compression")]
     gzip: bool,
 }
 
@@ -121,7 +121,7 @@ impl Request {
 
             #[cfg(feature = "cookies")]
             cookies: vec![],
-            #[cfg(feature = "gzip")]
+            #[cfg(feature = "compression")]
             gzip: false,
         }
     }
@@ -353,7 +353,7 @@ impl Request {
             })
             .next()
     }
-    #[cfg(feature = "gzip")]
+    #[cfg(feature = "compression")]
     /// Return whether the request has a Content-Encoding header containing "gzip"
     pub fn gzip(&self) -> bool {
         if let Some(content_encoding) = self.header("Accept-Encoding") {

@@ -8,6 +8,7 @@
 * Fix OOM (https://github.com/sigaloid/vial/issues/7)
 * Add criterion benchmarks (cargo criterion) and fuzzing tests (cargo fuzz run libfuzzer)
 * Refactor requests structure (https://github.com/sigaloid/vial/pull/12, thanks [@JEBailey](https://github.com/JEBailey)!)
+* Add compression (gzip-only for now). Enable `compression` feature to opt in
 
 # Why not PR? 
 * Author has been inactive since Dec 2020, and I really like this framework and want to see it improved. :)

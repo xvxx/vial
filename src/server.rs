@@ -76,7 +76,7 @@ impl Server {
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
         let gzip = false;
-        #[cfg(feature = "gzip")]
+        #[cfg(feature = "compression")]
         let gzip = req.gzip();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
@@ -103,7 +103,7 @@ impl Server {
 
     fn build_response(&self, mut req: Request) -> (Response, bool) {
         let bool = false;
-        #[cfg(feature = "gzip")]
+        #[cfg(feature = "compression")]
         let bool = req.gzip();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
