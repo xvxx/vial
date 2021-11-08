@@ -71,7 +71,7 @@ fn from_reader() {
         &version,
         &date,
         "Connection: close",
-        // "content-length: 6529",
+        "content-length: 6607",
         "content-type: text/html; charset=utf8",
     ];
 
