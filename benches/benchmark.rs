@@ -67,8 +67,9 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(name = benches;
-    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
-    targets = criterion_benchmark
-);
+criterion_group! {
+    name = benches;
+    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+    targets = bench
+}
 criterion_main!(benches);
