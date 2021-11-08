@@ -64,7 +64,7 @@ use {
         collections::{hash_map::DefaultHasher, HashMap},
         fs,
         hash::{Hash, Hasher},
-        io::{self, BufReader, Read},
+        io::{BufReader, Read},
         str,
     },
 };
@@ -178,7 +178,7 @@ pub fn to_string(path: &str) -> Result<String> {
 }
 
 /// Produces a boxed `io::Read` for an asset.
-pub fn as_reader(path: &str) -> Option<Box<dyn io::Read>> {
+pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
     let path = normalize_path(path)?;
     if is_bundled() {
         if let Some(v) = bundled_assets().unwrap().get(&path) {

@@ -185,11 +185,7 @@ impl Request {
 
     /// Path requested, starting with `/` and not including `?query`.
     pub fn path(&self) -> &str {
-        let span = if let Some(idx) = self.full_path().find('?') {
-            Span(self.path.0, self.path.0 + idx)
-        } else {
-            self.path
-        };
+        let span = self.full_path().find('?').map_or(self.path, |idx| Span(self.path.0, self.path.0 + idx));
         span.from_buf(&self.buffer)
     }
 

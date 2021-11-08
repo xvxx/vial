@@ -380,7 +380,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W, _encoding: &Option<Compression>) -> Result<()> {
+    pub fn write<W: Write>(mut self, mut w: W, _encoding: &Option<Compression>) -> Result<()> {
         // gross - move into print_headers or something
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",

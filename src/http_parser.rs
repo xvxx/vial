@@ -11,7 +11,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
     macro_rules! peek {
         ($size:expr) => {
             if buffer[pos..].len() < $size {
-                return Err(Error::ConnectionClosed);
+                return Err(ConnectionClosed);
             } else {
                 true
             }
@@ -48,7 +48,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
             let mut found = true;
             for c in $word.bytes() {
                 if buffer.len() <= pos {
-                    return Err(Error::ConnectionClosed);
+                    return Err(ConnectionClosed);
                 } else if buffer[pos] == c {
                     pos += 1;
                 } else {
