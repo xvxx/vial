@@ -1,6 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::fs;
 use vial::{http_parser::parse, Request};
+use pprof::{criterion::{PProfProfiler, Output}, flamegraph::Options};
 
 fn fixture(name: &str) -> String {
     fs::read_to_string(name).unwrap()
@@ -66,5 +67,8 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
+criterion_group!(name = benches;
+    config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Protobuf));
+    targets = criterion_benchmark
+);
 criterion_main!(benches);

@@ -79,6 +79,7 @@ http = { version = "*", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }
+pprof = { version = "0.6.1", features = ["criterion", "flamegraph", "protobuf"] }
 
 [[bench]]
 name = "benchmark"
