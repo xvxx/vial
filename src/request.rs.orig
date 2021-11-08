@@ -357,9 +357,7 @@ impl Request {
     }
     #[cfg(feature = "compression")]
     /// Return the compression type from accept-encoding header
-    pub fn compression(&self) -> Option<crate::response::VialEncoding> {
-        use crate::response::VialEncoding;
-
+    pub fn compression(&self) -> Encoding {
         if let Some(content_encoding) = self.header("Accept-Encoding") {
             let mut headers = http::header::HeaderMap::new();
             headers.insert(
@@ -367,16 +365,10 @@ impl Request {
                 http::header::HeaderValue::from_str(&content_encoding).unwrap(),
             );
             if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
-                return match compression {
-                    Encoding::Gzip => Some(VialEncoding::Gzip),
-                    Encoding::Deflate => Some(VialEncoding::Deflate),
-                    Encoding::Brotli => Some(VialEncoding::Brotli),
-                    Encoding::Zstd => Some(VialEncoding::Zstd),
-                    Encoding::Identity => None,
-                };
+                return compression;
             }
         }
-        None
+        return Encoding::Identity;
     }
 
     /// Request's `cache()` lives for only a single Request, but can

@@ -1,6 +1,4 @@
 use std::time::Duration;
-
-use crate::response::VialEncoding;
 use {
     crate::{asset, Request, Response, Result, Router},
     std::{
@@ -77,15 +75,15 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
-        let compression: Option<VialEncoding> = None;
+        let _gzip = false;
         #[cfg(feature = "compression")]
-        let compression = req.compression();
+        let _gzip = req.gzip();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
             let mut res: Vec<u8> = vec![];
             Response::from(500)
                 .with_body(format!("<pre>{}", info))
-                .write(&mut res, &compression)
+                .write(&mut res, _gzip)
                 .unwrap();
 
             println!("ERR 500 {}", String::from_utf8_lossy(&res));
@@ -94,35 +92,35 @@ impl Server {
 
         let method = req.method().to_string();
         let path = req.path().to_string();
-        let (response, encoding) = self.build_response(req);
+        let (response, _gzip) = self.build_response(req);
 
         println!("{} {} {}", method, response.code(), path);
         if response.code() == 500 {
             eprintln!("{}", response.body());
         }
-        response.write(stream, &encoding)
+        response.write(stream, _gzip)
     }
 
-    fn build_response(&self, mut req: Request) -> (Response, Option<VialEncoding>) {
-        let encoding: Option<VialEncoding> = None;
+    fn build_response(&self, mut req: Request) -> (Response, bool) {
+        let _bool = false;
         #[cfg(feature = "compression")]
-        let encoding = req.compression();
+        let _bool = req.gzip();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
             if let Some(req_etag) = req.header("If-None-Match") {
                 if req_etag == asset::etag(req.path()).as_ref() {
-                    (Response::from(304), encoding)
+                    (Response::from(304), _bool)
                 } else {
-                    (Response::from_asset(req.path()), encoding)
+                    (Response::from_asset(req.path()), _bool)
                 }
             } else {
-                (Response::from_asset(req.path()), encoding)
+                (Response::from_asset(req.path()), _bool)
             }
         } else if let Some(action) = self.router.action_for(&mut req) {
-            let gzip = encoding;
+            let gzip = _bool;
             (action(req), gzip)
         } else {
-            (Response::from(404), encoding)
+            (Response::from(404), _bool)
         }
     }
 }

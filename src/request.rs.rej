@@ -1,0 +1,35 @@
+--- src/request.rs
++++ src/request.rs
+@@ -354,27 +352,14 @@ impl Request {
+             .next()
+     }
+     #[cfg(feature = "compression")]
+-    /// Return the compression type from accept-encoding header
+-    pub fn compression(&self) -> Option<crate::response::VialEncoding> {
+-        use crate::response::VialEncoding;
+-
++    /// Return whether the request has a Content-Encoding header containing "gzip"
++    pub fn gzip(&self) -> bool {
+         if let Some(content_encoding) = self.header("Accept-Encoding") {
+-            let mut headers = http::header::HeaderMap::new();
+-            headers.insert(
+-                http::header::ACCEPT_ENCODING,
+-                http::header::HeaderValue::from_str(&content_encoding).unwrap(),
+-            );
+-            if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
+-                return match compression {
+-                    Encoding::Gzip => Some(VialEncoding::Gzip),
+-                    Encoding::Deflate => Some(VialEncoding::Deflate),
+-                    Encoding::Brotli => Some(VialEncoding::Brotli),
+-                    Encoding::Zstd => Some(VialEncoding::Zstd),
+-                    Encoding::Identity => None,
+-                };
++            if content_encoding.into_owned().contains("gzip") {
++                return true;
+             }
+         }
+-        None
++        false
+     }
+ 
+     /// Request's `cache()` lives for only a single Request, but can

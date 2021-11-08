@@ -10,14 +10,7 @@ use {
         io::{self, BufReader},
     },
 };
-/// Encoding. Internal enum to avoid importing content encoding package w/o feature
-pub enum VialEncoding {
-    Gzip,
-    Deflate,
-    Brotli,
-    Zstd,
-    Identity,
-}
+
 /// Response Body. Will be either a `String` or `io::Read`, like from
 /// a File.
 enum Body {
@@ -386,7 +379,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W, encoding: &Option<VialEncoding>) -> Result<()> {
+    pub fn write<W: io::Write>(mut self, mut w: W, _gzip: bool) -> Result<()> {
         // gross - move into print_headers or something
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
@@ -401,53 +394,15 @@ impl Response {
             Body::Reader(mut reader) => {
                 #[cfg(feature = "compression")]
                 {
-                    match encoding {
-                        Some(encoding) => match encoding {
-                            VialEncoding::Gzip => {
-                                let mut vec = vec![];
-                                if reader.read_to_end(&mut vec).is_ok() {
-                                    body.write_all(
-                                        &libflate::gzip::Encoder::new(vec)
-                                            .unwrap()
-                                            .finish()
-                                            .into_result()
-                                            .unwrap(),
-                                    )?;
-                                }
-                            }
-                            VialEncoding::Deflate => {
-                                let mut vec = vec![];
-                                if reader.read_to_end(&mut vec).is_ok() {
-                                    body.write_all(
-                                        &libflate::deflate::Encoder::new(vec)
-                                            .finish()
-                                            .into_result()
-                                            .unwrap(),
-                                    )?;
-                                }
-                            }
-                            VialEncoding::Brotli => {
-                                io::copy(
-                                    &mut brotli2::read::BrotliEncoder::new(reader, 6),
-                                    &mut body,
-                                )?;
-                            }
-                            VialEncoding::Zstd => {
-                                let mut vec = vec![];
-                                if reader.read_to_end(&mut vec).is_ok() {
-                                    let zstd = zstd::stream::write::Encoder::new(vec, 3)
-                                        .unwrap()
-                                        .finish()
-                                        .unwrap();
-                                    body.write_all(&zstd)?;
-                                    // io::copy(&mut zstd, &mut body)?;
-                                }
-                            }
-                            VialEncoding::Identity => todo!(),
-                        },
-                        None => {
-                            io::copy(&mut reader, &mut body)?;
+                    if _gzip {
+                        let mut vec = vec![];
+                        if reader.read_to_end(&mut vec).is_ok() {
+                            body.write_all(
+                                &Encoder::new(vec).unwrap().finish().into_result().unwrap(),
+                            )?;
                         }
+                    } else {
+                        io::copy(&mut reader, &mut body)?;
                     }
                 }
 
@@ -459,21 +414,12 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
-                    match encoding {
-                        Some(encoding) => match encoding {
-                            VialEncoding::Gzip => {
-                                let mut encoder = Encoder::new(vec![]).unwrap();
-                                encoder.write_all(s.as_bytes())?;
-                                body.write_all(&encoder.finish().into_result().unwrap())?;
-                            }
-                            VialEncoding::Deflate => todo!(),
-                            VialEncoding::Brotli => todo!(),
-                            VialEncoding::Zstd => todo!(),
-                            VialEncoding::Identity => todo!(),
-                        },
-                        None => {
-                            body.write_all(s.as_bytes())?;
-                        }
+                    if _gzip {
+                        let mut encoder = Encoder::new(vec![]).unwrap();
+                        encoder.write_all(s.as_bytes())?;
+                        body.write_all(&encoder.finish().into_result().unwrap())?;
+                    } else {
+                        body.write_all(s.as_bytes())?;
                     }
                 }
 
@@ -485,19 +431,9 @@ impl Response {
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
         #[cfg(feature = "compression")]
-        let encoding = match encoding {
-            Some(encoding) => match encoding {
-                VialEncoding::Gzip => Some("gzip"),
-                VialEncoding::Deflate => Some("deflate"),
-                VialEncoding::Brotli => Some("br"),
-                VialEncoding::Zstd => Some("zstd"),
-                VialEncoding::Identity => None,
-            },
-            None => None,
-        };
-        if let Some(encoding_content) = encoding {
+        if _gzip {
             self.headers
-                .insert("content-encoding".to_lowercase(), encoding_content.to_string());
+                .insert("content-encoding".to_lowercase(), "gzip".into());
         }
 
         header.push_str(
