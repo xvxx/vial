@@ -1,3 +1,5 @@
+#[cfg(feature = "compression")]
+use fly_accept_encoding::Encoding;
 use std::net::TcpStream;
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
@@ -69,7 +71,7 @@ pub struct Request {
     cookies: Vec<(String, String)>,
 
     #[cfg(feature = "compression")]
-    gzip: bool,
+    compression: Encoding,
 }
 
 impl fmt::Debug for Request {
@@ -122,7 +124,7 @@ impl Request {
             #[cfg(feature = "cookies")]
             cookies: vec![],
             #[cfg(feature = "compression")]
-            gzip: false,
+            compression: Encoding::Identity,
         }
     }
 
@@ -354,14 +356,19 @@ impl Request {
             .next()
     }
     #[cfg(feature = "compression")]
-    /// Return whether the request has a Content-Encoding header containing "gzip"
-    pub fn gzip(&self) -> bool {
+    /// Return the compression type from accept-encoding header
+    pub fn compression(&self) -> Encoding {
         if let Some(content_encoding) = self.header("Accept-Encoding") {
-            if content_encoding.into_owned().contains("gzip") {
-                return true;
+            let mut headers = http::header::HeaderMap::new();
+            headers.insert(
+                http::header::ACCEPT_ENCODING,
+                http::header::HeaderValue::from_str(&content_encoding).unwrap(),
+            );
+            if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
+                return compression;
             }
         }
-        false
+        return Encoding::Identity;
     }
 
     /// Request's `cache()` lives for only a single Request, but can

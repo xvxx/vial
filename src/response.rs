@@ -396,7 +396,7 @@ impl Response {
                 {
                     if _gzip {
                         let mut vec = vec![];
-                        if reader.read_to_end(&mut vec).is_ok(){
+                        if reader.read_to_end(&mut vec).is_ok() {
                             body.write_all(
                                 &Encoder::new(vec).unwrap().finish().into_result().unwrap(),
                             )?;

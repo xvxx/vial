@@ -2805,7 +2805,7 @@ test! {
 #[test]
 fn test_request_partial() {
     match parse(b"GET / HTTP/1.1\r\n\r".to_vec()) {
-        Err(Error::ConnectionClosed) => {},
+        Err(Error::ConnectionClosed) => {}
         _ => panic!(),
     }
 }
@@ -2813,7 +2813,7 @@ fn test_request_partial() {
 #[test]
 fn test_request_partial_version() {
     match parse(b"GET / HTTP/1.".to_vec()) {
-        Err(Error::ConnectionClosed) => {},
+        Err(Error::ConnectionClosed) => {}
         _ => panic!(),
     }
 }
