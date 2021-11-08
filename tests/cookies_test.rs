@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use std::{fs, fs::File};
-use vial::{http_parser::parse, Error, Request};
+use vial::{http_parser::parse, Request};
 
 ////
 // helpers
@@ -15,7 +15,7 @@ fn parse_fixture(name: &str) -> Request {
     println!("{:?}", parse_result);
     match parse_result {
         Ok(request) => request,
-        Err(error) => panic!("Error with request!"),
+        Err(_error) => panic!("Error with request!"),
     }
 }
 

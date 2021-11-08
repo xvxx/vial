@@ -296,17 +296,16 @@ impl Response {
                     return self.with_file(&path);
                 }
             }
-        }
-        else if asset::exists(&path) {
+        } else if asset::exists(path) {
             if asset::is_bundled() {
-                if let Some(reader) = asset::as_reader(&path) {
-                    self.set_header("ETag", asset::etag(&path).as_ref());
-                    self.set_header("Content-Type", util::content_type(&path));
-                    self.set_header("Content-Length", &asset::size(&path).to_string());
+                if let Some(reader) = asset::as_reader(path) {
+                    self.set_header("ETag", asset::etag(path).as_ref());
+                    self.set_header("Content-Type", util::content_type(path));
+                    self.set_header("Content-Length", &asset::size(path).to_string());
                     return self.with_reader(reader);
                 }
             } else {
-                return self.with_file(&path);
+                return self.with_file(path);
             }
         }
         self.with_code(404)
@@ -380,7 +379,7 @@ impl Response {
     }
 
     /// Writes this response to a stream.
-    pub fn write<W: io::Write>(mut self, mut w: W, gzip: bool) -> Result<()> {
+    pub fn write<W: io::Write>(mut self, mut w: W, _gzip: bool) -> Result<()> {
         // gross - move into print_headers or something
         let mut header = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
@@ -395,12 +394,12 @@ impl Response {
             Body::Reader(mut reader) => {
                 #[cfg(feature = "compression")]
                 {
-                    if gzip {
+                    if _gzip {
                         let mut vec = vec![];
-                        if let Ok(_) = reader.read_to_end(&mut vec) {
+                        if reader.read_to_end(&mut vec).is_ok(){
                             body.write_all(
                                 &Encoder::new(vec).unwrap().finish().into_result().unwrap(),
-                            );
+                            )?;
                         }
                     } else {
                         io::copy(&mut reader, &mut body)?;
@@ -415,10 +414,10 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
-                    if gzip {
+                    if _gzip {
                         let mut encoder = Encoder::new(vec![]).unwrap();
                         encoder.write_all(s.as_bytes())?;
-                        body.write(&encoder.finish().into_result().unwrap());
+                        body.write_all(&encoder.finish().into_result().unwrap())?;
                     } else {
                         body.write_all(s.as_bytes())?;
                     }
@@ -432,7 +431,7 @@ impl Response {
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
         #[cfg(feature = "compression")]
-        if gzip {
+        if _gzip {
             self.headers
                 .insert("content-encoding".to_lowercase(), "gzip".into());
         }
@@ -467,8 +466,7 @@ impl Response {
 
         header.push_str("\r\n");
         w.write_all(header.as_bytes())?;
-
-        w.write_all(&body);
+        w.write_all(&body)?;
         w.flush()?;
         Ok(())
     }

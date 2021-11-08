@@ -2805,15 +2805,15 @@ test! {
 #[test]
 fn test_request_partial() {
     match parse(b"GET / HTTP/1.1\r\n\r".to_vec()) {
-        Err(Error::ConnectionClosed) => assert!(true),
-        _ => assert!(false),
+        Err(Error::ConnectionClosed) => {},
+        _ => panic!(),
     }
 }
 
 #[test]
 fn test_request_partial_version() {
     match parse(b"GET / HTTP/1.".to_vec()) {
-        Err(Error::ConnectionClosed) => assert!(true),
-        _ => assert!(false),
+        Err(Error::ConnectionClosed) => {},
+        _ => panic!(),
     }
 }

@@ -36,7 +36,13 @@ fn from_asset() {
     let res2 = Response::default().with_asset("puff.gif");
     assert_eq!(res1.body(), res2.body());
     assert_eq!(res1.headers(), res2.headers());
-    assert_eq!(res1, res2, "\n\n1 len: {}\n2 len: {}", res1.len(), res2.len());
+    assert_eq!(
+        res1,
+        res2,
+        "\n\n1 len: {}\n2 len: {}",
+        res1.len(),
+        res2.len()
+    );
 }
 
 #[test]
@@ -182,7 +188,7 @@ fn redirect_to() {
 
 #[test]
 fn write_response() {
-    assert!(true); // TODO
+    // TODO
 }
 
 #[test]
