@@ -115,8 +115,8 @@ impl Request {
             method: Span::new(),
             body: Span::new(),
             headers: Vec::new(),
-            args: HashMap::new(),
-            form: HashMap::new(),
+            args: HashMap::with_capacity(0),
+            form: HashMap::with_capacity(0),
             buffer: Vec::new(),
             cache: Rc::new(TypeCache::new()),
 
