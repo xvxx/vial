@@ -1,8 +1,7 @@
 name: windows
 on:
   push:
-    branches:
-      - master
+    branches: ["*"]
   pull_request:
 
 jobs:
