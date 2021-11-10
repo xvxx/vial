@@ -1,4 +1,3 @@
-#[cfg(target_family = "unix")]
 #[allow(unused_imports)]
 use {
     crate::Result,
