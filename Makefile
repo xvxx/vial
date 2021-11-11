@@ -18,7 +18,7 @@ check:
 	@(which pandoc) > /dev/null || (echo "Need pandoc(1) installed"; exit 1)
 	@(which ruby) > /dev/null || (echo "Need ruby(1) installed"; exit 1)
 	@(which md-toc) > /dev/null || (echo "Need md-toc(1): cargo install markdown-toc"; exit 1)
-
+	cargo check --all-features
 docs/index.html: check target/docs/toc.html docs/manual.tpl docs/MANUAL.md
 	@echo "building docs/index.html..."
 	@pandoc docs/MANUAL.md -o target/docs/manual.html
