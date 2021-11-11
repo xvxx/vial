@@ -197,7 +197,6 @@
 #![warn(missing_docs)]
 #![allow(clippy::needless_doctest_main)]
 #![allow(clippy::large_enum_variant)]
-
 #![deny(
     anonymous_parameters,
     clippy::all,

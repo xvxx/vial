@@ -1,5 +1,9 @@
 use vial::Response;
-
+#[test]
+fn test_response_status() {
+    let response = Response::new().with_code(200);
+    assert_eq!(response.code(), 200);
+}
 #[test]
 fn set_header() {
     let mut res = Response::new();

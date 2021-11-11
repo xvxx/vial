@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use std::{fs};
+use std::fs;
 use vial::{http_parser::parse, Request};
 
 ////
@@ -53,7 +53,8 @@ fn escaping() {
 #[cfg(feature = "cookies")]
 fn ignore_escaping_error_and_return_orig_value() {
     let request = Request::from_reader(
-        fs::File::open("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt").unwrap(),
+        fs::File::open("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt")
+            .unwrap(),
     )
     .unwrap();
     assert_eq!("%1", request.cookie("foo").unwrap());
@@ -83,7 +84,8 @@ fn unencoded() {
 #[cfg(feature = "cookies")]
 fn unencoded_2() {
     let request =
-        Request::from_reader(fs::File::open("tests/http/cookies_unencoded_2.txt").unwrap()).unwrap();
+        Request::from_reader(fs::File::open("tests/http/cookies_unencoded_2.txt").unwrap())
+            .unwrap();
     assert_eq!("%20%22%2c%3b%2f", request.cookie("email").unwrap());
 }
 

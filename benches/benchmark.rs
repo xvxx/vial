@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use pprof::criterion::{Output, PProfProfiler};
 use std::fs;
 use vial::{http_parser::parse, Request};
-use pprof::{criterion::{PProfProfiler, Output}, flamegraph::Options};
 
 fn file_to_string(path: &str) -> String {
     fs::read_to_string(path).unwrap()
@@ -18,11 +18,15 @@ fn parse_text(text: &str) -> Request {
 }
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("simple_get_internal", |b|{
-        b.iter(||black_box(parse_text(r##"GET / HTTP/1.1
+    c.bench_function("simple_get_internal", |b| {
+        b.iter(|| {
+            black_box(parse_text(
+                r##"GET / HTTP/1.1
 Host: www.codecademy.com
 
-"##)))
+"##,
+            ))
+        })
     });
     c.bench_function("simple_get", |b| {
         let str = file_to_string("tests/http/simple_GET.txt");
@@ -35,7 +39,6 @@ Host: www.codecademy.com
     c.bench_function("big_get", |b| {
         let str = file_to_string("tests/http/big_GET.txt");
         b.iter(|| parse_text(black_box(&str)))
-
     });
     c.bench_function("stacked_headers_GET", |b| {
         let str = file_to_string("tests/http/stacked_headers_GET.txt");
@@ -69,7 +72,8 @@ Host: www.codecademy.com
         b.iter(|| parse_text(black_box(&str)))
     });
     c.bench_function("cookies_ignore_escaping_error_and_return_orig_value", |b| {
-        let str = file_to_string("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt");
+        let str =
+            file_to_string("tests/http/cookies_ignore_escaping_error_and_return_orig_value.txt");
         b.iter(|| parse_text(black_box(&str)))
     });
     c.bench_function("cookies_ignore_non_values", |b| {
