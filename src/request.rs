@@ -185,7 +185,10 @@ impl Request {
 
     /// Path requested, starting with `/` and not including `?query`.
     pub fn path(&self) -> &str {
-        let span = self.full_path().find('?').map_or(self.path, |idx| Span(self.path.0, self.path.0 + idx));
+        let span = self
+            .full_path()
+            .find('?')
+            .map_or(self.path, |idx| Span(self.path.0, self.path.0 + idx));
         span.from_buf(&self.buffer)
     }
 
@@ -373,7 +376,25 @@ impl Request {
         }
         None
     }
-
+    /// Return the user-agent header
+    pub fn user_agent(&self) -> Option<String> {
+        self.header("User-Agent").map(|ua| ua.to_string())
+    }
+    /// Return the Do Not Track header
+    pub fn do_not_track(&self) -> bool {
+        match self.header("DNT") {
+            Some(dnt) => dnt == "1",
+            None => false,
+        }
+    }
+    /// Return the Accept-Language, if exists
+    pub fn accept_language(&self) -> Option<String> {
+        self.header("Accept-Language").map(|al| al.to_string())
+    }
+    /// Return the content-type, if exists
+    pub fn content_type(&self) -> Option<String> {
+        self.header("Content-Type").map(|ct| ct.to_string())
+    }
     /// Request's `cache()` lives for only a single Request, but can
     /// nonethenevertheless be useful to prevent looking up the same
     /// data over and over. The cache is based on the return type of
