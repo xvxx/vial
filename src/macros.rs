@@ -7,7 +7,7 @@
 /// There are four ways to use `run!`:
 ///
 /// 1. `vial::run!()`: No arguments. Starts listening at
-///    http://0.0.0.0:7667 and expects you to have called
+///    <http://0.0.0.0:7667> and expects you to have called
 ///    [`vial::routes!`](macro.routes.html) in the current module.
 ///
 /// 2. `vial::run!("localhost:9999")`: With your own address.
@@ -133,12 +133,12 @@ macro_rules! run_with_banner {
 /// }
 ///
 /// fn hello(req: Request) -> impl Responder {
-///     req.state::<HitCount>().0.fetch_add(1, Ordering::Relaxed);
+///     vial::Request::state::<HitCount>().0.fetch_add(1, Ordering::Relaxed);
 ///     format!("Hits: {}", count(req))
 /// }
 ///
 /// fn count(req: Request) -> String {
-///     req.state::<HitCount>()
+///     vial::Request::state::<HitCount>()
 ///         .0
 ///         .load(Ordering::Relaxed)
 ///         .to_string()
@@ -188,7 +188,7 @@ macro_rules! include_assets {
 }
 
 /// Vial can serve static files out of an asset directory, complete
-/// with ETag support so your browser isn't constantly re-downloading.
+/// with `ETag` support so your browser isn't constantly re-downloading.
 ///
 /// To enable this, put all your `.js` and `.css` and other static
 /// assets into a directory in the root of your project, then

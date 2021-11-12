@@ -58,7 +58,7 @@
 //! This list is a work in progress:
 //!
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
-//! - [x] **json_serde**: `Request::json` and `Response::with_json` powers,
+//! - [x] **`json_serde`**: `Request::json` and `Response::with_json` powers,
 //!       via Serde.
 //! - [x] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
@@ -216,16 +216,17 @@
     clippy::get_unwrap,
     // clippy::missing_docs_in_private_items,
     clippy::nursery,
-    // clippy::pedantic,
+    clippy::pedantic,
     clippy::todo,
     clippy::unimplemented,
     clippy::use_debug,
-    missing_copy_implementations,
+    // missing_copy_implementations,
     clippy::all,
     // missing_debug_implementations,
     unused_qualifications,
-    // variant_size_differences
+    variant_size_differences
 )]
+#[allow(clippy::cast_possible_truncation)]
 #[macro_use]
 mod macros;
 pub mod asset;

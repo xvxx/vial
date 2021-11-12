@@ -7,12 +7,14 @@ routes! {
 }
 
 fn hello(req: Request) -> impl Responder {
-    req.state::<HitCount>().0.fetch_add(1, Ordering::Relaxed);
+    vial::Request::state::<HitCount>()
+        .0
+        .fetch_add(1, Ordering::Relaxed);
     format!("Hits: {}", count(req))
 }
 
 fn count(req: Request) -> String {
-    req.state::<HitCount>()
+    vial::Request::state::<HitCount>()
         .0
         .load(Ordering::Relaxed)
         .to_string()

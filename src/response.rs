@@ -37,7 +37,7 @@ impl fmt::Display for Body {
         match self {
             Body::String(s) => write!(f, "{}", s),
             Body::Reader(..) => write!(f, "(io::Read)"),
-            _ => write!(f, "None"),
+            Body::None => write!(f, "None"),
         }
     }
 }
@@ -125,33 +125,41 @@ impl Default for Response {
 
 impl Response {
     /// Create a new, empty, 200 response - ready for HTML!
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// HTTP Status Code
+    #[must_use]
     pub fn code(&self) -> usize {
         self.code
     }
 
     /// Either the inferred or user-set Content-Type for this Response.
+    #[must_use]
     pub fn content_type(&self) -> &str {
         self.header("Content-Type").unwrap_or("")
     }
 
     /// Response body.
+    #[must_use]
     pub fn body(&self) -> &str {
         self.body.as_str()
     }
 
     /// Take a peek at all the headers for this response.
+    #[must_use]
     pub fn headers(&self) -> &HashMap<String, String> {
         &self.headers
     }
 
     /// Get an individual header. `name` is case insensitive.
+    #[must_use]
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers.get(&name.to_lowercase()).map(|h| h.as_ref())
+        self.headers
+            .get(&name.to_lowercase())
+            .map(std::convert::AsRef::as_ref)
     }
 
     /// Set an individual header.
@@ -185,17 +193,20 @@ impl Response {
     /// Create a response from an asset. See the
     /// [`asset`](asset/index.html) module for more information on
     /// using assets.
+    #[must_use]
     pub fn from_asset(path: &str) -> Self {
         Self::default().with_asset(path)
     }
 
-    /// Create a response from a (boxed) io::Read.
+    /// Create a response from a (boxed) `io::Read`.
+    #[must_use]
     pub fn from_reader(reader: Box<dyn io::Read>) -> Self {
         Self::default().with_reader(reader)
     }
 
     /// Creates a response from a file on disk.
     /// TODO: Path?
+    #[must_use]
     pub fn from_file(path: &str) -> Self {
         Self::default().with_file(path)
     }
@@ -207,6 +218,7 @@ impl Response {
 
     /// Creates a new Response and sets the given header, in
     /// addition to the defaults.
+    #[must_use]
     pub fn from_header(name: &str, value: &str) -> Self {
         Self::default().with_header(name, value)
     }
@@ -229,11 +241,13 @@ impl Response {
     }
 
     /// Creates a new response with the given HTTP Status Code.
+    #[must_use]
     pub fn from_code(code: usize) -> Self {
         Self::default().with_code(code)
     }
 
     /// Creates a new response with the given HTTP Status Code.
+    #[must_use]
     pub fn with_code(mut self, code: usize) -> Self {
         self.code = code;
         match code {
@@ -273,6 +287,7 @@ impl Response {
     }
 
     /// Returns a Response using the given reader for the body.
+    #[must_use]
     pub fn with_reader(mut self, reader: Box<dyn io::Read>) -> Self {
         self.body = Body::Reader(reader);
         self
@@ -283,6 +298,7 @@ impl Response {
     ///
     /// See the [`asset`](asset/index.html) module for more
     /// information on using assets.
+    #[must_use]
     pub fn with_asset(mut self, path: &str) -> Self {
         if let Some(path) = asset::normalize_path(path) {
             if asset::exists(&path) {
@@ -314,6 +330,7 @@ impl Response {
 
     /// Sets this Response's body to the body of the given file and
     /// sets the `Content-Type` header based on the file's extension.
+    #[must_use]
     pub fn with_file(mut self, path: &str) -> Self {
         if !std::path::Path::new(path).exists() {
             return Self::from(404);
@@ -337,6 +354,7 @@ impl Response {
     }
 
     /// Returns a Response with the given header set to the value.
+    #[must_use]
     pub fn with_header(mut self, key: &str, value: &str) -> Self {
         self.set_header(key, value);
         self
@@ -357,6 +375,7 @@ impl Response {
     }
 
     /// Length of the body.
+    #[must_use]
     pub fn len(&self) -> usize {
         match &self.body {
             Body::String(s) => s.len(),
@@ -365,11 +384,12 @@ impl Response {
                 .unwrap_or("0")
                 .parse()
                 .unwrap_or(0),
-            _ => 0,
+            Body::None => 0,
         }
     }
 
     /// Is ths response empty?
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -505,7 +525,7 @@ impl Response {
                 #[cfg(not(feature = "compression"))]
                 body.write_all(s.as_bytes())?;
             }
-            _ => {}
+            Body::None => {}
         }
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());

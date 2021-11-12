@@ -26,6 +26,7 @@ pub struct Router {
 
 impl Router {
     /// Create a new `Router`. You shouldn't have to do this.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             routes: HashMap::new(),
@@ -66,9 +67,8 @@ impl Router {
                         return Some(action);
                     } else if req_part == pattern_part {
                         continue;
-                    } else {
-                        continue 'outer;
                     }
+                    continue 'outer;
                 }
                 return Some(action);
             }

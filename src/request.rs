@@ -91,6 +91,7 @@ impl fmt::Debug for Request {
 impl Request {
     /// Create a new Request from a raw one. You probably want
     /// `default()` to get an empty `Request`.
+    #[must_use]
     pub fn new(
         method: Span,
         path: Span,
@@ -99,15 +100,16 @@ impl Request {
         buffer: Vec<u8>,
     ) -> Self {
         Self {
-            method,
+            buffer,
             path,
+            method,
             headers,
             body,
-            buffer,
             ..Self::default()
         }
     }
     /// Produce an empty Request.
+    #[must_use]
     pub fn default() -> Self {
         Self {
             remote_addr: String::new(),
@@ -179,11 +181,13 @@ impl Request {
     }
 
     /// Remote address of the request.
+    #[must_use]
     pub fn remote_addr(&self) -> &str {
         &self.remote_addr
     }
 
     /// Path requested, starting with `/` and not including `?query`.
+    #[must_use]
     pub fn path(&self) -> &str {
         let span = self
             .full_path()
@@ -193,11 +197,13 @@ impl Request {
     }
 
     /// Full path requested, starting with `/` and including `?query`.
+    #[must_use]
     pub fn full_path(&self) -> &str {
         self.path.from_buf(&self.buffer)
     }
 
     /// Create a request from an arbitrary path. Used in testing.
+    #[must_use]
     pub fn from_path(path: &str) -> Self {
         Self::default().with_path(path)
     }
@@ -211,6 +217,7 @@ impl Request {
 
     /// Give a request an arbitrary `path`. Can be used in tests or
     /// with `filter`.
+    #[must_use]
     pub fn with_path(mut self, path: &str) -> Self {
         self.set_path(path);
         self
@@ -219,6 +226,7 @@ impl Request {
     /// Raw body of HTTP request. If you are using methods like
     /// `with_path` or `set_arg` this will not accurately represent
     /// the raw HTTP request that was made.
+    #[must_use]
     pub fn body(&self) -> &str {
         self.body.from_buf(&self.buffer)
     }
@@ -245,6 +253,7 @@ impl Request {
     }
 
     /// HTTP Method
+    #[must_use]
     pub fn method(&self) -> &str {
         self.method.from_buf(&self.buffer)
     }
@@ -256,6 +265,7 @@ impl Request {
     }
 
     /// Give this Request a new HTTP Method and return the new Request.
+    #[must_use]
     pub fn with_method(mut self, method: &str) -> Self {
         self.set_method(method);
         self
@@ -264,8 +274,9 @@ impl Request {
     /// In a route defined with `routes!` like `"/names/:name"`,
     /// calling `request.arg("name")` will return `Some("peter")` when
     /// the request is `/names/peter`.
+    #[must_use]
     pub fn arg(&self, name: &str) -> Option<&str> {
-        self.args.get(name).map(|v| v.as_ref())
+        self.args.get(name).map(std::convert::AsRef::as_ref)
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -277,11 +288,13 @@ impl Request {
     #[doc(hidden)]
     /// For testing. You should use [`header()`](#method.header) to
     /// get a specific header from this Request.
+    #[must_use]
     pub fn headers(&self) -> &Vec<(Span, Span)> {
         &self.headers
     }
 
     /// Get a header value. `name` is case insensitive.
+    #[must_use]
     pub fn header(&self, name: &str) -> Option<Cow<'_, str>> {
         let name = name.to_lowercase();
         let mut headers = self
@@ -305,9 +318,10 @@ impl Request {
         self.form(name).is_some()
     }
 
-    /// Return a value from the POSTed form data.
+    /// Return a value from the `POSTed` form data.
+    #[must_use]
     pub fn form(&self, name: &str) -> Option<&str> {
-        self.form.get(name).map(|s| s.as_ref())
+        self.form.get(name).map(std::convert::AsRef::as_ref)
     }
 
     /// Replace or set a new value for an arbitrary URL argument from
@@ -335,23 +349,22 @@ impl Request {
     }
 
     /// Was the given query value sent?
+    #[must_use]
     pub fn has_query(&self, name: &str) -> bool {
         self.query(name).is_some()
     }
 
     /// Return a value from the ?querystring=
+    #[must_use]
     pub fn query(&self, name: &str) -> Option<&str> {
         let idx = self.full_path().find('?')?;
-        self.full_path()[idx + 1..]
-            .split('&')
-            .filter_map(|s| {
-                if s.starts_with(name) && s[name.len()..].starts_with('=') {
-                    Some(&s[name.len() + 1..])
-                } else {
-                    None
-                }
-            })
-            .next()
+        self.full_path()[idx + 1..].split('&').find_map(|s| {
+            if s.starts_with(name) && s[name.len()..].starts_with('=') {
+                Some(&s[name.len() + 1..])
+            } else {
+                None
+            }
+        })
     }
     #[cfg(feature = "compression")]
     /// Return the compression type from accept-encoding header
@@ -377,10 +390,12 @@ impl Request {
         None
     }
     /// Return the user-agent header
+    #[must_use]
     pub fn user_agent(&self) -> Option<String> {
         self.header("User-Agent").map(|ua| ua.to_string())
     }
     /// Return the Do Not Track header
+    #[must_use]
     pub fn do_not_track(&self) -> bool {
         match self.header("DNT") {
             Some(dnt) => dnt == "1",
@@ -388,10 +403,12 @@ impl Request {
         }
     }
     /// Return the Accept-Language, if exists
+    #[must_use]
     pub fn accept_language(&self) -> Option<String> {
         self.header("Accept-Language").map(|al| al.to_string())
     }
     /// Return the content-type, if exists
+    #[must_use]
     pub fn content_type(&self) -> Option<String> {
         self.header("Content-Type").map(|ct| ct.to_string())
     }
@@ -511,7 +528,8 @@ impl Request {
     ///     run!();
     /// }
     /// ```
-    pub fn state<T: Send + Sync + 'static>(&self) -> &T {
+    #[must_use]
+    pub fn state<T: Send + Sync + 'static>() -> &'static T {
         crate::storage::get::<T>()
     }
 

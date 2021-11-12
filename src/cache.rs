@@ -5,7 +5,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 
-/// The TypeCache is heavily inspired by the `state` crate and the way
+/// The `TypeCache` is heavily inspired by the `state` crate and the way
 /// the Rocket framework handles global and local state. You could say
 /// we've immutably borrowed some ideas. *Rim-shot!*
 ///
@@ -36,12 +36,13 @@ pub struct TypeCache {
 }
 
 impl TypeCache {
-    /// Create a new, empty TypeCache.
+    /// Create a new, empty `TypeCache`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// TypeCache works like a regular hash map, but with types as
+    /// `TypeCache` works like a regular hash map, but with types as
     /// keys. Meaning it can only store one of each type.
     /// Choose wisely.
     pub fn get<T: Send + Sync + 'static>(&self) -> Option<&T> {
@@ -50,13 +51,13 @@ impl TypeCache {
             self.map
                 .borrow()
                 .get(&TypeId::of::<T>())
-                .map(|ptr| &*(*ptr as *const dyn Any as *const T))
+                .map(|ptr| &*(*ptr as *const dyn Any).cast::<T>())
         };
         self.unlock();
         item
     }
 
-    /// As long as your object is `Send + Sync + 'static`, TypeCache
+    /// As long as your object is `Send + Sync + 'static`, `TypeCache`
     /// can store it.
     pub fn set<T: Send + Sync + 'static>(&self, v: T) {
         self.lock();

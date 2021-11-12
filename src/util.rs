@@ -1,6 +1,7 @@
 const HTTP_DATE_FMT: &str = "%a, %d %b %Y %H:%M:%S";
 
 /// Size of a file on disk. 0 if it doesn't exist.
+#[must_use]
 pub fn file_size(path: &str) -> usize {
     std::fs::File::open(path)
         .map(|f| f.metadata().map(|m| m.len()).unwrap_or(0))
@@ -8,19 +9,22 @@ pub fn file_size(path: &str) -> usize {
 }
 
 /// Does what it says.
+#[must_use]
 pub fn decode_form_value(post: &str) -> String {
     let cleaned = post.replace('+', " ").replace('\r', "");
     percent_decode(&cleaned).unwrap_or_else(|| "".into())
 }
 
 /// Current date in HTTP format.
+#[must_use]
 pub fn http_current_date() -> String {
     let now = libc_strftime::epoch();
     libc_strftime::strftime_gmt(HTTP_DATE_FMT, now) + " GMT"
 }
 
 /// Mutably borrowed from the zero dependency httpserv project.
-/// https://github.com/nic-hartley/httpserv/blob/585c020/src/http.rs
+/// <https://github.com/nic-hartley/httpserv/blob/585c020/src/http.rs>
+#[must_use]
 pub fn percent_decode(mut inp: &str) -> Option<String> {
     let mut out = Vec::new();
     for _ in 0..512 {
@@ -43,7 +47,8 @@ pub fn percent_decode(mut inp: &str) -> Option<String> {
 }
 
 /// Content type for a file based on its extension.
-/// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+/// <https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types>
+#[must_use]
 pub fn content_type(path: &str) -> &'static str {
     match path
         .split('.')
@@ -75,11 +80,10 @@ pub fn content_type(path: &str) -> &'static str {
         "ics" => "text/calendar",
         "jar" => "application/java-archive",
         "jpeg" | "jpg" => "image/jpeg",
-        "js" => "text/javascript",
+        "js" | "mjs" => "text/javascript",
         "json" => "application/json",
         "jsonld" => "application/ld+json",
         "mid" | "midi" => "audio/midi",
-        "mjs" => "text/javascript",
         "mp3" => "audio/mpeg",
         "mpeg" => "video/mpeg",
         "mpkg" => "application/vnd.apple.installer+xml",
@@ -105,7 +109,7 @@ pub fn content_type(path: &str) -> &'static str {
         "tif" | "tiff" => "image/tiff",
         "ts" => "video/mp2t",
         "ttf" => "font/ttf",
-        "txt" => "text/plain; charset=utf8",
+        // "txt" => "text/plain; charset=utf8", // note: `"txt"` has the same arm body as the `_` wildcard, consider removing it
         "vsd" => "application/vnd.visio",
         "wav" => "audio/wav",
         "weba" => "audio/webm",

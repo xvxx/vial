@@ -54,7 +54,7 @@ impl fmt::Display for Error {
             f,
             "{}",
             match self {
-                Error::UnknownHTTPMethod(reason) => reason,
+                Error::UnknownHTTPMethod(reason) | Error::Other(reason) => reason,
                 Error::ConnectionClosed => "Connection Closed By Client",
                 Error::ParsePath => "Error Parsing HTTP Path",
                 Error::ParseVersion => "Error Parsing HTTP Version",
@@ -70,7 +70,6 @@ impl fmt::Display for Error {
                         "io::Error While Parsing HTTP Request"
                     }
                 }
-                Error::Other(reason) => reason,
             }
         )
     }
@@ -78,7 +77,10 @@ impl fmt::Display for Error {
 
 impl PartialEq for Error {
     fn eq(&self, other: &Self) -> bool {
-        use Error::*;
+        use Error::{
+            AssetNotFound, ConnectionClosed, ExpectedCRLF, Other, ParseError, ParseHeaderName,
+            ParseHeaderValue, ParsePath, ParseVersion, UnknownHTTPMethod, IO,
+        };
         match self {
             IO(_) => false,
             AssetNotFound(s) => match other {

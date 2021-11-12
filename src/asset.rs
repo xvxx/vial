@@ -6,18 +6,18 @@
 //! [`vial::bundle_assets!()`][macro.bundle_assets.html] macro,
 //! you can then use the methods in this module to work with them:
 //!
-//! - **[asset::etag()](#method.etag)**: Get the ETag for an asset.
+//! - **[`asset::etag`()](#method.etag)**: Get the `ETag` for an asset.
 //!   Used automatically by the Router if a web request matches an
 //!   asset's path.
-//! - **[asset::exists()](#method.exists)**: Does an asset exist?
+//! - **[`asset::exists`()](#method.exists)**: Does an asset exist?
 //!   Works regardless of whether the asset is bundled or not.
-//! - **[asset::is_bundled()](#method.is_bundled)**: Are assets
+//! - **[`asset::is_bundled`()](#method.is_bundled)**: Are assets
 //!   bundled? Only true in `--release` mode and when used with the
 //!   `vial::bundle_assets!()` macro.
-//! - **[asset::to_string()](#method.to_string)**: Like
+//! - **[`asset::to_string`()](#method.to_string)**: Like
 //!   `fs::read_to_string()`, delivers the content of an asset as a
 //!   `String`.
-//! - **[asset::as_reader()](#method.as_reader)**: Like
+//! - **[`asset::as_reader`()](#method.as_reader)**: Like
 //!   `asset::to_string()` but provides an `io::Read` of an asset,
 //!   whether or not it's bundled.
 //!
@@ -70,8 +70,9 @@ use {
 };
 
 /// Produce an etag for an asset.
+#[must_use]
 pub fn etag(path: &str) -> Cow<'_, str> {
-    if is_bundled() {
+    if bundled_assets().is_some() {
         Cow::from(crate::BUILD_DATE)
     } else {
         let mut hasher = DefaultHasher::new();
@@ -81,9 +82,9 @@ pub fn etag(path: &str) -> Cow<'_, str> {
 }
 
 /// The last modified time for an asset on disk.
-/// Does nothing if `is_bundled()` is true.
+/// Does nothing if `bundled_assets().is_some()` is true.
 fn last_modified(path: &str) -> Option<String> {
-    if is_bundled() {
+    if bundled_assets().is_some() {
         return None;
     }
 
@@ -98,6 +99,7 @@ fn last_modified(path: &str) -> Option<String> {
 
 /// Cleans a path of tricky things like `..` and puts it in a format
 /// we can use in other asset functions.
+#[must_use]
 pub fn normalize_path(path: &str) -> Option<String> {
     asset_dir().map(|root| {
         format!(
@@ -112,6 +114,7 @@ pub fn normalize_path(path: &str) -> Option<String> {
 }
 
 /// Have assets been bundled into the binary?
+#[must_use]
 pub fn is_bundled() -> bool {
     bundled_assets().is_some()
 }
@@ -123,6 +126,10 @@ fn bundled_assets() -> Option<&'static HashMap<String, &'static [u8]>> {
 
 /// Size of an asset in `asset_dir()`. `0` if the asset doesn't exist.
 /// Works in bundled mode and regular mode.
+/// # Panics
+///
+/// Panics if `bundled_assets().is_some()` is true
+#[must_use]
 pub fn size(path: &str) -> usize {
     if !exists(path) {
         return 0;
@@ -132,15 +139,9 @@ pub fn size(path: &str) -> usize {
         Some(path) => path,
         None => return 0,
     };
-
-    if is_bundled() {
-        bundled_assets()
-            .unwrap()
-            .get(&path)
-            .map(|a| a.len())
-            .unwrap_or(0)
-    } else {
-        util::file_size(&path)
+    match bundled_assets() {
+        Some(bundled_assets) => bundled_assets.get(&path).map_or(0, |a| a.len()),
+        None => util::file_size(&path),
     }
 }
 
@@ -150,23 +151,29 @@ fn asset_dir() -> Option<&'static String> {
 }
 
 /// Does the asset exist on disk? `path` is the path relative to
-/// `ASSET_DIR` ex: asset::exists("index.html") checks for
+/// `ASSET_DIR` ex: `asset::exists("index.html`") checks for
 /// "./static/index.html" if `ASSET_DIR` is set to `static`.
 /// Works both in regular mode and bundle mode.
+#[must_use]
 pub fn exists(path: &str) -> bool {
     if let Some(path) = normalize_path(path) {
-        if is_bundled() {
-            return bundled_assets().unwrap().contains_key(&path);
-        } else if let Ok(file) = fs::File::open(path) {
-            if let Ok(meta) = file.metadata() {
-                return !meta.is_dir();
+        match bundled_assets() {
+            Some(bundled_assets) => {
+                return bundled_assets.contains_key(&path);
+            }
+            None => {
+                if let Ok(file) = fs::File::open(path) {
+                    if let Ok(meta) = file.metadata() {
+                        return !meta.is_dir();
+                    }
+                }
             }
         }
     }
     false
 }
 
-/// Like fs::read_to_string(), but with an asset.
+/// Like `fs::read_to_string`(), but with an asset.
 pub fn to_string(path: &str) -> Result<String> {
     if let Some(bytes) = read(path) {
         if let Ok(utf8) = str::from_utf8(bytes.as_ref()) {
@@ -178,9 +185,10 @@ pub fn to_string(path: &str) -> Result<String> {
 }
 
 /// Produces a boxed `io::Read` for an asset.
+#[must_use]
 pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
     let path = normalize_path(path)?;
-    if is_bundled() {
+    if bundled_assets().is_some() {
         if let Some(v) = bundled_assets().unwrap().get(&path) {
             return Some(Box::new(*v));
         }
@@ -195,9 +203,10 @@ pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
 }
 
 /// Read an asset to [u8].
+#[must_use]
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = normalize_path(path)?;
-    if is_bundled() {
+    if bundled_assets().is_some() {
         if let Some(v) = bundled_assets().unwrap().get(&path) {
             return Some(Cow::from(*v));
         }

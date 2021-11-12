@@ -53,13 +53,14 @@ impl Counter {
 
 // We do this purely for the convenience of using `req.counter()`
 // instead of `req.state::<Counter>()`.
+// Nov 12 2021: not quite sure which clippy triggered this edit but now it's `vial::Request::state` not `self.state`
 trait WithCounter {
     fn counter(&self) -> &Counter;
 }
 
 impl WithCounter for Request {
     fn counter(&self) -> &Counter {
-        self.state::<Counter>()
+        vial::Request::state::<Counter>()
     }
 }
 

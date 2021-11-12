@@ -105,7 +105,7 @@ pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
         let name = parse_header_name(&buffer, &mut pos)?;
         consume!(":");
         consume_whitespace_to_eol!();
-        let value = parse_header_value(&buffer, &mut pos)?;
+        let value = parse_header_value(&buffer, &mut pos);
 
         if name.from_buf(&buffer).to_ascii_lowercase() == "content-length" {
             content_length = value.from_buf(&buffer).parse().unwrap_or(0);
@@ -175,10 +175,10 @@ fn parse_method(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
         };
         if size == 0 {
             return Err(Error::UnknownHTTPMethod("?".into()));
-        } else {
-            *pos += size;
-            return Ok(Span(start, start + size));
         }
+
+        *pos += size;
+        return Ok(Span(start, start + size));
     }
     Err(Error::ParseError)
 }
@@ -215,11 +215,11 @@ fn parse_header_name(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
     Ok(Span(start, end))
 }
 
-fn parse_header_value(buffer: &[u8], pos: &mut usize) -> Result<Span, Error> {
+fn parse_header_value(buffer: &[u8], pos: &mut usize) -> Span {
     let start = *pos;
     while *pos < buffer.len() && (buffer[*pos] != b'\r' && buffer[*pos] != b'\n') {
         *pos += 1;
     }
     let end = *pos;
-    Ok(Span(start, end))
+    Span(start, end)
 }
