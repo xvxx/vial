@@ -2,7 +2,7 @@
 /// application after you've defined one or more routes using
 /// [`vial::routes!`](macro.routes.html). `run!` performs a bit of
 /// necessary setup, then starts listening for client requests at
-/// http://0.0.0.0:7667 by default.
+/// <http://0.0.0.0:7667> by default.
 ///
 /// There are four ways to use `run!`:
 ///

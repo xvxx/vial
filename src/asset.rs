@@ -2,8 +2,8 @@
 //! optionally bundle them into your application in `--release` mode.
 //!
 //! By setting an asset directory, either through the
-//! [`vial::asset_dir!()`][macro.asset_dir.html] or
-//! [`vial::bundle_assets!()`][macro.bundle_assets.html] macro,
+//! [`vial::asset_dir!()`][`macro.asset_dir.html`] or
+//! [`vial::bundle_assets!()`][`macro.bundle_assets.html`] macro,
 //! you can then use the methods in this module to work with them:
 //!
 //! - **[`asset::etag`()](#method.etag)**: Get the `ETag` for an asset.
@@ -26,7 +26,7 @@
 //! reference them in HTML  as if the root of your Vial web
 //! application was that asset directory.
 //!
-//! Next call [`vial::asset_dir!()`][macro.asset_dir.html] with the
+//! Next call [`vial::asset_dir!()`][`macro.asset_dir.html`] with the
 //! path to your asset directory (maybe `assets/`?) before starting
 //! your application with [`vial::run!`](macro.run.html):
 //!
@@ -127,7 +127,6 @@ fn bundled_assets() -> Option<&'static HashMap<String, &'static [u8]>> {
 /// Size of an asset in `asset_dir()`. `0` if the asset doesn't exist.
 /// Works in bundled mode and regular mode.
 /// # Panics
-///
 /// Panics if `bundled_assets().is_some()` is true
 #[must_use]
 pub fn size(path: &str) -> usize {
@@ -174,6 +173,8 @@ pub fn exists(path: &str) -> bool {
 }
 
 /// Like `fs::read_to_string`(), but with an asset.
+/// # Errors
+/// This function errors if the asset is not found.
 pub fn to_string(path: &str) -> Result<String> {
     if let Some(bytes) = read(path) {
         if let Ok(utf8) = str::from_utf8(bytes.as_ref()) {
@@ -185,11 +186,13 @@ pub fn to_string(path: &str) -> Result<String> {
 }
 
 /// Produces a boxed `io::Read` for an asset.
+/// # Errors
+/// This function errors if the file doesn't exist within the bundled assets, nor on the filesystem.
 #[must_use]
 pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
     let path = normalize_path(path)?;
-    if bundled_assets().is_some() {
-        if let Some(v) = bundled_assets().unwrap().get(&path) {
+    if let Some(bundled_assets) = bundled_assets() {
+        if let Some(v) = bundled_assets.get(&path) {
             return Some(Box::new(*v));
         }
     } else if let Ok(file) = fs::File::open(path) {
@@ -206,8 +209,8 @@ pub fn as_reader(path: &str) -> Option<Box<dyn Read>> {
 #[must_use]
 pub fn read(path: &str) -> Option<Cow<'static, [u8]>> {
     let path = normalize_path(path)?;
-    if bundled_assets().is_some() {
-        if let Some(v) = bundled_assets().unwrap().get(&path) {
+    if let Some(bundled_assets) = bundled_assets() {
+        if let Some(v) = bundled_assets.get(&path) {
             return Some(Cow::from(*v));
         }
     } else {

@@ -131,6 +131,9 @@ impl Request {
 
     /// Read a raw HTTP request from `reader` and create an
     /// appropriate `Request` to represent it.
+    ///
+    /// # Errors
+    /// This function will return an error if the request's reader blocks, or if the request cannot be parsed.
     pub fn from_reader<R: io::Read>(mut reader: R) -> Result<Self> {
         let mut buffer = Vec::with_capacity(512);
         loop {
@@ -170,6 +173,8 @@ impl Request {
 
     /// Read a raw HTTP request from `TcpStream` and create an
     /// appropriate `Request` to represent it.
+    /// # Errors
+    /// This function will error if the stream cannot be set to non-blocking (and downstream, if the request's reader blocks, or if the request cannot be parsed)
     pub fn from_stream(stream: &TcpStream) -> Result<Self> {
         stream.set_nonblocking(true)?;
         Self::from_reader(stream)
@@ -297,7 +302,7 @@ impl Request {
     #[must_use]
     pub fn header(&self, name: &str) -> Option<Cow<'_, str>> {
         let name = name.to_lowercase();
-        let mut headers = self
+        let headers = self
             .headers
             .iter()
             .filter(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
@@ -306,8 +311,6 @@ impl Request {
         let count = headers.clone().count();
         if count == 0 {
             None
-        } else if count == 1 {
-            Some(Cow::from(headers.next().unwrap()))
         } else {
             Some(Cow::from(headers.collect::<Vec<_>>().join(", ")))
         }
@@ -372,19 +375,21 @@ impl Request {
         use crate::Compression;
 
         if let Some(content_encoding) = self.header("Accept-Encoding") {
-            let mut headers = http::header::HeaderMap::new();
-            headers.insert(
-                http::header::ACCEPT_ENCODING,
-                http::header::HeaderValue::from_str(&content_encoding).unwrap(),
-            );
-            if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
-                return match compression {
-                    Encoding::Gzip => Some(Compression::Gzip),
-                    Encoding::Deflate => Some(Compression::Deflate),
-                    Encoding::Brotli => Some(Compression::Brotli),
-                    Encoding::Zstd => Some(Compression::Zstd),
-                    Encoding::Identity => None,
-                };
+            if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
+                let mut headers = http::header::HeaderMap::new();
+                headers.insert(
+                    http::header::ACCEPT_ENCODING,
+                    header_value,
+                );
+                if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
+                    return match compression {
+                        Encoding::Gzip => Some(Compression::Gzip),
+                        Encoding::Deflate => Some(Compression::Deflate),
+                        Encoding::Brotli => Some(Compression::Brotli),
+                        Encoding::Zstd => Some(Compression::Zstd),
+                        Encoding::Identity => None,
+                    };
+                }
             }
         }
         None
@@ -488,7 +493,9 @@ impl Request {
     {
         self.cache.get().unwrap_or_else(|| {
             self.cache.set(fun(self));
-            self.cache.get().unwrap()
+            self.cache
+                .get()
+                .expect("Failed to get cache value in above line!")
         })
     }
 

@@ -77,19 +77,26 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
-        let _compression: Option<Compression> = None;
+        let compression: Option<Compression> = None;
         #[cfg(feature = "compression")]
-        let _compression = req.compression();
+        let compression = req.compression();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
             let mut response: Vec<u8> = vec![];
-            Response::from(500)
+            let write = Response::from(500)
                 .with_body(format!("<pre>{}", info))
-                .write(&mut response, &_compression)
-                .unwrap();
-
-            println!("ERR 500 {}", String::from_utf8_lossy(&response));
-            panic_writer.lock().unwrap().write_all(&response).unwrap();
+                .write(&mut response, &compression);
+            if write.is_ok() {
+                println!("ERR 500 {}", String::from_utf8_lossy(&response));
+                if let Ok(mut panic_writer) = panic_writer.lock() {
+                    if panic_writer.write_all(&response).is_ok() {
+                    } else {
+                        println!("Error writing 500 server error to TCP connection");
+                    }
+                } else {
+                    println!("Error locking panic writer");
+                }
+            }
         }));
 
         let method = req.method().to_string();
@@ -104,25 +111,26 @@ impl Server {
     }
 
     fn build_response(&self, mut req: Request) -> (Response, Option<Compression>) {
-        let _encoding: Option<Compression> = None;
+        let encoding: Option<Compression> = None;
         #[cfg(feature = "compression")]
-        let _encoding = req.compression();
+        let encoding = req.compression();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
-            if let Some(req_etag) = req.header("If-None-Match") {
-                if req_etag == asset::etag(req.path()).as_ref() {
-                    (Response::from(304), _encoding)
-                } else {
-                    (Response::from_asset(req.path()), _encoding)
-                }
-            } else {
-                (Response::from_asset(req.path()), _encoding)
-            }
+            req.header("If-None-Match").map_or_else(
+                || (Response::from_asset(req.path()), encoding.clone()),
+                |req_etag| {
+                    if req_etag == asset::etag(req.path()).as_ref() {
+                        (Response::from(304), encoding.clone())
+                    } else {
+                        (Response::from_asset(req.path()), encoding.clone())
+                    }
+                },
+            )
         } else if let Some(action) = self.router.action_for(&mut req) {
-            let gzip = _encoding;
+            let gzip = encoding;
             (action(req), gzip)
         } else {
-            (Response::from(404), _encoding)
+            (Response::from(404), encoding)
         }
     }
 }

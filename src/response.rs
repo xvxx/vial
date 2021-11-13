@@ -400,9 +400,11 @@ impl Response {
     }
 
     /// Writes this response to a stream.
+    /// # Errors
+    /// This function errors if at some point the reader failed to be copied out of
     pub fn write<W: Write>(mut self, mut w: W, _encoding: &Option<Compression>) -> Result<()> {
         // gross - move into print_headers or something
-        let mut header = format!(
+        let mut default_headers = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
             self.code,
             crate::VERSION,
@@ -422,10 +424,10 @@ impl Response {
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     body.write_all(
                                         &libflate::gzip::Encoder::new(vec)
-                                            .unwrap()
+                                            .expect("Failed to initiate gzip encoder")
                                             .finish()
                                             .into_result()
-                                            .unwrap(),
+                                            .expect("Failed to compress with gzip")
                                     )?;
                                 }
                             }
@@ -436,7 +438,7 @@ impl Response {
                                         &libflate::deflate::Encoder::new(vec)
                                             .finish()
                                             .into_result()
-                                            .unwrap(),
+                                            .expect("Failed to compress with deflate")
                                     )?;
                                 }
                             }
@@ -450,9 +452,9 @@ impl Response {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     let zstd = zstd::stream::write::Encoder::new(vec, 3)
-                                        .unwrap()
-                                        .finish()
-                                        .unwrap();
+                                    .expect("Failed to initialize zstd encoder")
+                                    .finish()
+                                    .expect("Failed to compress with zstd");
                                     body.write_all(&zstd)?;
                                 }
                             }
@@ -477,9 +479,9 @@ impl Response {
                     match _encoding {
                         Some(encoding) => match encoding {
                             Compression::Gzip => {
-                                let mut encoder = Encoder::new(vec![]).unwrap();
+                                let mut encoder = Encoder::new(vec![]).expect("Failed to create gzip encoder");
                                 encoder.write_all(s.as_bytes())?;
-                                body.write_all(&encoder.finish().into_result().unwrap())?;
+                                body.write_all(&encoder.finish().into_result().expect("Failed to compress gzip"))?;
                             }
                             Compression::Deflate => {
                                 let mut vec = vec![];
@@ -488,7 +490,7 @@ impl Response {
                                         &libflate::deflate::Encoder::new(vec)
                                             .finish()
                                             .into_result()
-                                            .unwrap(),
+                                            .expect("Failed to compress with deflate")
                                     )?;
                                 }
                             }
@@ -507,8 +509,8 @@ impl Response {
                                 if vec.write_all(s.as_bytes()).is_ok() {
                                     body.write_all(
                                         &zstd::stream::write::Encoder::new(vec, 3)
-                                            .unwrap()
-                                            .finish()?,
+                                        .expect("Failed to initiate zstd encoder")
+                                        .finish()?,
                                     )?;
                                 }
                             }
@@ -529,9 +531,9 @@ impl Response {
         }
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
-        let _encoding_opt: Option<&str> = None;
+        let encoding_opt: Option<&str> = None;
         #[cfg(feature = "compression")]
-        let _encoding_opt = match _encoding {
+        let encoding_opt = match _encoding {
             Some(encoding) => match encoding {
                 Compression::Gzip => Some("gzip"),
                 Compression::Deflate => Some("deflate"),
@@ -541,14 +543,14 @@ impl Response {
             },
             None => None,
         };
-        if let Some(encoding_content) = _encoding_opt {
+        if let Some(encoding_content) = encoding_opt {
             self.headers.insert(
                 "content-encoding".to_lowercase(),
                 encoding_content.to_string(),
             );
         }
 
-        header.push_str(
+        default_headers.push_str(
             &self
                 .headers
                 .iter()
@@ -557,27 +559,27 @@ impl Response {
                 .join("\r\n"),
         );
 
-        if !header.ends_with("\r\n") {
-            header.push_str("\r\n");
+        if !default_headers.ends_with("\r\n") {
+            default_headers.push_str("\r\n");
         }
 
         #[cfg(feature = "cookies")]
         {
             for (name, val) in self.cookies {
-                header.push_str("Set-Cookie: ");
-                header.push_str(&name);
-                header.push('=');
+                default_headers.push_str("Set-Cookie: ");
+                default_headers.push_str(&name);
+                default_headers.push('=');
                 if val.is_empty() {
-                    header.push_str("; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+                    default_headers.push_str("; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
                 } else {
-                    header.push_str(&val);
+                    default_headers.push_str(&val);
                 }
-                header.push_str("\r\n");
+                default_headers.push_str("\r\n");
             }
         }
 
-        header.push_str("\r\n");
-        w.write_all(header.as_bytes())?;
+        default_headers.push_str("\r\n");
+        w.write_all(default_headers.as_bytes())?;
         w.write_all(&body)?;
         w.flush()?;
         Ok(())

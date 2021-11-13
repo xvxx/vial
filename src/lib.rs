@@ -195,8 +195,6 @@
 //!
 
 #![warn(missing_docs)]
-#![allow(clippy::needless_doctest_main)]
-#![allow(clippy::large_enum_variant)]
 #![deny(
     anonymous_parameters,
     clippy::all,
@@ -206,7 +204,6 @@
     path_statements,
     patterns_in_fns_without_body,
     rust_2018_idioms,
-    // trivial_casts,
     trivial_numeric_casts,
     unused_extern_crates
 )]
@@ -214,19 +211,17 @@
     clippy::dbg_macro,
     clippy::decimal_literal_representation,
     clippy::get_unwrap,
-    // clippy::missing_docs_in_private_items,
     clippy::nursery,
     clippy::pedantic,
     clippy::todo,
     clippy::unimplemented,
     clippy::use_debug,
-    // missing_copy_implementations,
     clippy::all,
-    // missing_debug_implementations,
     unused_qualifications,
     variant_size_differences
 )]
-#[allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::needless_doctest_main)]
 #[macro_use]
 mod macros;
 pub mod asset;
@@ -277,7 +272,7 @@ pub const BUILD_DATE: &str = env!("BUILD_DATE");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Encoding. Internal enum to avoid importing content encoding package w/o feature
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub enum Compression {
     /// Gzip compression
     Gzip,
