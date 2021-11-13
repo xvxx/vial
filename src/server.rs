@@ -7,7 +7,7 @@ use {
         io::Write,
         net::{TcpListener, TcpStream, ToSocketAddrs},
         sync::{Arc, Mutex},
-    }
+    },
 };
 
 /// Starts a new Vial server. Should always be invoked via the

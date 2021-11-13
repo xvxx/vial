@@ -377,10 +377,7 @@ impl Request {
         if let Some(content_encoding) = self.header("Accept-Encoding") {
             if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
                 let mut headers = http::header::HeaderMap::new();
-                headers.insert(
-                    http::header::ACCEPT_ENCODING,
-                    header_value,
-                );
+                headers.insert(http::header::ACCEPT_ENCODING, header_value);
                 if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
                     return match compression {
                         Encoding::Gzip => Some(Compression::Gzip),

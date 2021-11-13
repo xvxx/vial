@@ -13,7 +13,7 @@ fn hello(req: Request) -> impl Responder {
     format!("Hits: {}", count(req))
 }
 
-fn count(req: Request) -> String {
+fn count(_req: Request) -> String {
     vial::Request::state::<HitCount>()
         .0
         .load(Ordering::Relaxed)

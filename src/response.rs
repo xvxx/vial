@@ -427,7 +427,7 @@ impl Response {
                                             .expect("Failed to initiate gzip encoder")
                                             .finish()
                                             .into_result()
-                                            .expect("Failed to compress with gzip")
+                                            .expect("Failed to compress with gzip"),
                                     )?;
                                 }
                             }
@@ -438,7 +438,7 @@ impl Response {
                                         &libflate::deflate::Encoder::new(vec)
                                             .finish()
                                             .into_result()
-                                            .expect("Failed to compress with deflate")
+                                            .expect("Failed to compress with deflate"),
                                     )?;
                                 }
                             }
@@ -452,9 +452,9 @@ impl Response {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
                                     let zstd = zstd::stream::write::Encoder::new(vec, 3)
-                                    .expect("Failed to initialize zstd encoder")
-                                    .finish()
-                                    .expect("Failed to compress with zstd");
+                                        .expect("Failed to initialize zstd encoder")
+                                        .finish()
+                                        .expect("Failed to compress with zstd");
                                     body.write_all(&zstd)?;
                                 }
                             }
@@ -479,9 +479,15 @@ impl Response {
                     match _encoding {
                         Some(encoding) => match encoding {
                             Compression::Gzip => {
-                                let mut encoder = Encoder::new(vec![]).expect("Failed to create gzip encoder");
+                                let mut encoder =
+                                    Encoder::new(vec![]).expect("Failed to create gzip encoder");
                                 encoder.write_all(s.as_bytes())?;
-                                body.write_all(&encoder.finish().into_result().expect("Failed to compress gzip"))?;
+                                body.write_all(
+                                    &encoder
+                                        .finish()
+                                        .into_result()
+                                        .expect("Failed to compress gzip"),
+                                )?;
                             }
                             Compression::Deflate => {
                                 let mut vec = vec![];
@@ -490,7 +496,7 @@ impl Response {
                                         &libflate::deflate::Encoder::new(vec)
                                             .finish()
                                             .into_result()
-                                            .expect("Failed to compress with deflate")
+                                            .expect("Failed to compress with deflate"),
                                     )?;
                                 }
                             }
@@ -509,8 +515,8 @@ impl Response {
                                 if vec.write_all(s.as_bytes()).is_ok() {
                                     body.write_all(
                                         &zstd::stream::write::Encoder::new(vec, 3)
-                                        .expect("Failed to initiate zstd encoder")
-                                        .finish()?,
+                                            .expect("Failed to initiate zstd encoder")
+                                            .finish()?,
                                     )?;
                                 }
                             }

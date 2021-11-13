@@ -82,11 +82,10 @@ impl Router {
             .trim_matches('/')
             .split('/')
             .flat_map(|s| {
-                if let Some(idx) = s.find('.') {
-                    vec![s[..idx].to_string(), s[idx..].to_string()]
-                } else {
-                    vec![s.to_string()]
-                }
+                s.find('.').map_or_else(
+                    || vec![s.to_string()],
+                    |idx| vec![s[..idx].to_string(), s[idx..].to_string()],
+                )
             })
             .collect::<Vec<_>>()
     }
