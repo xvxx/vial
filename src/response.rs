@@ -369,7 +369,7 @@ impl Response {
 
     #[cfg(feature = "cookies")]
     /// Returns a Response with an instruction to remove the cookie.
-    pub fn without_cookie(mut self, key: &str) -> Response {
+    pub fn without_cookie(mut self, key: &str) -> Self {
         self.remove_cookie(key);
         self
     }
@@ -553,7 +553,7 @@ impl Response {
                             Compression::Deflate => "deflate",
                             Compression::Brotli => "br",
                             Compression::Zstd => "zstd",
-                            _ => "", // this branch can't be reached
+                            Compression::Identity => "", // this branch can't be reached
                         }
                         .to_string(),
                     );

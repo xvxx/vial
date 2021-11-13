@@ -220,8 +220,13 @@
     unused_qualifications,
     variant_size_differences
 )]
-#![allow(clippy::cast_possible_truncation)]
-#![allow(clippy::needless_doctest_main)]
+#![allow(clippy::cast_possible_truncation)] 
+#![allow(clippy::needless_doctest_main)] // main is useful for docs
+// #![allow(clippy::missing_const_for_fn)] 
+#![allow(clippy::too_many_lines)]
+#![allow(clippy::shadow_unrelated)] // warnings annoyingly show up in macros
+#![allow(clippy::module_name_repetitions)] // helps with context
+#![allow(clippy::inline_always)] // let me inline hot functions
 #[macro_use]
 mod macros;
 pub mod asset;

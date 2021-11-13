@@ -5,6 +5,8 @@ use crate::{request::Span, Error, Request};
 const MAX_HEADER_SIZE: usize = 8192;
 
 /// Parse a raw HTTP request into a Request struct.
+/// # Errors
+/// Errors if the connection is unexpectedly closed or if the headers are too large.
 pub fn parse(buffer: Vec<u8>) -> Result<Request, Error> {
     let mut pos = 0;
 

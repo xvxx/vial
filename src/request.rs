@@ -69,8 +69,6 @@ pub struct Request {
 
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
-    // #[cfg(feature = "compression")]
-    // compression: Encoding,
 }
 
 impl fmt::Debug for Request {
@@ -124,8 +122,6 @@ impl Request {
 
             #[cfg(feature = "cookies")]
             cookies: vec![],
-            // #[cfg(feature = "compression")]
-            // compression: Encoding::Identity,
         }
     }
 
@@ -369,8 +365,8 @@ impl Request {
             }
         })
     }
-    // #[cfg(feature = "compression")]
     /// Return the compression type from accept-encoding header
+    #[must_use]
     pub fn compression(&self) -> Option<crate::Compression> {
         #[cfg(not(feature = "compression"))]
         return None;

@@ -6,7 +6,7 @@ use {
 
 impl<F> Responder for FnRenderer<F>
 where
-    FnRenderer<F>: fmt::Display,
+    Self: fmt::Display,
     F: FnOnce(&mut TemplateBuffer<'_>),
 {
     fn to_response(self) -> Response {
