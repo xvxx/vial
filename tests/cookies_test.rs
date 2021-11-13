@@ -1,9 +1,6 @@
 #![allow(non_snake_case)]
 #[cfg(feature = "cookies")]
-use {
-    std::fs,
-    vial::{http_parser::parse, Request},
-};
+use {std::fs, vial::Request};
 
 ////
 // tests

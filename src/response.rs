@@ -169,8 +169,11 @@ impl Response {
 
     #[cfg(feature = "cookies")]
     /// Get an individual cookie. `name` is case insensitive.
+    #[must_use]
     pub fn cookie(&self, name: &str) -> Option<&str> {
-        self.cookies.get(&name.to_lowercase()).map(|h| h.as_ref())
+        self.cookies
+            .get(&name.to_lowercase())
+            .map(std::convert::AsRef::as_ref)
     }
 
     #[cfg(feature = "cookies")]
@@ -226,8 +229,9 @@ impl Response {
     #[cfg(feature = "cookies")]
     /// Creates a new Response and sets the given cookie, in
     /// addition to the defaults.
-    pub fn from_cookie(name: &str, value: &str) -> Response {
-        Response::default().with_cookie(name, value)
+    #[must_use]
+    pub fn from_cookie(name: &str, value: &str) -> Self {
+        Self::default().with_cookie(name, value)
     }
 
     /// Creates a new default Response with the given body.
@@ -270,7 +274,7 @@ impl Response {
     ///
     /// The `json_serde` feature must be enabled in `Cargo.toml`.
     #[cfg(feature = "json_serde")]
-    pub fn with_json<T: serde::Serialize>(self, value: T) -> Response {
+    pub fn with_json<T: serde::Serialize>(self, value: T) -> Self {
         // Panics if to_value returns Err because this probably indicates a programming error.
         self.with_body(
             serde_json::to_value(value)
@@ -362,13 +366,15 @@ impl Response {
 
     #[cfg(feature = "cookies")]
     /// Returns a Response with the given cookie set to the value.
-    pub fn with_cookie(mut self, key: &str, value: &str) -> Response {
+    #[must_use]
+    pub fn with_cookie(mut self, key: &str, value: &str) -> Self {
         self.set_cookie(key, value);
         self
     }
 
     #[cfg(feature = "cookies")]
     /// Returns a Response with an instruction to remove the cookie.
+    #[must_use]
     pub fn without_cookie(mut self, key: &str) -> Self {
         self.remove_cookie(key);
         self

@@ -158,7 +158,7 @@ impl Request {
                         req.cookies.push((
                             cookie.get_name().to_string(),
                             cookie.get_value().to_string(),
-                        ))
+                        ));
                     }
                 }
             }
@@ -248,6 +248,8 @@ impl Request {
     /// Body of HTTP request deserialized as a JSON value.
     ///
     /// The `json_serde` feature must be enabled in `Cargo.toml`.
+    /// # Errors
+    /// Errors if the javascript within the body is invalid.
     #[cfg(feature = "json_serde")]
     pub fn json<'a, T: serde::Deserialize<'a>>(&'a self) -> serde_json::Result<T> {
         serde_json::from_str(self.body())
@@ -365,31 +367,33 @@ impl Request {
             }
         })
     }
-    /// Return the compression type from accept-encoding header
+    /// Return the compression type from accept-encoding header (none)
+    #[cfg(not(feature = "compression"))]
     #[must_use]
     pub fn compression(&self) -> Option<crate::Compression> {
-        #[cfg(not(feature = "compression"))]
-        return None;
-        #[cfg(feature = "compression")]
-        {
-            use crate::Compression;
-            if let Some(content_encoding) = self.header("Accept-Encoding") {
-                if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
-                    let mut headers = http::header::HeaderMap::new();
-                    headers.insert(http::header::ACCEPT_ENCODING, header_value);
-                    if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
-                        return match compression {
-                            Encoding::Gzip => Some(Compression::Gzip),
-                            Encoding::Deflate => Some(Compression::Deflate),
-                            Encoding::Brotli => Some(Compression::Brotli),
-                            Encoding::Zstd => Some(Compression::Zstd),
-                            Encoding::Identity => None,
-                        };
-                    }
+        None
+    }
+    /// Return the compression type from accept-encoding header
+    #[cfg(feature = "compression")]
+    #[must_use]
+    pub fn compression(&self) -> Option<crate::Compression> {
+        use crate::Compression;
+        if let Some(content_encoding) = self.header("Accept-Encoding") {
+            if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
+                let mut headers = http::header::HeaderMap::new();
+                headers.insert(http::header::ACCEPT_ENCODING, header_value);
+                if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
+                    return match compression {
+                        Encoding::Gzip => Some(Compression::Gzip),
+                        Encoding::Deflate => Some(Compression::Deflate),
+                        Encoding::Brotli => Some(Compression::Brotli),
+                        Encoding::Zstd => Some(Compression::Zstd),
+                        Encoding::Identity => None,
+                    };
                 }
             }
-            None
         }
+        None
     }
     /// Return the user-agent header
     #[must_use]
@@ -539,6 +543,7 @@ impl Request {
 
     #[cfg(feature = "cookies")]
     /// Get the value of a cookie sent by the client.
+    #[must_use]
     pub fn cookie(&self, name: &str) -> Option<&str> {
         self.cookies
             .iter()
