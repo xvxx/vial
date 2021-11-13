@@ -402,7 +402,7 @@ impl Response {
     /// Writes this response to a stream.
     /// # Errors
     /// This function errors if at some point the reader failed to be copied out of
-    pub fn write<W: Write>(mut self, mut w: W, _encoding: &Option<Compression>) -> Result<()> {
+    pub fn write<W: Write>(mut self, mut w: W, compression: &Option<Compression>) -> Result<()> {
         // gross - move into print_headers or something
         let mut default_headers = format!(
             "HTTP/1.1 {} OK\r\nServer: ~ vial {} ~\r\nDate: {}\r\nConnection: close\r\n",
@@ -410,15 +410,18 @@ impl Response {
             crate::VERSION,
             util::http_current_date(),
         );
-
+        #[cfg(not(feature = "compression"))]
+        if compression.is_some() {
+            println!("Compression option given, but compression feature disabled!");
+        }
         let mut body = vec![];
         // let mut len;
         match self.body {
             Body::Reader(mut reader) => {
                 #[cfg(feature = "compression")]
                 {
-                    match _encoding {
-                        Some(encoding) => match encoding {
+                    match compression {
+                        Some(compression) => match compression {
                             Compression::Gzip => {
                                 let mut vec = vec![];
                                 if reader.read_to_end(&mut vec).is_ok() {
@@ -476,8 +479,8 @@ impl Response {
             Body::String(s) => {
                 #[cfg(feature = "compression")]
                 {
-                    match _encoding {
-                        Some(encoding) => match encoding {
+                    match compression {
+                        Some(compression) => match compression {
                             Compression::Gzip => {
                                 let mut encoder =
                                     Encoder::new(vec![]).expect("Failed to create gzip encoder");
@@ -531,29 +534,31 @@ impl Response {
                 }
 
                 #[cfg(not(feature = "compression"))]
-                body.write_all(s.as_bytes())?;
+                {
+                    body.write_all(s.as_bytes())?;
+                }
             }
             Body::None => {}
         }
         self.headers
             .insert("content-length".to_lowercase(), body.len().to_string());
-        let encoding_opt: Option<&str> = None;
         #[cfg(feature = "compression")]
-        let encoding_opt = match _encoding {
-            Some(encoding) => match encoding {
-                Compression::Gzip => Some("gzip"),
-                Compression::Deflate => Some("deflate"),
-                Compression::Brotli => Some("br"),
-                Compression::Zstd => Some("zstd"),
-                Compression::Identity => None,
-            },
-            None => None,
-        };
-        if let Some(encoding_content) = encoding_opt {
-            self.headers.insert(
-                "content-encoding".to_lowercase(),
-                encoding_content.to_string(),
-            );
+        {
+            if let Some(compression) = compression {
+                if compression != &Compression::Identity {
+                    self.headers.insert(
+                        "content-encoding".to_lowercase(),
+                        match compression {
+                            Compression::Gzip => "gzip",
+                            Compression::Deflate => "deflate",
+                            Compression::Brotli => "br",
+                            Compression::Zstd => "zstd",
+                            _ => "", // this branch can't be reached
+                        }
+                        .to_string(),
+                    );
+                }
+            }
         }
 
         default_headers.push_str(

@@ -369,27 +369,31 @@ impl Request {
             }
         })
     }
-    #[cfg(feature = "compression")]
+    // #[cfg(feature = "compression")]
     /// Return the compression type from accept-encoding header
     pub fn compression(&self) -> Option<crate::Compression> {
-        use crate::Compression;
-
-        if let Some(content_encoding) = self.header("Accept-Encoding") {
-            if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
-                let mut headers = http::header::HeaderMap::new();
-                headers.insert(http::header::ACCEPT_ENCODING, header_value);
-                if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
-                    return match compression {
-                        Encoding::Gzip => Some(Compression::Gzip),
-                        Encoding::Deflate => Some(Compression::Deflate),
-                        Encoding::Brotli => Some(Compression::Brotli),
-                        Encoding::Zstd => Some(Compression::Zstd),
-                        Encoding::Identity => None,
-                    };
+        #[cfg(not(feature = "compression"))]
+        return None;
+        #[cfg(feature = "compression")]
+        {
+            use crate::Compression;
+            if let Some(content_encoding) = self.header("Accept-Encoding") {
+                if let Ok(header_value) = http::header::HeaderValue::from_str(&content_encoding) {
+                    let mut headers = http::header::HeaderMap::new();
+                    headers.insert(http::header::ACCEPT_ENCODING, header_value);
+                    if let Ok(Some(compression)) = fly_accept_encoding::parse(&headers) {
+                        return match compression {
+                            Encoding::Gzip => Some(Compression::Gzip),
+                            Encoding::Deflate => Some(Compression::Deflate),
+                            Encoding::Brotli => Some(Compression::Brotli),
+                            Encoding::Zstd => Some(Compression::Zstd),
+                            Encoding::Identity => None,
+                        };
+                    }
                 }
             }
+            None
         }
-        None
     }
     /// Return the user-agent header
     #[must_use]

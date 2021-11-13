@@ -1,23 +1,9 @@
 #![allow(non_snake_case)]
-
-use std::fs;
-use vial::{http_parser::parse, Request};
-
-////
-// helpers
-
-fn fixture(name: &str) -> String {
-    fs::read_to_string(name).unwrap()
-}
-
-fn parse_fixture(name: &str) -> Request {
-    let parse_result = parse(fixture(name).as_bytes().to_vec());
-    println!("{:?}", parse_result);
-    match parse_result {
-        Ok(request) => request,
-        Err(_error) => panic!("Error with request!"),
-    }
-}
+#[cfg(feature = "cookies")]
+use {
+    std::fs,
+    vial::{http_parser::parse, Request},
+};
 
 ////
 // tests

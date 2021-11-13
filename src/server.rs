@@ -64,8 +64,6 @@ impl Server {
     }
 
     fn write_response(&self, stream: TcpStream, req: Request) -> Result<()> {
-        let compression: Option<Compression> = None;
-        #[cfg(feature = "compression")]
         let compression = req.compression();
         let panic_writer = Arc::new(Mutex::new(stream.try_clone()?));
         std::panic::set_hook(Box::new(move |info| {
@@ -88,36 +86,34 @@ impl Server {
 
         let method = req.method().to_string();
         let path = req.path().to_string();
-        let (response, encoding) = self.build_response(req);
+        let (response, compression_opt) = self.build_response(req);
 
         println!("{} {} {}", method, response.code(), path);
         if response.code() == 500 {
             eprintln!("{}", response.body());
         }
-        response.write(stream, &encoding)
+        response.write(stream, &compression_opt)
     }
 
     fn build_response(&self, mut req: Request) -> (Response, Option<Compression>) {
-        let encoding: Option<Compression> = None;
-        #[cfg(feature = "compression")]
-        let encoding = req.compression();
+        let compression = req.compression();
         //Should this really check for a file on every request? Maybe only if the router doesn't have an action..?
         if asset::exists(req.path()) {
             req.header("If-None-Match").map_or_else(
-                || (Response::from_asset(req.path()), encoding.clone()),
+                || (Response::from_asset(req.path()), compression.clone()),
                 |req_etag| {
                     if req_etag == asset::etag(req.path()).as_ref() {
-                        (Response::from(304), encoding.clone())
+                        (Response::from(304), compression.clone())
                     } else {
-                        (Response::from_asset(req.path()), encoding.clone())
+                        (Response::from_asset(req.path()), compression.clone())
                     }
                 },
             )
         } else if let Some(action) = self.router.action_for(&mut req) {
-            let gzip = encoding;
+            let gzip = compression;
             (action(req), gzip)
         } else {
-            (Response::from(404), encoding)
+            (Response::from(404), compression)
         }
     }
 }

@@ -75,7 +75,6 @@ impl Router {
         }
         None
     }
-
     /// Path pattern ("/dogs", "/dogs/:breed") to Vec<String>
     fn pattern_to_vec(pattern: &str) -> Pattern {
         pattern
@@ -83,11 +82,12 @@ impl Router {
             .split('/')
             .flat_map(|s| {
                 s.find('.').map_or_else(
-                    || vec![s.to_string()],
-                    |idx| vec![s[..idx].to_string(), s[idx..].to_string()],
+                    || [s.to_string(), "".into()],
+                    |idx| [s[..idx].to_string(), s[idx..].to_string()],
                 )
             })
-            .collect::<Vec<_>>()
+            .filter(|x| !x.is_empty())
+            .collect::<Vec<String>>()
     }
 
     /// Insert a route into the router. Routes are checked in FIFO
