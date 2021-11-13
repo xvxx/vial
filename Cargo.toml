@@ -63,7 +63,7 @@ default = []
 compression = ['libflate', 'brotli2', 'zstd', 'http', 'fly-accept-encoding']
 
 [dependencies]
-threadpool = "1.7.1"
+threadfin = "0.1.0"
 libc-strftime = "0.2.0"
 
 basic-cookies = { version = "0.1.4", optional = true }

@@ -7,19 +7,16 @@ use {
         io::Write,
         net::{TcpListener, TcpStream, ToSocketAddrs},
         sync::{Arc, Mutex},
-    },
-    threadpool::ThreadPool,
+    }
 };
-
-const INITIAL_THREADS: usize = 10;
-const MAXIMUM_THREADS: usize = 400;
 
 /// Starts a new Vial server. Should always be invoked via the
 /// [`vial::run!()`](macro.run.html) macro, since there is some setup
 /// that needs to happen.
 #[doc(hidden)]
 pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> Result<()> {
-    let mut pool = ThreadPool::new(INITIAL_THREADS);
+    // If a range is supplied, the lower bound will be the core pool size while the upper bound will be a maximum pool size the pool is allowed to burst up to when the core threads are busy.
+    let pool = threadfin::builder().size(1..=128).build();
     let listener = TcpListener::bind(&addr)?;
     let addr = listener.local_addr()?;
     let server = Arc::new(Server::new(router));
@@ -35,16 +32,6 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
     }
 
     for stream in listener.incoming() {
-        // if all threads are active, extend by two
-        if pool.active_count() > pool.max_count() - 1 && pool.max_count() < MAXIMUM_THREADS {
-            pool.set_num_threads(pool.max_count() + 2);
-        }
-        // tldr: if no active threads and the threadpool has
-        // been expanded, halve the total number of threads.
-        if pool.active_count() == 0 && pool.max_count() > INITIAL_THREADS * 2 {
-            pool.set_num_threads(pool.max_count() / 2);
-        }
-
         let server = server.clone();
         let stream = stream?;
         pool.execute(move || {
