@@ -67,11 +67,11 @@ impl TypeCache {
 
     #[inline(always)]
     fn lock(&self) {
-        while self.mutex.compare_and_swap(0, 1, Ordering::SeqCst) != 0 {}
+        while self.mutex.compare_exchange(0, 1, Ordering::SeqCst, Ordering::SeqCst) != Ok(0) {}
     }
 
     #[inline(always)]
     fn unlock(&self) {
-        assert!(self.mutex.compare_and_swap(1, 0, Ordering::SeqCst) == 1);
+        assert!(self.mutex.compare_exchange(1, 0, Ordering::SeqCst, Ordering::SeqCst) == Ok(1));
     }
 }
