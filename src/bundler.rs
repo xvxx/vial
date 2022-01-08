@@ -5,11 +5,10 @@ use {
         env,
         fs::{self, File},
         io::Write,
+        os::unix,
         path::{Path, PathBuf},
     },
 };
-#[cfg(target_family = "unix")]
-use std::os::unix;
 
 /// You should use the
 /// [`vial::bundle_assets!()`](macro.bundle_assets.html) macro instead
@@ -83,8 +82,7 @@ fn files_in_dir(path: &str) -> Result<Vec<PathBuf>> {
         let path = entry.path();
         let meta = fs::metadata(&path)?;
         if meta.is_dir() {
-            let dir = path.to_string_lossy() + "/";
-            files.extend_from_slice(&files_in_dir(dir.as_ref())?);
+            files.extend_from_slice(&files_in_dir(path.to_str().unwrap_or("bad"))?);
         } else {
             files.push(path);
         }
