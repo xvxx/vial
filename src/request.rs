@@ -128,7 +128,7 @@ impl Request {
                 return Err(Error::ConnectionClosed);
             }
             buffer.extend_from_slice(&read_buf[..n]);
-            match http_parser::parse(mem::replace(&mut buffer, vec![]))? {
+            match http_parser::parse(std::mem::take(&mut buffer))? {
                 http_parser::Status::Complete(req) => break req,
                 http_parser::Status::Partial(b) => {
                     let _ = mem::replace(&mut buffer, b);
@@ -411,7 +411,7 @@ impl Request {
         T: Send + Sync + 'static,
     {
         self.cache.get().unwrap_or_else(|| {
-            self.cache.set(fun(&self));
+            self.cache.set(fun(self));
             self.cache.get().unwrap()
         })
     }
