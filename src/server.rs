@@ -46,7 +46,7 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
         let server = server.clone();
         let stream = stream?;
         pool.execute(move || {
-            if let Err(e) = server.handle_request(stream) {
+            if let Err(e) = server.handle_request(&stream) {
                 eprintln!("!! {}", e);
             }
         });
@@ -64,13 +64,13 @@ impl Server {
         Server { router }
     }
 
-    fn handle_request(&self, stream: TcpStream) -> Result<()> {
-        let reader = stream.try_clone()?;
-
-        //discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
-        let _ = reader.set_read_timeout(Some(Duration::from_millis(1000)));
-
-        let req = Request::from_reader(reader)?;
+    fn handle_request(&self, stream: &TcpStream) -> Result<()> {
+        let stream = stream.try_clone()?;
+        // discard because: https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_read_timeout
+        // "An Err is returned if the zero Duration is passed to this method." thus no need to check result
+        drop(stream.set_read_timeout(Some(Duration::from_millis(1000))));
+        let mut req = Request::from_stream(&stream)?;
+        req.set_remote_addr(stream.peer_addr()?);
         self.write_response(stream, req)
     }
 

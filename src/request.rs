@@ -1,3 +1,6 @@
+#[cfg(feature = "compression")]
+use fly_accept_encoding::Encoding;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
     std::{borrow::Cow, collections::HashMap, fmt, io, mem, rc::Rc, str},
@@ -37,6 +40,9 @@ impl Span {
 
 /// Contains information about a single request.
 pub struct Request {
+    /// Remote address.
+    remote_addr: SocketAddr,
+
     /// The raw request.
     buffer: Vec<u8>,
 
@@ -100,8 +106,10 @@ impl Request {
         }
     }
     /// Produce an empty Request.
-    pub fn default() -> Request {
-        Request {
+    #[must_use]
+    pub fn default() -> Self {
+        Self {
+            remote_addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0),
             path: Span::new(),
             method: Span::new(),
             body: Span::new(),
@@ -162,6 +170,26 @@ impl Request {
         }
 
         Ok(req)
+    }
+
+    /// Read a raw HTTP request from `TcpStream` and create an
+    /// appropriate `Request` to represent it.
+    /// # Errors
+    /// This function will error if the stream cannot be set to non-blocking (and downstream, if the request's reader blocks, or if the request cannot be parsed)
+    pub fn from_stream(stream: &TcpStream) -> Result<Self> {
+        stream.set_nonblocking(true)?;
+        Self::from_reader(stream)
+    }
+
+    /// Sets the remote address of the request.
+    pub fn set_remote_addr(&mut self, socket_addr: SocketAddr) {
+        self.remote_addr = socket_addr;
+    }
+
+    /// Remote address of the request.
+    #[must_use]
+    pub fn remote_addr(&self) -> &SocketAddr {
+        &self.remote_addr
     }
 
     /// Path requested, starting with `/` and not including `?query`.
