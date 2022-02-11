@@ -171,7 +171,7 @@ fancy stuff by default, but there (will be) a few compile-time
 - [x] **horror**: Enable [horrorshow]: A small & fast macro-based HTML
       builder.
 - [x] **json_serde**: `Request::json` and `Response::with_json` powers, via
-      Serde.
+      nanoserde.
 - [x] **cookies**: `Request::cookie()`, `Response::with_cookie`, and
       friends.
 - [ ] **sessions**: Session support.

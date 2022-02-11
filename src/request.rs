@@ -222,8 +222,8 @@ impl Request {
     ///
     /// The `json_serde` feature must be enabled in `Cargo.toml`.
     #[cfg(feature = "json_serde")]
-    pub fn json<'a, T: serde::Deserialize<'a>>(&'a self) -> serde_json::Result<T> {
-        Ok(serde_json::from_str(self.body())?)
+    pub fn json<T: nanoserde::DeJson>(&self) -> core::result::Result<T, nanoserde::DeJsonErr> {
+        T::deserialize_json(self.body())
     }
 
     /// HTTP Method

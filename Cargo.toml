@@ -56,7 +56,7 @@ path = "examples/filters.rs"
 
 [features]
 horror = ['horrorshow']
-json_serde = ['serde', 'serde_json']
+json_serde = ['nanoserde']
 state = []
 cookies = ['cookie2']
 default = []
@@ -68,5 +68,4 @@ libc-strftime = "0.2.0"
 cookie2 = { version = "0.12.0", default-features = false, optional = true }
 hatter = { version = "0.1.1", optional = true }
 horrorshow = { version = "0.8.3", optional = true }
-serde = { version = "1", optional = true }
-serde_json = { version = "1", optional = true }
+nanoserde = { version = "0.1.29", optional = true }

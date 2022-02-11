@@ -217,7 +217,14 @@ fn from() {
 #[test]
 #[cfg(feature = "json_serde")]
 fn with_json() {
-    let res = Response::from(200).with_json(serde_json::json!({"hello": "world"}));
+    use nanoserde::SerJson;
+    #[derive(SerJson)]
+    struct Sample {
+        hello: String,
+    }
+    let res = Response::from(200).with_json(Sample {
+        hello: "world".to_owned(),
+    });
     assert_eq!("application/json", res.content_type());
     assert_eq!("{\"hello\":\"world\"}", res.body());
 }

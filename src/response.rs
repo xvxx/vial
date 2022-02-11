@@ -251,14 +251,10 @@ impl Response {
     ///
     /// The `json_serde` feature must be enabled in `Cargo.toml`.
     #[cfg(feature = "json_serde")]
-    pub fn with_json<T: serde::Serialize>(self, value: T) -> Response {
+    pub fn with_json<T: nanoserde::SerJson>(self, value: T) -> Response {
         // Panics if to_value returns Err because this probably indicates a programming error.
-        self.with_body(
-            serde_json::to_value(value)
-                .expect("Serialize failed")
-                .to_string(),
-        )
-        .with_header("Content-Type", "application/json")
+        self.with_body(value.serialize_json())
+            .with_header("Content-Type", "application/json")
     }
 
     /// Returns a `text/plain` Response with the given body.

@@ -20,11 +20,14 @@ fn basic_req_methods() {
 #[test]
 #[cfg(feature = "json_serde")]
 fn json() {
+    use nanoserde::DeJson;
     let req = Request::from_reader(File::open("tests/http/json_POST.txt").unwrap()).unwrap();
-    assert_eq!(
-        serde_json::json!({"hello": "world"}),
-        req.json::<serde_json::Value>().unwrap()
-    );
+    #[derive(DeJson)]
+    struct Sample {
+        hello: String,
+    }
+
+    assert_eq!("world".to_string(), req.json::<Sample>().unwrap().hello);
     let req = Request::from_reader(File::open("tests/http/bad_json_POST.txt").unwrap()).unwrap();
-    assert!(req.json::<serde_json::Value>().is_err());
+    assert!(req.json::<Sample>().is_err());
 }
