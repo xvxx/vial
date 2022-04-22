@@ -26,12 +26,6 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
     #[cfg(not(debug_assertions))]
     {
         let out_dir = env::var("OUT_DIR").unwrap();
-        // symlink assets dir into out dir
-        let link = Path::new(&out_dir).join(dir);
-        if link.exists() {
-            fs::remove_file(&link)?;
-        }
-        std::os::unix::fs::symlink(env::current_dir()?.join(dir), link)?;
         let bundle_rs = Path::new(&out_dir).join("bundle.rs");
         if bundle_rs.exists() {
             fs::remove_file(&bundle_rs)?;
@@ -48,7 +42,7 @@ pub fn bundle_assets(dir: &str) -> Result<()> {
                 format!(
                     "    map.insert({:?}.into(), &include_bytes!(\"{}\")[..]);\n",
                     path,
-                    path.as_path().to_string_lossy().trim_start_matches("./")
+                    path.canonicalize().unwrap().to_string_lossy()
                 )
                 .as_bytes(),
             )?;
