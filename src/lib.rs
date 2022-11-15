@@ -60,6 +60,7 @@
 //! - [x] **horror**: Small & fast macro-based HTML builder, via [horrowshow].
 //! - [x] **json_serde**: `Request::json` and `Response::with_json` powers,
 //!       via Serde.
+//! - [x] **json_nano**: `Request::json` and `Response::with_json`, via nanoserde.
 //! - [x] **cookies**: Cookie monster!
 //! - [ ] **sessions**: Session support
 //! - [ ] **multipart**: Multipart form data (file uploads)
@@ -246,3 +247,6 @@ pub const BUILD_DATE: &str = env!("BUILD_DATE");
 
 /// Crate version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[cfg(all(feature = "json_serde", feature = "json_nano"))]
+compile_error!("features `vial/json_serde` and `vial/json_nano` are mutually exclusive");

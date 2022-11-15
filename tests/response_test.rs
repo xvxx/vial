@@ -240,3 +240,18 @@ fn test_cookies() {
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n"));
 }
+
+#[test]
+#[cfg(feature = "json_nano")]
+fn with_json() {
+    use nanoserde::SerJson;
+    #[derive(SerJson)]
+    struct Sample {
+        hello: String,
+    }
+    let res = Response::from(200).with_json(Sample {
+        hello: "world".to_owned(),
+    });
+    assert_eq!("application/json", res.content_type());
+    assert_eq!("{\"hello\":\"world\"}", res.body());
+}

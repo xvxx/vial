@@ -261,6 +261,16 @@ impl Response {
         .with_header("Content-Type", "application/json")
     }
 
+    /// Returns an `application/json` Response with a body serialized as JSON
+    /// from the given value.
+    ///
+    /// The `json_nano` feature must be enabled in `Cargo.toml`.
+    #[cfg(feature = "json_nano")]
+    pub fn with_json<T: nanoserde::SerJson>(self, value: T) -> Response {
+        self.with_body(value.serialize_json())
+            .with_header("Content-Type", "application/json")
+    }
+
     /// Returns a `text/plain` Response with the given body.
     pub fn with_text<S: AsRef<str>>(self, text: S) -> Response {
         self.with_body(text)

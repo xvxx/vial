@@ -226,6 +226,14 @@ impl Request {
         Ok(serde_json::from_str(self.body())?)
     }
 
+    /// Body of HTTP request deserialized as a JSON value.
+    ///
+    /// The `json_nano` feature must be enabled in `Cargo.toml`.
+    #[cfg(feature = "json_nano")]
+    pub fn json<T: nanoserde::DeJson>(&self) -> core::result::Result<T, nanoserde::DeJsonErr> {
+        T::deserialize_json(self.body())
+    }
+
     /// HTTP Method
     pub fn method(&self) -> &str {
         self.method.from_buf(&self.buffer)

@@ -172,6 +172,8 @@ fancy stuff by default, but there (will be) a few compile-time
       builder.
 - [x] **json_serde**: `Request::json` and `Response::with_json` powers, via
       Serde.
+- [x] **json_nano**: `Request::json` and `Response::with_json`, via
+      nanoserde.
 - [x] **cookies**: `Request::cookie()`, `Response::with_cookie`, and
       friends.
 - [ ] **sessions**: Session support.

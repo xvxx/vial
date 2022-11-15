@@ -1,6 +1,8 @@
 .PHONY: test
 test:
-	cargo test --all-features
+	cargo test --features horror,state,cookies,default
+	cargo test --features json_serde
+	cargo test --features json_nano
 
 .PHONY: build
 build:
@@ -8,7 +10,9 @@ build:
 
 .PHONY: docs
 docs: docs/index.html
-	cargo doc --all-features
+	cargo doc --features horror,state,cookies,default
+	cargo doc --features json_serde
+	cargo doc --features json_nano
 
 # The Vial docs were originally built using:
 # pandoc 2.8
