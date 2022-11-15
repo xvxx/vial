@@ -5,6 +5,7 @@
 - Added [nanoserde] support. Thanks @alexwennerberg!
 - Fixed asset bundling in release mode. Thanks @ggsvr!
 - Tests now work on Windows. Thanks @JEBailey!
+- Threadpool now expands past 10, to an arbitrary max. Thanks @sigaloid!
 
 [nanoserde]: https://github.com/not-fl3/nanoserde
 
