@@ -546,6 +546,9 @@ can set on a [Response] in your actions:
 - `fn with_json<T: serde::Serialize>(self, value: T) -> Response;` (requires
   the `json_serde` feature)
 
+- `fn with_json<T: nanoserde::SerJson>(self, value: T) -> Response;` (requires
+  the `json_nano` feature)
+
 - `fn with_reader(mut self, reader: Box<dyn io::Read>) -> Response;`
 
 - `fn with_asset(mut self, path: &str) -> Response;`
@@ -964,9 +967,9 @@ _Optional Feature: Coming soon._
 
 ## JSON
 
-**Vial** supports JSON requests and responses via [Serde].
+**Vial** supports JSON requests and responses via [Serde] and [nanoserde].
 
-First, enable the `json_serde` feature in your `Cargo.toml`:
+First, enable either `json_serde` or `json_nano` in your `Cargo.toml`:
 
 ```
 [Dependencies]
@@ -977,6 +980,7 @@ Now, you can use `Request::json` to deserialize a JSON request body, and
 `Response::with_json` to serialize a JSON response body:
 
 ```rust
+// serde example
 use vial::prelude::*;
 
 routes! {
@@ -1043,6 +1047,15 @@ fn main() {
 }
 ```
 
+nanoserde has a similar derive macro available:
+
+```rust
+#[derive(SerJson, DeJson)]
+struct Message {
+    message: String,
+}
+```
+
 ## Database
 
 _"Pro Tip": Coming soon._
@@ -1066,4 +1079,5 @@ _"Pro Tip": Coming soon._
 [to_string api]: https://docs.rs/vial/latest/vial/assets/#method.to_string
 [as_reader api]: https://docs.rs/vial/latest/vial/assets/#method.as_reader
 [serde]: https://serde.rs/
+[nanoserde]: https://github.com/not-fl3/nanoserde
 [serde's derive macro]: https://serde.rs/derive.html

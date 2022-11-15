@@ -2,8 +2,11 @@
 
 ## [] -
 
-- Fixed asset bundling in release mode thanks to @ggsvr
-- Tests now work on Windows thanks to @JEBailey
+- Added [nanoserde] support. Thanks @alexwennerberg!
+- Fixed asset bundling in release mode. Thanks @ggsvr!
+- Tests now work on Windows. Thanks @JEBailey!
+
+[nanoserde]: https://github.com/not-fl3/nanoserde
 
 ## [0.1.9] - 2020-12-13
 
