@@ -1,6 +1,9 @@
 <!-- next-header -->
 
-## [] - 
+## [] -
+
+- Fixed asset bundling in release mode thanks to @ggsvr
+- Tests now work on Windows thanks to @JEBailey
 
 ## [0.1.9] - 2020-12-13
 
