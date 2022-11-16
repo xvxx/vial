@@ -35,7 +35,7 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
         let server = server.clone();
         let stream = stream?;
         pool.execute(move || {
-            if let Err(e) = server.handle_request(&stream) {
+            if let Err(e) = server.handle_request(stream) {
                 eprintln!("!! {}", e);
             }
         });
