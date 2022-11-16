@@ -60,14 +60,8 @@ impl fmt::Display for Error {
                 Error::ParseHeaderValue => "Error Parsing HTTP Header value",
                 Error::ParseError => "Error Parsing HTTP Request",
                 Error::AssetNotFound(..) => "Can't Find Asset",
-                Error::IO(e) => {
-                    if e.kind() == std::io::ErrorKind::WouldBlock {
-                        "io:Error: Thread timeout (std::io::ErrorKind::WouldBlock)"
-                    } else {
-                        "io::Error While Parsing HTTP Request"
-                    }
-                }
-                Error::Other(reason) => &reason,
+                Error::IO(..) => "io::Error While Parsing HTTP Request",
+                Error::Other(reason) => reason,
             }
         )
     }
