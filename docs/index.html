@@ -5,6 +5,7 @@
     <title>vial: a micro micro-framework</title>
     <style type="text/css">
       body {
+        zoom: 80%;
         margin: 40px auto;
         line-height: 1.6;
         font-size: 20px;
