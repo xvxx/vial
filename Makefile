@@ -1,6 +1,8 @@
+FEATURES = horror,state,cookies,default
+
 .PHONY: test
 test:
-	cargo test --features horror,state,cookies,default
+	cargo test --features $(FEATURES)
 	cargo test --features json_serde
 	cargo test --features json_nano
 
@@ -10,14 +12,14 @@ build:
 
 .PHONY: docs
 docs: docs/index.html
-	cargo doc --features horror,state,cookies,default
+	cargo doc --features $(FEATURES)
 	cargo doc --features json_serde
 	cargo doc --features json_nano
 
 # The Vial docs were originally built using:
 # pandoc 2.8
 # Compiled with pandoc-types 1.20, texmath 0.12, skylighting 0.8.2.3
-check:
+deps: check
 	@mkdir -p target/docs
 	@(which pandoc) > /dev/null || (echo "Need pandoc(1) installed"; exit 1)
 	@(which ruby) > /dev/null || (echo "Need ruby(1) installed"; exit 1)
@@ -37,5 +39,16 @@ target/docs/toc.html: check docs/MANUAL.md docs/manual.tpl
 	@pandoc docs/links.md >> target/docs/toc.html
 	@echo "DONE"
 
+.PHONY: clean
 clean:
 	-cargo clean
+
+.PHONY: clippy
+clippy:
+	cargo clippy --features $(FEATURES)
+
+.PHONY: check
+check:
+	cargo check --features $(FEATURES)
+	cargo check --features json_serde
+	cargo check --features json_nano
