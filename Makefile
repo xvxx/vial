@@ -3,8 +3,8 @@ FEATURES = horror,state,cookies,default
 .PHONY: test
 test:
 	cargo test --features $(FEATURES)
-	cargo test --features json_serde
-	cargo test --features json_nano
+	cargo test --features json_serde --test json_test
+	cargo test --features json_nano --test json_test
 
 .PHONY: build
 build:
