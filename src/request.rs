@@ -11,7 +11,7 @@ use cookie2::Cookie;
 
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
-#[derive(Debug, Default, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct Span(pub usize, pub usize);
 
 impl Span {
@@ -27,7 +27,7 @@ impl Span {
 
     /// Find and return the str this span represents from the given
     /// buffer, which should be the raw HTTP request.
-    pub fn from_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
+    pub fn in_buf<'buf>(&self, buf: &'buf [u8]) -> &'buf str {
         if self.is_empty() {
             ""
         } else if self.1 >= self.0 && self.1 <= buf.len() {
@@ -75,12 +75,12 @@ impl fmt::Debug for Request {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut headers = HashMap::new();
         for (k, v) in &self.headers {
-            headers.insert(k.from_buf(&self.buffer), v.from_buf(&self.buffer));
+            headers.insert(k.in_buf(&self.buffer), v.in_buf(&self.buffer));
         }
         f.debug_struct("Request")
-            .field("method", &self.method.from_buf(&self.buffer))
-            .field("path", &self.path.from_buf(&self.buffer))
-            .field("full_path", &self.path.from_buf(&self.buffer))
+            .field("method", &self.method.in_buf(&self.buffer))
+            .field("path", &self.path.in_buf(&self.buffer))
+            .field("full_path", &self.path.in_buf(&self.buffer))
             .field("headers", &headers)
             .finish()
     }
@@ -201,12 +201,12 @@ impl Request {
         } else {
             self.path
         };
-        span.from_buf(&self.buffer)
+        span.in_buf(&self.buffer)
     }
 
     /// Full path requested, starting with `/` and including `?query`.
     pub fn full_path(&self) -> &str {
-        self.path.from_buf(&self.buffer)
+        self.path.in_buf(&self.buffer)
     }
 
     /// Create a request from an arbitrary path. Used in testing.
@@ -232,7 +232,7 @@ impl Request {
     /// `with_path` or `set_arg` this will not accurately represent
     /// the raw HTTP request that was made.
     pub fn body(&self) -> &str {
-        self.body.from_buf(&self.buffer)
+        self.body.in_buf(&self.buffer)
     }
 
     /// Give this Request an arbitrary body from a string.
@@ -266,7 +266,7 @@ impl Request {
 
     /// HTTP Method
     pub fn method(&self) -> &str {
-        self.method.from_buf(&self.buffer)
+        self.method.in_buf(&self.buffer)
     }
 
     /// Give this Request a new HTTP Method.
@@ -307,8 +307,8 @@ impl Request {
         let mut headers = self
             .headers
             .iter()
-            .filter(|(n, _)| n.from_buf(&self.buffer).to_ascii_lowercase() == name)
-            .map(|(_, v)| v.from_buf(&self.buffer).trim_end());
+            .filter(|(n, _)| n.in_buf(&self.buffer).to_ascii_lowercase() == name)
+            .map(|(_, v)| v.in_buf(&self.buffer).trim_end());
 
         let count = headers.clone().count();
         if count == 0 {

@@ -433,7 +433,7 @@ impl Response {
 
 impl From<&str> for Response {
     fn from(s: &str) -> Response {
-        Response::from_body(s.to_string())
+        Response::from_body(s)
     }
 }
 
@@ -457,6 +457,6 @@ impl From<usize> for Response {
 
 impl From<std::borrow::Cow<'_, [u8]>> for Response {
     fn from(i: std::borrow::Cow<'_, [u8]>) -> Response {
-        Response::from_body(String::from_utf8_lossy(&i).to_string())
+        Response::from_body(String::from_utf8_lossy(&i))
     }
 }
