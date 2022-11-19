@@ -121,3 +121,11 @@ fn rejects_expected_but_no_body() {
     let err = Request::from_reader(fixture);
     assert_eq!(err.unwrap_err(), Error::ConnectionClosed);
 }
+
+#[test]
+fn fuzzed1() {
+    let fixture = fs::File::open("tests/http/fuzzed1.txt").unwrap();
+    let request = Request::from_reader(fixture).unwrap();
+    assert_eq!("/Ogk/process.cgi", request.path());
+    assert_eq!("POST", request.method());
+}

@@ -25,7 +25,7 @@ pub fn percent_decode(mut inp: &str) -> Option<String> {
     let mut out = Vec::new();
     loop {
         let next_pct = match inp.find('%') {
-            Some(l) if l < inp.len() - 2 => l,
+            Some(l) if inp.len() > 1 && l < inp.len() - 2 => l,
             Some(_) => return None,
             None => break,
         };
