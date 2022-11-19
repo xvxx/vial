@@ -1,9 +1,13 @@
-#[cfg(feature = "compression")]
-use fly_accept_encoding::Encoding;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
 use {
     crate::{http_parser, util, Error, Result, TypeCache},
-    std::{borrow::Cow, collections::HashMap, fmt, io, mem, rc::Rc, str},
+    std::{
+        borrow::Cow,
+        collections::HashMap,
+        fmt, io, mem,
+        net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
+        rc::Rc,
+        str,
+    },
 };
 
 #[cfg(feature = "cookies")]
