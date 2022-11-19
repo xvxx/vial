@@ -179,7 +179,7 @@ impl Request {
                     let cookie = Cookie::parse(cookie).map_err(|e| Error::Other(e.to_string()))?;
                     let name = cookie.name().to_owned();
                     let val = util::percent_decode(cookie.value()).unwrap();
-                    req.cookies.push((name, val));
+                    req.cookies.push((name.to_lowercase(), val));
                 }
             }
         }
@@ -522,9 +522,10 @@ impl Request {
     #[cfg(feature = "cookies")]
     /// Get the value of a cookie sent by the client.
     pub fn cookie(&self, name: &str) -> Option<&str> {
+        let name = name.to_lowercase();
         self.cookies
             .iter()
-            .find_map(|(k, v)| if k == name { Some(v.as_ref()) } else { None })
+            .find_map(|(k, v)| if k == &name { Some(v.as_ref()) } else { None })
     }
 
     #[cfg(feature = "sessions")]

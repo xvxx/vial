@@ -18,6 +18,16 @@ fn basic_req_methods() {
 }
 
 #[test]
+#[cfg(feature = "cookies")]
+fn basic_cookies() {
+    let req = Request::from_reader(File::open("tests/http/cookies_GET.txt").unwrap()).unwrap();
+    assert_eq!("GET", req.method());
+    assert_eq!("/counter.php", req.path());
+    assert_eq!("50", req.cookie("Count").unwrap());
+    assert_eq!("Ricardo", req.cookie("NAME").unwrap());
+}
+
+#[test]
 #[cfg(feature = "sessions")]
 fn basic_sessions() {
     let req = Request::from_reader(File::open("tests/http/session_GET.txt").unwrap()).unwrap();
