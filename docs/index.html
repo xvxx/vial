@@ -1344,7 +1344,63 @@ class="sourceCode rust"><code class="sourceCode rust"><span id="cb38-1"><a href=
 <span id="cb38-28"><a href="#cb38-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Like all HTTP key/value pairs, cookie names are case insensitive.</p>
 <h2 id="sessions">Sessions</h2>
-<p><em>Optional Feature: Coming soon.</em></p>
+<p>Sessions are essentially encrypted cookies that live until the user
+closes their browser. As a result, they can be treated as semi-
+trustworthy and store information like a username or preference.</p>
+<p>To enable sessions, enable the <code>sessions</code> feature in your
+<code>Cargo.toml</code>:</p>
+<pre><code>[Dependencies]
+vial = { version = &quot;*&quot;, features = [&#39;sessions&#39;] }</code></pre>
+<p>Note that this also turns on the <code>cookies</code> feature, as
+sessions depend on cookies.</p>
+<p>Once it’s enabled you can access the client’s session using an API
+similar to cookie’s: <code>req.session(name)</code>. You can set session
+values using a similar API to the <a href="#request-headers">Request
+Headers</a> API. Removing session values is done using
+<code>remove_session()</code> or <code>without_session()</code>:</p>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    GET <span class="st">&quot;/&quot;</span> <span class="op">=&gt;</span> show<span class="op">;</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    GET <span class="st">&quot;/clear&quot;</span> <span class="op">=&gt;</span> clear<span class="op">;</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    GET <span class="st">&quot;/set&quot;</span> <span class="op">=&gt;</span> set<span class="op">;</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> show(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> count<span class="op">:</span> <span class="dt">usize</span> <span class="op">=</span> req<span class="op">.</span>session(<span class="st">&quot;count&quot;</span>)<span class="op">.</span>unwrap_or(<span class="st">&quot;0&quot;</span>)<span class="op">.</span>parse()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> new_count <span class="op">=</span> count <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>    <span class="pp">Response::</span>from_session(<span class="st">&quot;count&quot;</span><span class="op">,</span> <span class="op">&amp;</span>new_count<span class="op">.</span>to_string())<span class="op">.</span>with_body(<span class="pp">format!</span>(</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">r#&quot;</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;h1&gt; Count: {} &lt;/h1&gt;</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;p&gt;&lt;a href=&quot;/clear&quot;&gt;Clear Count&lt;/a&gt;&lt;/p&gt;</span></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;form action=&quot;/set&quot; method=&quot;GET&quot;&gt;</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;input type=&quot;text&quot; name=&quot;count&quot; /&gt;</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;input type=&quot;submit&quot; value=&quot;Set Count&quot; /&gt;</span></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;/form&gt;</span></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a><span class="st">    &quot;#</span><span class="op">,</span></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>        new_count</span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> clear(_req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a>    <span class="pp">Response::</span>redirect_to(<span class="st">&quot;/&quot;</span>)<span class="op">.</span>without_session(<span class="st">&quot;count&quot;</span>)</span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> set(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> <span class="kw">mut</span> res <span class="op">=</span> <span class="pp">Response::</span>redirect_to(<span class="st">&quot;/&quot;</span>)<span class="op">;</span></span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">let</span> <span class="cn">Some</span>(val) <span class="op">=</span> req<span class="op">.</span>query(<span class="st">&quot;count&quot;</span>)<span class="op">.</span>map(<span class="op">|</span>c<span class="op">|</span> c<span class="op">.</span><span class="pp">parse::</span><span class="op">&lt;</span><span class="dt">usize</span><span class="op">&gt;</span>()<span class="op">.</span>unwrap_or(<span class="dv">0</span>)) <span class="op">{</span></span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> val <span class="op">=</span> val<span class="op">.</span>to_string()<span class="op">;</span></span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>        res<span class="op">.</span>set_session(<span class="st">&quot;count&quot;</span><span class="op">,</span> <span class="op">&amp;</span>val)<span class="op">;</span></span>
+<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb40-35"><a href="#cb40-35" aria-hidden="true" tabindex="-1"></a>    res</span>
+<span id="cb40-36"><a href="#cb40-36" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb40-37"><a href="#cb40-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-38"><a href="#cb40-38" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb40-39"><a href="#cb40-39" aria-hidden="true" tabindex="-1"></a>    <span class="pp">run!</span>()<span class="op">;</span></span>
+<span id="cb40-40"><a href="#cb40-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Like all HTTP key/value pairs, session names are case
+insensitive.</p>
 <h2 id="json">JSON</h2>
 <p><strong>Vial</strong> supports JSON requests and responses via <a
 href="https://serde.rs/">Serde</a> and <a
@@ -1356,34 +1412,34 @@ vial = { version = &quot;*&quot;, features = [&#39;json_serde&#39;] }</code></pr
 <p>Now, you can use <code>Request::json</code> to deserialize a JSON
 request body, and <code>Response::with_json</code> to serialize a JSON
 response body:</p>
-<div class="sourceCode" id="cb40"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">// serde example</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    POST <span class="st">&quot;/json&quot;</span> <span class="op">=&gt;</span> post<span class="op">;</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> post(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> req</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="pp">json::</span><span class="op">&lt;</span><span class="pp">serde_json::</span>Value<span class="op">&gt;</span>()</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>ok()</span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>as_ref()</span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>val<span class="op">|</span> val<span class="op">.</span>as_object())</span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>obj<span class="op">|</span> obj<span class="op">.</span>get(<span class="st">&quot;message&quot;</span>))</span>
-<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>val<span class="op">|</span> val<span class="op">.</span>as_str())</span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>map(<span class="op">|</span>message<span class="op">|</span> message<span class="op">.</span>to_string())</span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Some</span>(message) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">200</span>)<span class="op">.</span>with_json(<span class="pp">serde_json::json!</span>(<span class="op">{</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> <span class="pp">format!</span>(<span class="st">&quot;Echo: {}&quot;</span><span class="op">,</span> message)</span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>))<span class="op">,</span></span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>        <span class="cn">None</span> <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">400</span>)<span class="op">.</span>with_body(<span class="st">&quot;json request parse error&quot;</span>)<span class="op">,</span></span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a>    <span class="pp">vial::run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
-<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">// serde example</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    POST <span class="st">&quot;/json&quot;</span> <span class="op">=&gt;</span> post<span class="op">;</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> post(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> req</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span><span class="pp">json::</span><span class="op">&lt;</span><span class="pp">serde_json::</span>Value<span class="op">&gt;</span>()</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>ok()</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>as_ref()</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>val<span class="op">|</span> val<span class="op">.</span>as_object())</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>obj<span class="op">|</span> obj<span class="op">.</span>get(<span class="st">&quot;message&quot;</span>))</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>and_then(<span class="op">|</span>val<span class="op">|</span> val<span class="op">.</span>as_str())</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">.</span>map(<span class="op">|</span>message<span class="op">|</span> message<span class="op">.</span>to_string())</span>
+<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Some</span>(message) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">200</span>)<span class="op">.</span>with_json(<span class="pp">serde_json::json!</span>(<span class="op">{</span></span>
+<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> <span class="pp">format!</span>(<span class="st">&quot;Echo: {}&quot;</span><span class="op">,</span> message)</span>
+<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>))<span class="op">,</span></span>
+<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a>        <span class="cn">None</span> <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">400</span>)<span class="op">.</span>with_body(<span class="st">&quot;json request parse error&quot;</span>)<span class="op">,</span></span>
+<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb42-24"><a href="#cb42-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-25"><a href="#cb42-25" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb42-26"><a href="#cb42-26" aria-hidden="true" tabindex="-1"></a>    <span class="pp">vial::run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb42-27"><a href="#cb42-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p><a href="https://serde.rs/derive.html">Serde’s derive macro</a> can
 conveniently generate code to serialize and deserialize structs and
 enums, including helpful error messages. To use it, add a dependency on
@@ -1395,36 +1451,36 @@ serde = { version = &quot;*&quot;, features=[&quot;derive&quot;] }</code></pre>
 <code>Response::with_json</code> with any type implementing
 <code>serde::Deserialize</code> and <code>serde::Serialize</code>,
 respectively:</p>
-<div class="sourceCode" id="cb42"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="pp">routes!</span> <span class="op">{</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    POST <span class="st">&quot;/json&quot;</span> <span class="op">=&gt;</span> post<span class="op">;</span></span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="pp">serde::</span>Serialize<span class="op">,</span> <span class="pp">serde::</span>Deserialize<span class="at">)]</span></span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Echo <span class="op">{</span></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">String</span><span class="op">,</span></span>
-<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> post(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
-<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> req<span class="op">.</span><span class="pp">json::</span><span class="op">&lt;</span>Echo<span class="op">&gt;</span>() <span class="op">{</span></span>
-<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Ok</span>(echo) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">200</span>)<span class="op">.</span>with_json(Echo <span class="op">{</span></span>
-<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>            message<span class="op">:</span> <span class="pp">format!</span>(<span class="st">&quot;Echo: {}&quot;</span><span class="op">,</span> echo<span class="op">.</span>message)<span class="op">,</span></span>
-<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>)<span class="op">,</span></span>
-<span id="cb42-17"><a href="#cb42-17" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Err</span>(e) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">400</span>)<span class="op">.</span>with_body(e<span class="op">.</span>to_string())<span class="op">,</span></span>
-<span id="cb42-18"><a href="#cb42-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb42-20"><a href="#cb42-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-21"><a href="#cb42-21" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
-<span id="cb42-22"><a href="#cb42-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">vial::run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
-<span id="cb42-23"><a href="#cb42-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">vial::prelude::</span><span class="op">*;</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="pp">routes!</span> <span class="op">{</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    POST <span class="st">&quot;/json&quot;</span> <span class="op">=&gt;</span> post<span class="op">;</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span><span class="pp">serde::</span>Serialize<span class="op">,</span> <span class="pp">serde::</span>Deserialize<span class="at">)]</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Echo <span class="op">{</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">String</span><span class="op">,</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> post(req<span class="op">:</span> Request) <span class="op">-&gt;</span> <span class="kw">impl</span> Responder <span class="op">{</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> req<span class="op">.</span><span class="pp">json::</span><span class="op">&lt;</span>Echo<span class="op">&gt;</span>() <span class="op">{</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Ok</span>(echo) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">200</span>)<span class="op">.</span>with_json(Echo <span class="op">{</span></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>            message<span class="op">:</span> <span class="pp">format!</span>(<span class="st">&quot;Echo: {}&quot;</span><span class="op">,</span> echo<span class="op">.</span>message)<span class="op">,</span></span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span>)<span class="op">,</span></span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>        <span class="cn">Err</span>(e) <span class="op">=&gt;</span> <span class="pp">Response::</span>from(<span class="dv">400</span>)<span class="op">.</span>with_body(e<span class="op">.</span>to_string())<span class="op">,</span></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>    <span class="pp">vial::run!</span>()<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>nanoserde has a similar derive macro available:</p>
-<div class="sourceCode" id="cb43"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>SerJson<span class="op">,</span> DeJson<span class="at">)]</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Message <span class="op">{</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">String</span><span class="op">,</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>SerJson<span class="op">,</span> DeJson<span class="at">)]</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Message <span class="op">{</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">String</span><span class="op">,</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="database">Database</h2>
 <p><em>“Pro Tip”: Coming soon.</em></p>
 <h2 id="markdown">Markdown</h2>

@@ -7,6 +7,9 @@ use {
     },
 };
 
+#[cfg(feature = "sessions")]
+use crate::session::{self, Session};
+
 /// Response Body. Will be either a `String` or `io::Read`, like from
 /// a File.
 enum Body {
@@ -71,6 +74,10 @@ pub struct Response {
     #[cfg(feature = "cookies")]
     /// Cookies to set.
     cookies: HashMap<String, String>,
+
+    #[cfg(feature = "sessions")]
+    /// Session store.,
+    session_store: Session,
 }
 
 impl PartialEq for Response {
@@ -114,6 +121,9 @@ impl Default for Response {
 
             #[cfg(feature = "cookies")]
             cookies: HashMap::new(),
+
+            #[cfg(feature = "sessions")]
+            session_store: Session::new(session::SECRET),
         }
     }
 }
@@ -172,6 +182,31 @@ impl Response {
         self.cookies.insert(name.to_lowercase(), "".into());
     }
 
+    #[cfg(feature = "sessions")]
+    /// Get an individual session item. `name` is case insensitive.
+    pub fn session(&self, name: &str) -> Option<&str> {
+        self.session_store.get(name)
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Set a session item.
+    pub fn set_session(&mut self, name: &str, value: &str) {
+        self.session_store.set(name, value);
+        self.set_cookie(&self.session_key(name), &self.session_store.encode(value));
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Remove a session item.
+    pub fn remove_session(&mut self, name: &str) {
+        self.session_store.remove(name);
+        self.remove_cookie(&self.session_key(name));
+    }
+
+    #[cfg(feature = "sessions")]
+    fn session_key(&self, key: &str) -> String {
+        format!("{}{}", session::PREFIX, key.to_lowercase())
+    }
+
     /// Convert into a Response.
     pub fn from<T: Into<Response>>(from: T) -> Response {
         from.into()
@@ -211,6 +246,13 @@ impl Response {
     /// addition to the defaults.
     pub fn from_cookie(name: &str, value: &str) -> Response {
         Response::default().with_cookie(name, value)
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Creates a new Response and sets the given session item, in
+    /// addition to the defaults.
+    pub fn from_session(name: &str, value: &str) -> Response {
+        Response::default().with_session(name, value)
     }
 
     /// Creates a new default Response with the given body.
@@ -347,6 +389,20 @@ impl Response {
     /// Returns a Response with an instruction to remove the cookie.
     pub fn without_cookie(mut self, key: &str) -> Response {
         self.remove_cookie(key);
+        self
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Returns a Response with the given session item set to the value.
+    pub fn with_session(mut self, key: &str, value: &str) -> Response {
+        self.set_session(key, value);
+        self
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Returns a Response with an instruction to remove the session item.
+    pub fn without_session(mut self, key: &str) -> Response {
+        self.remove_session(key);
         self
     }
 

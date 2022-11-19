@@ -2,6 +2,7 @@
 
 ## [] -
 
+- Added optional encrypted sessions.
 - Added [nanoserde] support. Thanks @alexwennerberg!
 - Multiple cookies work now. Thanks @sigaloid!
 - Added `Request.remote_addr`. Thanks @sigaloid and @CuriouslyCurious!

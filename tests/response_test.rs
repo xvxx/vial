@@ -232,3 +232,25 @@ fn test_cookies() {
     let out = String::from_utf8_lossy(&out);
     assert!(out.contains("\r\nSet-Cookie: count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n"));
 }
+
+#[test]
+#[cfg(feature = "sessions")]
+fn test_sessions() {
+    let mut res = Response::new();
+    res.set_session("Count", "2");
+    assert_eq!("2", res.session("Count").unwrap());
+    let mut out = vec![];
+    res.write(&mut out).unwrap();
+    let out = String::from_utf8_lossy(&out);
+    assert!(out.contains("\r\nSet-Cookie: __vial_count="));
+
+    let mut res = Response::new();
+    res.remove_session("Count");
+    assert_eq!("", res.session("Count").unwrap());
+    let mut out = vec![];
+    res.write(&mut out).unwrap();
+    let out = String::from_utf8_lossy(&out);
+    assert!(
+        out.contains("\r\nSet-Cookie: __vial_count=; Expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n")
+    );
+}

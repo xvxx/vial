@@ -1,4 +1,4 @@
-FEATURES = horror,state,cookies,default
+FEATURES = horror,state,cookies,sessions,default
 
 .PHONY: test
 test:

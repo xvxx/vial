@@ -13,6 +13,9 @@ use {
 #[cfg(feature = "cookies")]
 use cookie2::Cookie;
 
+#[cfg(feature = "sessions")]
+use crate::session::{self, Session};
+
 /// A `(start, end)` tuple representing a the location of some part of
 /// a Request in a raw buffer, such as the requested URL's path.
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -73,6 +76,9 @@ pub struct Request {
 
     #[cfg(feature = "cookies")]
     cookies: Vec<(String, String)>,
+
+    #[cfg(feature = "sessions")]
+    session_store: Session,
 }
 
 impl fmt::Debug for Request {
@@ -125,6 +131,9 @@ impl Request {
 
             #[cfg(feature = "cookies")]
             cookies: vec![],
+
+            #[cfg(feature = "sessions")]
+            session_store: Session::new(session::SECRET),
         }
     }
 
@@ -171,6 +180,18 @@ impl Request {
                     let name = cookie.name().to_owned();
                     let val = util::percent_decode(cookie.value()).unwrap();
                     req.cookies.push((name, val));
+                }
+            }
+        }
+
+        #[cfg(feature = "sessions")]
+        {
+            for (key, val) in &req.cookies {
+                if key.starts_with(session::PREFIX) {
+                    match req.session_store.decode(val) {
+                        Ok(v) => req.session_store.set(&key.replace(session::PREFIX, ""), &v),
+                        Err(e) => return Err(e),
+                    }
                 }
             }
         }
@@ -504,5 +525,11 @@ impl Request {
         self.cookies
             .iter()
             .find_map(|(k, v)| if k == name { Some(v.as_ref()) } else { None })
+    }
+
+    #[cfg(feature = "sessions")]
+    /// Get the value of something in the session store.
+    pub fn session(&self, name: &str) -> Option<&str> {
+        self.session_store.get(name)
     }
 }

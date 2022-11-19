@@ -176,7 +176,8 @@ fancy stuff by default, but there (will be) a few compile-time
       nanoserde.
 - [x] **cookies**: `Request::cookie()`, `Response::with_cookie`, and
       friends.
-- [ ] **sessions**: Session support.
+- [x] **sessions**: `Request::session()`, `Response::with_session`, and
+      friends.
 - [ ] **uploads**: Multipart form data (file uploads)
 - [ ] **log**: Access logging
 

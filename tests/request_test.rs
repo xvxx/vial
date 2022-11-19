@@ -16,3 +16,13 @@ fn basic_req_methods() {
         req.header("User-Agent").unwrap()
     );
 }
+
+#[test]
+#[cfg(feature = "sessions")]
+fn basic_sessions() {
+    let req = Request::from_reader(File::open("tests/http/session_GET.txt").unwrap()).unwrap();
+    assert_eq!("GET", req.method());
+    assert_eq!("/counter.php", req.path());
+    assert_eq!("100", req.session("Count").unwrap());
+    assert_eq!("Roger", req.session("NAME").unwrap());
+}

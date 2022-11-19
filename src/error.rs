@@ -23,6 +23,10 @@ pub enum Error {
     IO(io::Error),
     /// Unknown error.
     Other(String),
+
+    #[cfg(feature = "sessions")]
+    /// Failed to decode raw session value.
+    SessionDecode,
 }
 
 impl From<Error> for io::Error {
@@ -62,6 +66,9 @@ impl fmt::Display for Error {
                 Error::AssetNotFound(..) => "Can't Find Asset",
                 Error::IO(..) => "io::Error While Parsing HTTP Request",
                 Error::Other(reason) => reason,
+
+                #[cfg(feature = "sessions")]
+                Error::SessionDecode => "Error Decoding Session",
             }
         )
     }
@@ -90,6 +97,9 @@ impl PartialEq for Error {
             ParseHeaderName => matches!(other, ParseHeaderName),
             ParseHeaderValue => matches!(other, ParseHeaderValue),
             ParseError => matches!(other, ParseError),
+
+            #[cfg(feature = "sessions")]
+            SessionDecode => matches!(other, SessionDecode),
         }
     }
 }

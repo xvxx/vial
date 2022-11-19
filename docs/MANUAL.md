@@ -963,7 +963,70 @@ Like all HTTP key/value pairs, cookie names are case insensitive.
 
 ## Sessions
 
-_Optional Feature: Coming soon._
+Sessions are essentially encrypted cookies that live until the user
+closes their browser. As a result, they can be treated as semi-
+trustworthy and store information like a username or preference.
+
+To enable sessions, enable the `sessions` feature in your `Cargo.toml`:
+
+```
+[Dependencies]
+vial = { version = "*", features = ['sessions'] }
+```
+
+Note that this also turns on the `cookies` feature, as sessions
+depend on cookies.
+
+Once it's enabled you can access the client's session using an API
+similar to cookie's: `req.session(name)`. You can set session values
+using a similar API to the [Request Headers](#request-headers) API.
+Removing session values is done using `remove_session()` or
+`without_session()`:
+
+```rust
+use vial::prelude::*;
+
+routes! {
+    GET "/" => show;
+    GET "/clear" => clear;
+    GET "/set" => set;
+}
+
+fn show(req: Request) -> impl Responder {
+    let count: usize = req.session("count").unwrap_or("0").parse().unwrap();
+    let new_count = count + 1;
+    Response::from_session("count", &new_count.to_string()).with_body(format!(
+        r#"
+<h1> Count: {} </h1>
+<p><a href="/clear">Clear Count</a></p>
+<form action="/set" method="GET">
+    <input type="text" name="count" />
+    <input type="submit" value="Set Count" />
+</form>
+    "#,
+        new_count
+    ))
+}
+
+fn clear(_req: Request) -> impl Responder {
+    Response::redirect_to("/").without_session("count")
+}
+
+fn set(req: Request) -> impl Responder {
+    let mut res = Response::redirect_to("/");
+    if let Some(val) = req.query("count").map(|c| c.parse::<usize>().unwrap_or(0)) {
+        let val = val.to_string();
+        res.set_session("count", &val);
+    }
+    res
+}
+
+fn main() {
+    run!();
+}
+```
+
+Like all HTTP key/value pairs, session names are case insensitive.
 
 ## JSON
 

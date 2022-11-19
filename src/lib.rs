@@ -62,7 +62,7 @@
 //!       via Serde.
 //! - [x] **json_nano**: `Request::json` and `Response::with_json`, via nanoserde.
 //! - [x] **cookies**: Cookie monster!
-//! - [ ] **sessions**: Session support
+//! - [x] **sessions**: Session support
 //! - [ ] **multipart**: Multipart form data (file uploads)
 //! - [ ] **log**: Access logging
 //!
@@ -227,6 +227,10 @@ pub mod storage;
 #[cfg(feature = "horror")]
 #[doc(hidden)]
 pub mod horrorshow;
+
+#[cfg(feature = "sessions")]
+#[doc(hidden)]
+pub mod session;
 
 pub use {
     bundler::bundle_assets, cache::TypeCache, error::Error, method::Method, request::Request,
