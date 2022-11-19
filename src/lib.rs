@@ -34,9 +34,9 @@
 //!
 //! ----
 //!
-//! **Status:** Vial is currently in early development. It is being
-//! developed alongside [deadwiki], but that is _strictly_ for personal
-//! use. Proceed with caution.
+//! **Status:** Vial is still in development and shouldn't be used to
+//! build real world apps on untrusted networks.
+//! Please proceed with caution.
 //!
 //! ---
 //!

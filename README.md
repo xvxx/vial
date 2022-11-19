@@ -30,9 +30,9 @@ To learn more, keep reading or visit one of these links:
 
 ---
 
-**⚠ Status:** Vial is currently in early development. It is being
-developed alongside [deadwiki], but that is _strictly_ for personal
-use. Please proceed with caution and wear a hard hat at all times.
+**⚠ Status:** Vial is still in development and shouldn't be used to
+build real world apps on untrusted networks. Please proceed with caution
+and wear a hard hat at all times.
 
 ---
 
@@ -217,5 +217,4 @@ appreciated.
 [cargo-watch]: https://crates.io/crates/cargo-watch
 [horrorshow]: https://github.com/Stebalien/horrorshow-rs
 [hatter]: https://github.com/xvxx/hatter
-[deadwiki]: https://github.com/xvxx/deadwiki
 [gh-build-action]: https://github.com/xvxx/vial/actions?query=workflow%3Abuild
