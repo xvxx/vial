@@ -71,6 +71,7 @@ json_nano = ['nanoserde']
 state = []
 cookies = ['cookie2']
 sessions = ['cookies', 'short-crypt']
+mock = []
 default = []
 
 [dependencies]
@@ -84,3 +85,6 @@ serde = { version = "1", optional = true }
 serde_json = { version = "1", optional = true }
 nanoserde = { version = "0.1.29", optional = true }
 short-crypt = { version = "1.0.27", optional = true }
+
+[dev-dependencies]
+minreq = { version = "2.6.0", default-features = false }
