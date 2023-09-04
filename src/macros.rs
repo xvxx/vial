@@ -173,7 +173,7 @@ macro_rules! run_once {
         vial::run_once!($addr, self)
     }};
     ($($module:ident),+) => {{
-        vial::run!("127.0.0.1:0", $($module),+)
+        vial::run_once!("127.0.0.1:0", $($module),+)
     }};
     ($addr:expr, $($module:ident),+) => {{
         vial::setup!();
