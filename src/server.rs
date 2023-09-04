@@ -4,6 +4,7 @@ use {
         io::Write,
         net::{SocketAddr, TcpListener, TcpStream, ToSocketAddrs},
         sync::{Arc, Mutex},
+        thread::{spawn, JoinHandle},
     },
     threadpool::ThreadPool,
 };
@@ -23,6 +24,19 @@ pub fn run<T: ToSocketAddrs>(addr: T, router: Router, banner: Option<&str>) -> R
     Ok(())
 }
 
+/// Starts a new Vial server accepting only one request. Should always
+/// be invoked via the [`vial::run_once!()`](macro.run_once.html) macro,
+/// since there is some setup that needs to happen.
+#[doc(hidden)]
+pub fn run_once<T: ToSocketAddrs>(addr: T, router: Router) -> Result<(String, JoinHandle<()>)> {
+    let mut addr = addr.to_socket_addrs()?;
+    let addr = addr.next().unwrap();
+    let mut server = Server::new(router, addr, 1, None);
+    let addr = format!("http://{}/", server.addr().to_string());
+    let thread = spawn(move || server.run_once());
+    Ok((addr, thread))
+}
+
 /// A Vial server instance. Has its own threadpool to handle incoming connections.
 pub struct Server<'s> {
     router: Arc<Router>,
@@ -34,6 +48,8 @@ pub struct Server<'s> {
 impl<'s> Server<'s> {
     /// Creates a new Vial server instance. This immediately binds the given address, but does not
     /// start accepting incoming traffic until `run` is called.
+    ///
+    /// This will panic upon being unable to bind the given IP and port combination.
     pub fn new(
         router: Router,
         addr: SocketAddr,
