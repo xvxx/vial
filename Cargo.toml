@@ -71,7 +71,6 @@ json_nano = ['nanoserde']
 state = []
 cookies = ['cookie2']
 sessions = ['cookies', 'short-crypt']
-mock = []
 default = []
 
 [dependencies]
