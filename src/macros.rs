@@ -112,6 +112,77 @@ macro_rules! run_with_banner {
     }};
 }
 
+/// `vial::run_once!`, similarly to `vial::run!`, starts a server.
+/// However, this server is started in a *separate thread* and only
+/// listens for one request then shuts down. This server is by default
+/// bound to an [ephemeral port](https://en.wikipedia.org/wiki/Ephemeral_port).
+/// This macro is meant to facilitate easy HTTP
+/// [mocking](https://en.wikipedia.org/wiki/Mock_object).
+///
+/// To be able to know what port is bound to the server instance the
+/// macro returns a `String` containing the IP and port combination with
+/// "http://" prepended (to allow for easier use) and ending with a '/',
+/// for example: `http://127.0.0.1:58231/`.
+///
+/// The macro also returns a [handle](std::thread::JoinHandle) to the thread that
+/// is spawned so it can be properly joined by the user. See [spawn](std::thread::spawn)
+/// for an explanation on that.
+///
+/// Note that even if multiple routes are defined, only one request is processed before the server
+/// shuts down.
+///
+/// `run_once!` accepts the same parameters as run. Below is an example of using `vial::run_once!`.
+///
+/// ```no_run
+/// use minreq;
+///
+/// mod wiki {
+///     vial::routes! {
+///         GET "/wiki" => |_| Response::from_file("wiki.html");
+///     }
+/// }
+///
+/// mod blog {
+///     vial::routes! {
+///         GET "/blog" => show_blog;
+///         // etc...
+///     }
+///
+///     fn show_blog(req: vial::Request) -> String {
+///         // ...
+///         "blog".to_string()
+///     }
+/// }
+///
+/// fn main() {
+///     let (mut addr, thread) = vial::run_once!(wiki, blog);
+///     addr.push_str("blog");
+///     let resp = minreq::get(addr).send().unwrap();
+///     let _ = thread.join();
+///     println!("Response: {}", resp.as_str().unwrap());
+/// }
+/// ```
+///
+///
+#[macro_export]
+macro_rules! run_once {
+    () => {
+        vial::run_once!("127.0.0.1:0")
+    };
+    ($addr:expr) => {{
+        vial::run_once!($addr, self)
+    }};
+    ($($module:ident),+) => {{
+        vial::run_once!("127.0.0.1:0", $($module),+)
+    }};
+    ($addr:expr, $($module:ident),+) => {{
+        vial::setup!();
+        let mut router = ::vial::Router::new();
+        $($module::vial_add_to_router(&mut router);)+
+        vial::run_once($addr, router).unwrap()
+    }};
+}
+
 /// Gives Vial a state object to manage globally. You can access it
 /// by calling
 /// [`request.state::<YourStruct>()`](struct.Request.html#method.state)

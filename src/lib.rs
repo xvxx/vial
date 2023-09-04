@@ -234,7 +234,8 @@ pub mod session;
 
 pub use {
     bundler::bundle_assets, cache::TypeCache, error::Error, method::Method, request::Request,
-    responder::Responder, response::Response, router::Router, server::run,
+    responder::Responder, response::Response, router::Router, server::run, server::run_once,
+    server::Server, server::MAX_CONNECTIONS,
 };
 
 /// Convenience Result that returns `vial::Error`.
